@@ -38,8 +38,8 @@ public:
         } else if (this->rows() != m.rows() || this->columns() != m.columns()) {
             throw new std::out_of_range("Different row or column number");
         } else {
-            for (auto i; i < this->rows(); ++i) {
-                for (auto j; j < this->columns(); ++j) {
+            for (auto i = 0; i < this->rows(); ++i) {
+                for (auto j = 0; j < this->columns(); ++j) {
                     (*this)(i, j) = m(i, j);
                 }
             }
@@ -56,8 +56,8 @@ public:
 
     // Impresión en pantalla
     std::ostream &operator<<(std::ostream &os, Matrix<F> const &m) {
-        for (auto i; i < this->rows(); ++i) {
-            for (auto j; j < this->columns(); ++j) {
+        for (auto i = 0; i < this->rows(); ++i) {
+            for (auto j = 0; j < this->columns(); ++j) {
                 os << (*this)(i, j) << ' ';
             }
 
@@ -74,8 +74,8 @@ public:
         if (this->rows() != m.rows() || this->columns() != m.columns()) {
             throw new std::out_of_range("Different row or column number");
         } else {
-            for (auto i; i < this->rows(); ++i) {
-                for (auto j; j < this->columns(); ++j) {
+            for (auto i = 0; i < this->rows(); ++i) {
+                for (auto j = 0; j < this->columns(); ++j) {
                     (*this)(i, j) += m(i, j);
                 }
             }
@@ -95,8 +95,8 @@ public:
         if (this->rows() != m.rows() || this->columns() != m.columns()) {
             return false;
         } else {
-            for (auto i; i < this->rows(); ++i) {
-                for (auto j; j < this->columns(); ++j) {
+            for (auto i = 0; i < this->rows(); ++i) {
+                for (auto j = 0; j < this->columns(); ++j) {
                     if ((*this)(i, j) != m(i, j)) {
                         return false;
                     }
@@ -113,8 +113,8 @@ public:
 
     // Producto por una constante
     Matrix<F> &operator*=(const F &c) {
-        for (auto i; i < this->rows(); i++) {
-            for (auto j; j < this->columns(); j++) {
+        for (auto i = 0; i < this->rows(); ++i) {
+            for (auto j = 0; j < this->columns(); ++j) {
                 (*this)(i, j) *= c;
             }
         }
@@ -155,8 +155,8 @@ public:
     InefficientMatrix(std::size_t N, std::size_t M) : Matrix(N, M) {
         matrix = new F[N][M];
 
-        for (auto i; i < N; ++i) {
-            for (auto j; j < M; ++j) {
+        for (auto i = 0; i < N; ++i) {
+            for (auto j = 0; j < M; ++j) {
                 (*this)(i, j) = 0;
             }
         }
@@ -166,8 +166,8 @@ public:
     InefficientMatrix<F>(const InefficientMatrix<F> &m) : Matrix(m.rows(), m.columns()) {
         matrix = new F[this->rows()][this->columns()];
 
-        for (auto i; i < this->rows(); ++i) {
-            for (auto j; j < this->columns(); ++j) {
+        for (auto i = 0; i < this->rows(); ++i) {
+            for (auto j = 0; j < this->columns(); ++j) {
                 (*this)(i, j) = m(i, j);
             }
         }
