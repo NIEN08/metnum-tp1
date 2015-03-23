@@ -6,6 +6,7 @@
 #define _TP1_MATRIX_H_
 
 #include <cstdint>
+#include <cassert>
 #include <iostream>
 #include <stdexcept>
 
@@ -18,17 +19,20 @@
 template <typename F>
 class Matrix {
 public:
-    Matrix<F>(std::size_t N, std::size_t M) : N(N), M(M) { }
+    Matrix<F>(std::size_t N, std::size_t M) : N(N), M(M) {
+        assert(N > 0);
+        assert(M > 0);
+    }
 
     // Constructor por copia
     virtual Matrix<F>(const Matrix<F> &) = 0;
 
     std::size_t rows() const {
-        return N;
+        return this->N;
     };
 
     std::size_t columns() const {
-        return M;
+        return this->M;
     };
 
     // Asignación
@@ -148,39 +152,45 @@ private:
 /*
 * Matriz ineficiente. Todos los algorítmos son malísimos.
 */
-template <typename F>
+template <typename F, F zero>
 class InefficientMatrix : public Matrix<F> {
 public:
     // Constructor
-    InefficientMatrix(std::size_t N, std::size_t M) : Matrix(N, M) {
-        matrix = new F[N][M];
+    InefficientMatrix(std::size_t N, std::size_t M) : Matrix<F>(N, M) {
+        this->matrix = new F[N][M];
 
         for (auto i = 0; i < N; ++i) {
             for (auto j = 0; j < M; ++j) {
-                (*this)(i, j) = 0;
+                this->matrix[i][j] = zero;
             }
         }
     }
 
     // Constructor por copia
-    InefficientMatrix<F>(const InefficientMatrix<F> &m) : Matrix(m.rows(), m.columns()) {
-        matrix = new F[this->rows()][this->columns()];
+    InefficientMatrix<F>(const InefficientMatrix<F> &m) : Matrix<F>(m.rows(), m.columns()) {
+        this->matrix = new F[this->rows()][this->columns()];
 
         for (auto i = 0; i < this->rows(); ++i) {
             for (auto j = 0; j < this->columns(); ++j) {
-                (*this)(i, j) = m(i, j);
+                this->matrix[i][j] = m(i, j);
             }
         }
     }
 
     // Lector de indice
     F &operator()(std::size_t i, std::size_t j) {
-        return matrix[i][j];
+        assert(j >= 0 && j < this->columns());
+        assert(i >= 0 && i < this->rows());
+
+        return this->matrix[i][j];
     }
 
     // Lector de indice constante
     const F &operator()(std::size_t i, std::size_t j) const {
-        return matrix[i][j];
+        assert(j >= 0 && j < this->columns());
+        assert(i >= 0 && i < this->rows());
+
+        return this->matrix[i][j];
     }
 
     // Destructor
@@ -189,6 +199,107 @@ public:
     }
 private:
     // Matrix
+    F **matrix;
+};
+
+/*
+* Matriz Banda.
+* TODO: verificar que la indexación esté bien.
+* TODO: implementar algorítmos de triangulación y resolución de sistema.
+*/
+template <typename F, F zero>
+class BandMatrix : public Matrix<F> {
+public:
+    // Constructor
+    /*
+Formally, consider an n×n matrix A=(ai,j ). If all matrix elements are zero outside a diagonally bordered band whose range
+    is determined by constants k1 and k2:
+
+a_{i,j}=0 \quad\mbox{if}\quad j<i-k_1 \quad\mbox{ or }\quad j>i+k_2; \quad k_1, k_2 \ge 0.\,
+then the quantities k1 and k2 are called the lower and upper bandwidth, respectively.[1] The bandwidth of the matrix is
+    the maximum of k1 and k2; in other words, it is the number k such that  a_{i,j}=0  if  |i-j| > k .[2]
+
+A matrix is called a band matrix or banded matrix if its bandwidth is reasonably small.
+
+A band matrix with k1 = k2 = 0 is a diagonal matrix; a band matrix with k1 = k2 = 1 is a tridiagonal matrix; when
+k1 = k2 = 2 one has a pentadiagonal matrix and so on. If one puts k1 = 0, k2 = n−1, one obtains the definition of an
+upper triangular matrix; similarly, for k1 = n−1, k2 = 0 one obtains a lower triangular matrix.
+    */
+    BandMatrix(std::size_t lband, std::size_t uband, std::size_t N, std::size_t M)
+            : Matrix<F>(N, M), lband(lband), uband(uband) {
+        assert(lband < N);
+        assert(uband < M);
+
+        std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
+
+        this->matrix = new F[this->rows()][bound];
+
+        for (auto i = 0; i < this->rows(); ++i) {
+            for (auto j = 0; j < bound; ++j) {
+                this->matrix[i][j] = zero;
+            }
+        }
+    }
+
+    // Constructor por copia
+    BandMatrix<F>(const BandMatrix<F> &m)
+            : Matrix<F>(m.rows(), m.columns()), lband(m.lower_bandwidth()), uband(m.upper_bandwidth()) {
+        std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
+
+        this->matrix = new F[this->rows()][bound];
+
+        for (auto i = 0; i < this->rows(); ++i) {
+            for (auto j = 0; j < bound; ++j) {
+                this->matrix[i][j] = m.matrix[i][j];
+            }
+        }
+    }
+
+    std::size_t upper_bandwidth() const {
+        return uband;
+    }
+
+    std::size_t lower_bandwidth() const {
+        return lband;
+    }
+
+    // Lector de indice
+    // TODO: esto SEGURO que está mal. Si te fuiste de rango de lo que "está definido", quiero que recibas una referencia que no haga nada.
+    F &operator()(std::size_t i, std::size_t j) {
+        assert(j > 0 && j < this->columns());
+        assert(i > 0 && i < this->rows());
+
+        if (i > j + lband) {
+            return zero;
+        } else if (j > i + uband) {
+            return zero;
+        } else {
+            return matrix[i][j - i + this->lower_bandwidth() + 1];
+        }
+    }
+
+    // Lector de indice constante
+    const F &operator()(std::size_t i, std::size_t j) const {
+        assert(j > 0 && j < this->columns());
+        assert(i > 0 && i < this->rows());
+
+        if (i > j + lband) {
+            return zero;
+        } else if (j > i + uband) {
+            return zero;
+        } else {
+            return matrix[i][j - i + this->lower_bandwidth()]; // +1
+        }
+    }
+
+    // Destructor
+    virtual ~BandMatrix() {
+        delete[] this->matrix;
+    }
+private:
+    // Matrix
+    std::size_t uband;
+    std::size_t lband;
     F **matrix;
 };
 
