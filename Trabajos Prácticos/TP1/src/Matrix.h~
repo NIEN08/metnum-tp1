@@ -296,46 +296,6 @@ upper triangular matrix; similarly, for k1 = n−1, k2 = 0 one obtains a lower t
     virtual ~BandMatrix() {
         delete[] this->matrix;
     }
-
-
-    // Eliminación Gaussiana
-    BandMatrix<F> EliminacionGaussiana( int M, BandMatrix<F> &m ){
-       
-        // Eliminacion gaussiana para matrices bandas
-        int k2 = lband;
-        int s = 1;
-
-        for(int j = 1; j < M; j++){
-            for(int i = s + k2; 0 < k2; k2--){
-                for(int l = j; l <= M; l++){
-                    m[i][j] = m[i][j] - (m[i - 1][j] * (m[i][j] / m[i - 1][j]));
-                }
-            }
-            s++;
-            k = lband;
-        }
-        return m;
-    }
-
-    // Descomposición LU para matrices bandas
-    BandMatrix<F> DescomposicionLU( BandMatrix<F> &m, int M, double b[M] ){
-       
-        // Primero no habria que aplicar eliminacion gaussiana para despues encontrar las soluciones?
-        int i = M;
-        int j = M;
-        int y = b[i] / m[i][i];
-        int x[M];
-        int x[i] = b[i] / m[i][i];
-
-        for(int i = M - 1; 0 < i; i--){
-            x[i] = (b[i] - (y * m[i][j])) / m[i - 1][j];
-            j--;
-            y = y + (m[i - 1][j] * x[i]);
-        }
-        return m;
-    }
-
-
 private:
     // Matrix
     std::size_t uband;
