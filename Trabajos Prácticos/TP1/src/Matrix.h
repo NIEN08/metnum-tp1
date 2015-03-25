@@ -305,9 +305,9 @@ upper triangular matrix; similarly, for k1 = n−1, k2 = 0 one obtains a lower t
         int k2 = lband;
         int s = 1;
 
-        for(int j = 1; j < M; j++){
-            for(int i = s + k2; 0 < k2; k2--){
-                for(int l = j; l <= M; l++){
+        for(int j = 1; j < M; j++){		// ciclo para recorrer las columnas
+            for(int i = s + k2; 0 < k2; k2--){	// ciclo para saber la cantidad de veces que tengo q restar las filas = cant de diagonales inferiores = k2
+                for(int l = j; l <= M; l++){	// ciclo para saber cuantas columnas tengo que restar entre 2 filas
                     m[i][j] = m[i][j] - (m[i - 1][j] * (m[i][j] / m[i - 1][j]));
                 }
             }
