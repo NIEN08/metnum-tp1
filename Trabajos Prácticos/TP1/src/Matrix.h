@@ -162,7 +162,6 @@ public:
                 // Si tenemos dos matrices banda con los mismos anchos de banda, simplemente sumamos la matriz miembro a miembro.
                 std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
 
-                // TODO: cuidado, hay posiciones que van a ser 0 y podríamos estar accediendolas.
                 for (std::size_t i = 0; i < this->rows(); ++i) {
                     for (std::size_t j = 0; j < bound; ++j) {
                         this->matrix[i][j] += m.matrix[i][j];
@@ -199,21 +198,21 @@ public:
                 // Terminamos de fijar los cambios
                 this->matrix = output;
             }
-
-            return *this;
         } else {
             // No podemos sumar
             throw new std::out_of_range("Different dimensions for matrix sum");
         }
+
+        return *this;
     }
 
     // Producto por una constante
     Matrix<F> &operator*=(const F &c) {
-        std::size_t diagonal = std::min(this->rows(), this->columns());
+        std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
 
-        for (std::size_t i = 0; i < diagonal; ++i) {
-            for (std::size_t j = i - this->lower_bandwidth(); j < diagonal + this->upper_bandwidth(); ++j) {
-                (*this)(i, j) *= c;
+        for (std::size_t i = 0; i < this->rows(); ++i) {
+            for (std::size_t j = 0; j < bound; ++j) {
+                this->matrix[i][j] *= c;
             }
         }
 
