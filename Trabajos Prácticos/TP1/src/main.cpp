@@ -1,4 +1,6 @@
 #include "Matrix.h"
+#include <iostream>
+#include <istream>
 
 int main(int argc, char *argv[]) {
     BandMatrix m(3, 3);
