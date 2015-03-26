@@ -66,11 +66,24 @@ public:
         return this->lband;
     }
 
+    // Destructor
+    virtual ~BandMatrix() {
+        for (std::size_t i = 0; i < this->rows(); ++i) {
+            delete[] this->matrix[i];
+        }
+
+        delete[] this->matrix;
+    }
+
     // Asignación
     BandMatrix<F, zero> &operator=(const BandMatrix<F, zero> &m) {
-        if (this->rows() == m.rows() && this->columns() == m.columns()) {
-            std::size_t k = std::min(this->rows(), this->columns());
+        if (*this != m) {
+            // Limpiar memoria.
+            for (std::size_t i = 0; i < this->rows(); ++i) {
+                delete[] this->matrix[i];
+            }
 
+<<<<<<< HEAD
             if (this->upper_bandwidth() == m.upper_bandwidth() && this->lower_bandwidth() == m.lower_bandwidth()) {
                 for (std::size_t d = 0; d < k; ++d) {
                     for (std::size_t j = d - this->lower_bandwidth(); j < d + this->upper_bandwidth(); ++j) {
@@ -80,12 +93,31 @@ public:
             } else {
                 std::size_t bound = std::max(this->lower_bandwidth(), m.lower_bandwidth()) + std::max(this->upper_bandwidth(), m.upper_bandwidth()) + 1;
                 F **output = new F*[this->rows()];
+=======
+            delete[] this->matrix;
+>>>>>>> 3104bf7cb69e705bf5cbfcd5d18acaba0d3022f0
 
-                // TODO: terminar asignación
+            // Poner información de la representación interna
+            this->N = m.rows();
+            this->M = m.columns();
+            this->lband = m.lower_bandwidth();
+            this->uband = m.upper_bandwidth();
+
+            // Crear matriz nueva
+            std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
+            this->matrix = new F*[m.rows()];
+
+            for (std::size_t i = 0; i < this->rows(); ++i) {
+                this->matrix[i] = new F[bound];
+
+                for (std::size_t j = 0; j < bound; ++j) {
+                    // Copiar los valores de la matriz
+                    this->matrix[i][j] = m.matrix[i][j];
+                }
             }
-        } else {
-            throw new std::out_of_range("Different row or column number");
         }
+
+        return *this;
     }
 
      // Igualdad
@@ -141,7 +173,6 @@ public:
                 // Si tenemos dos matrices banda con los mismos anchos de banda, simplemente sumamos la matriz miembro a miembro.
                 std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
 
-                // TODO: cuidado, hay posiciones que van a ser 0 y podríamos estar accediendolas.
                 for (std::size_t i = 0; i < this->rows(); ++i) {
                     for (std::size_t j = 0; j < bound; ++j) {
                         this->matrix[i][j] += m.matrix[i][j];
@@ -178,12 +209,12 @@ public:
                 // Terminamos de fijar los cambios
                 this->matrix = output;
             }
-
-            return *this;
         } else {
             // No podemos sumar
             throw new std::out_of_range("Different dimensions for matrix sum");
         }
+
+        return *this;
     }
 
     // Producto por una constante
@@ -198,16 +229,6 @@ public:
 
         return *this;
     };
-
-    // Destructor
-    virtual ~BandMatrix() {
-        for (std::size_t i = 0; i < this->rows(); ++i) {
-            delete[] this->matrix[i];
-        }
-
-        delete[] this->matrix;
-    }
-
 
     F *triangulate(F *b) {
         F *x = new F[this->rows()];
@@ -325,7 +346,9 @@ const BandMatrix<F, zero> operator+(const BandMatrix<F, zero> &m, const BandMatr
 
 template <class F, F zero>
 const BandMatrix<F, zero> operator*(const BandMatrix<F, zero> &m, const F &c) {
-    throw new std::runtime_error("Must implement operator for Matrix instance");
+    BandMatrix<F, zero> output(m);
+    output *= c;
+    return output;
 }
 
 template <class F, F zero>

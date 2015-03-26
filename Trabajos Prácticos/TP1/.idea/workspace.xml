@@ -47,15 +47,15 @@
       <file leaf-file-name="Matrix.h" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Matrix.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.19176136">
-              <caret line="10" column="20" selection-start-line="10" selection-start-column="20" selection-end-line="10" selection-end-column="20" />
+            <state vertical-scroll-proportion="0.4211663">
+              <caret line="214" column="30" selection-start-line="214" selection-start-column="30" selection-end-line="214" selection-end-column="30" />
               <folding>
                 <element signature="e#87#105#0" expanded="true" />
                 <element signature="e#198#215#0" expanded="true" />
-                <element signature="e#10223#10240#0" expanded="true" />
-                <element signature="e#10566#10583#0" expanded="true" />
-                <element signature="e#10755#10772#0" expanded="true" />
-                <element signature="e#10946#10963#0" expanded="true" />
+                <element signature="e#10127#10144#0" expanded="true" />
+                <element signature="e#10470#10487#0" expanded="true" />
+                <element signature="e#10669#10686#0" expanded="true" />
+                <element signature="e#10850#10867#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -231,27 +231,33 @@
       <option name="project" value="LOCAL" />
       <updated>1427078734737</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Asegurando consistencia de la implementación de matriz banda. Faltan muchas cosas todavía.">
+      <created>1427336663789</created>
+      <option name="number" value="00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1427336663789</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32786885" sideWeight="0.4940429" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32739726" sideWeight="0.4940429" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2494043" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22739726" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2494043" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32786885" sideWeight="0.5059571" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32786885" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -292,7 +298,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Pase de funciones de InefficientMatrix a Matrix.&#10;Esto nos da algorítmos por defecto gratis para cualquier representación." />
     <MESSAGE value="Comienzos de Matriz Banda + Bug fixes&#10;Arreglado un problema con el 0 en la representación de matrices." />
-    <option name="LAST_COMMIT_MESSAGE" value="Comienzos de Matriz Banda + Bug fixes&#10;Arreglado un problema con el 0 en la representación de matrices." />
+    <MESSAGE value="Asegurando consistencia de la implementación de matriz banda. Faltan muchas cosas todavía." />
+    <option name="LAST_COMMIT_MESSAGE" value="Asegurando consistencia de la implementación de matriz banda. Faltan muchas cosas todavía." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -314,10 +321,10 @@
           <folding>
             <element signature="e#87#105#0" expanded="true" />
             <element signature="e#198#215#0" expanded="true" />
-            <element signature="e#10223#10240#0" expanded="true" />
-            <element signature="e#10566#10583#0" expanded="true" />
-            <element signature="e#10755#10772#0" expanded="true" />
-            <element signature="e#10946#10963#0" expanded="true" />
+            <element signature="e#10127#10144#0" expanded="true" />
+            <element signature="e#10470#10487#0" expanded="true" />
+            <element signature="e#10669#10686#0" expanded="true" />
+            <element signature="e#10850#10867#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -369,10 +376,10 @@
           <folding>
             <element signature="e#87#105#0" expanded="true" />
             <element signature="e#198#215#0" expanded="true" />
-            <element signature="e#10223#10240#0" expanded="true" />
-            <element signature="e#10566#10583#0" expanded="true" />
-            <element signature="e#10755#10772#0" expanded="true" />
-            <element signature="e#10946#10963#0" expanded="true" />
+            <element signature="e#10127#10144#0" expanded="true" />
+            <element signature="e#10470#10487#0" expanded="true" />
+            <element signature="e#10669#10686#0" expanded="true" />
+            <element signature="e#10850#10867#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -464,15 +471,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Matrix.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.19176136">
-          <caret line="10" column="20" selection-start-line="10" selection-start-column="20" selection-end-line="10" selection-end-column="20" />
+        <state vertical-scroll-proportion="0.4211663">
+          <caret line="214" column="30" selection-start-line="214" selection-start-column="30" selection-end-line="214" selection-end-column="30" />
           <folding>
             <element signature="e#87#105#0" expanded="true" />
             <element signature="e#198#215#0" expanded="true" />
-            <element signature="e#10223#10240#0" expanded="true" />
-            <element signature="e#10566#10583#0" expanded="true" />
-            <element signature="e#10755#10772#0" expanded="true" />
-            <element signature="e#10946#10963#0" expanded="true" />
+            <element signature="e#10127#10144#0" expanded="true" />
+            <element signature="e#10470#10487#0" expanded="true" />
+            <element signature="e#10669#10686#0" expanded="true" />
+            <element signature="e#10850#10867#0" expanded="true" />
           </folding>
         </state>
       </provider>
