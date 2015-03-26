@@ -78,7 +78,6 @@ public:
                     }
                 }
             } else {
-                std::size_t
                 std::size_t bound = std::max(this->lower_bandwidth(), m.lower_bandwidth()) + std::max(this->upper_bandwidth(), m.upper_bandwidth()) + 1;
                 F **output = new F*[this->rows()];
 
@@ -89,7 +88,7 @@ public:
         }
     }
 
-    // Igualdad
+     // Igualdad
     bool operator==(const BandMatrix<F, zero> &m) const {
         if (this->rows() != m.rows() || this->columns() != m.columns()) {
             return false;
@@ -97,18 +96,17 @@ public:
             std::size_t diagonal = std::min(this->rows(), this->columns());
             std::size_t lower = std::max(this->lower_bandwidth(), m.lower_bandwidth());
             std::size_t upper = std::max(this->upper_bandwidth(), m.upper_bandwidth());
-
+            
             for (std::size_t d = 0; d < diagonal; ++d) {
-                for (std::size_t j = d - lower; j < d + upper; ++j) {
-                    if ((*this)(i, j) != m(i, j)) {
+                for (std::size_t j = d - lower + 1; j < d + upper; ++j) {
+                    if ((*this)(d, j) != m(d, j)) {
                         return false;
                     }
                 }
             }
-
             return true;
         }
-    };
+    }
 
     // Desigualdad
     bool operator!=(const BandMatrix<F, zero> &m) const {
@@ -189,7 +187,7 @@ public:
     }
 
     // Producto por una constante
-    Matrix<F> &operator*=(const F &c) {
+    BandMatrix<F, zero> &operator*=(const F &c) {
         std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
 
         for (std::size_t i = 0; i < this->rows(); ++i) {
@@ -273,8 +271,8 @@ public:
     }
 
     // Descomposición LU para matrices bandas
-    std::tuple<BandMatrix<F, zero>, BandMatrix<F, zero>, BandMatrix<F, zero>>
-        PLUDecomposition(BandMatrix<F> &m, int M, double b[M]) {
+    /*std::tuple<BandMatrix<F, zero>, BandMatrix<F, zero>, BandMatrix<F, zero>>
+        PLUDecomposition(BandMatrix<F, zero> &m, int M, double b[M]) {
 
         // Primero no habria que aplicar eliminacion gaussiana para despues encontrar las soluciones?
         int i = M;
@@ -289,7 +287,7 @@ public:
             y = y + (m[i - 1][j] * x[i]);
         }
         return m;
-    }
+    }*/
 
 
 private:
@@ -320,7 +318,7 @@ std::ostream &operator<<(std::ostream &os, const BandMatrix<F, zero> &m) {
 // TODO: todo esto
 template <class F, F zero>
 const BandMatrix<F, zero> operator+(const BandMatrix<F, zero> &m, const BandMatrix<F, zero> &n) {
-    Matrix<F> output(m);
+    BandMatrix<F, zero> output(m);
     output += n;
     return output;
 }
