@@ -16,13 +16,16 @@
 * Cabe destacar que los algorítmos por defecto funcionan seguro, pero van a ser super ineficientes, ya que no van
 * a explotar propiedades de la matriz o su representación.
 */
-template <class F>
+template <typename F>
 class Matrix {
 public:
     Matrix<F>(std::size_t N, std::size_t M) : N(N), M(M) {
         assert(N > 0);
         assert(M > 0);
     }
+
+    // Constructor por copia
+    virtual Matrix<F>(const Matrix<F> &) = 0;
 
     std::size_t rows() const {
         return this->N;
@@ -39,8 +42,8 @@ public:
         } else if (this->rows() != m.rows() || this->columns() != m.columns()) {
             throw new std::out_of_range("Different row or column number");
         } else {
-            for (std::size_t i = 0; i < this->rows(); ++i) {
-                for (std::size_t j = 0; j < this->columns(); ++j) {
+            for (auto i = 0; i < this->rows(); ++i) {
+                for (auto j = 0; j < this->columns(); ++j) {
                     (*this)(i, j) = m(i, j);
                 }
             }
@@ -55,13 +58,28 @@ public:
     // Lectura de miembro
     virtual const F &operator()(std::size_t, std::size_t) const = 0;
 
+    // Impresión en pantalla
+    std::ostream &operator<<(std::ostream &os, Matrix<F> const &m) {
+        for (auto i = 0; i < this->rows(); ++i) {
+            for (auto j = 0; j < this->columns(); ++j) {
+                os << (*this)(i, j) << ' ';
+            }
+
+            os << '\n';
+        }
+
+        os << '\n';
+
+        return os;
+    }
+
     // Suma de matrices
     Matrix<F> &operator+=(const Matrix<F> &m) {
         if (this->rows() != m.rows() || this->columns() != m.columns()) {
             throw new std::out_of_range("Different row or column number");
         } else {
-            for (std::size_t i = 0; i < this->rows(); ++i) {
-                for (std::size_t j = 0; j < this->columns(); ++j) {
+            for (auto i = 0; i < this->rows(); ++i) {
+                for (auto j = 0; j < this->columns(); ++j) {
                     (*this)(i, j) += m(i, j);
                 }
             }
@@ -70,13 +88,19 @@ public:
         }
     }
 
+    const Matrix<F> operator+(const Matrix<F> &m) const {
+        Matrix<F> output(*this);
+        output += m;
+        return output;
+    };
+
     // Igualdad
     bool operator==(const Matrix<F> &m) const {
         if (this->rows() != m.rows() || this->columns() != m.columns()) {
             return false;
         } else {
-            for (std::size_t i = 0; i < this->rows(); ++i) {
-                for (std::size_t j = 0; j < this->columns(); ++j) {
+            for (auto i = 0; i < this->rows(); ++i) {
+                for (auto j = 0; j < this->columns(); ++j) {
                     if ((*this)(i, j) != m(i, j)) {
                         return false;
                     }
@@ -93,8 +117,8 @@ public:
 
     // Producto por una constante
     Matrix<F> &operator*=(const F &c) {
-        for (std::size_t i = 0; i < this->rows(); ++i) {
-            for (std::size_t j = 0; j < this->columns(); ++j) {
+        for (auto i = 0; i < this->rows(); ++i) {
+            for (auto j = 0; j < this->columns(); ++j) {
                 (*this)(i, j) *= c;
             }
         }
@@ -102,9 +126,21 @@ public:
         return *this;
     };
 
+    const Matrix<F> operator*(const F &c) {
+        Matrix<F> output(*this);
+        output *= c;
+        return output;
+    };
+
     // Producto por otra matriz
     Matrix<F> &operator*=(const Matrix<F> &m) {
         // TODO: Ver como hacer esto bien. Tiene que ser destructivo pero hacer el producto igual... Si esto no sale, cambiar el de abajo.
+    };
+
+    const Matrix<F> operator*(const Matrix<F> &m) {
+        Matrix<F> output(*this);
+        output *= m;
+        return output;
     };
 
     virtual ~Matrix() { }
@@ -113,66 +149,29 @@ private:
     size_t M;
 };
 
-template <class F>
-const Matrix<F> operator+(const Matrix<F> &m, const Matrix<F> &n) {
-    Matrix<F> output(m);
-    output += n;
-    return output;
-}
-
-template <class F>
-const Matrix<F> operator*(const Matrix<F> &m, const F &c) {
-    throw new std::runtime_error("Must implement operator for Matrix instance");
-}
-
-template <class F>
-const Matrix<F> operator*(const Matrix<F> &m, const Matrix<F> &n) {
-    throw new std::runtime_error("Must implement operator for Matrix instance");
-}
-
-// Impresión en pantalla
-template <class T>
-std::ostream &operator<<(std::ostream &os, const Matrix<T> &m) {
-    for (std::size_t i = 0; i < m.rows(); ++i) {
-        for (std::size_t j = 0; j < m.columns(); ++j) {
-            os << m(i, j) << ' ';
-        }
-
-        os << std::endl;
-    }
-
-    os << std::endl;
-
-    return os;
-}
-
 /*
 * Matriz ineficiente. Todos los algorítmos son malísimos.
 */
-template <class F, F zero>
+template <typename F, F zero>
 class InefficientMatrix : public Matrix<F> {
 public:
     // Constructor
     InefficientMatrix(std::size_t N, std::size_t M) : Matrix<F>(N, M) {
-        this->matrix = new F*[N];
+        this->matrix = new F[N][M];
 
-        for (std::size_t i = 0; i < N; ++i) {
-            this->matrix[i] = new F[M];
-
-            for (std::size_t j = 0; j < M; ++j) {
+        for (auto i = 0; i < N; ++i) {
+            for (auto j = 0; j < M; ++j) {
                 this->matrix[i][j] = zero;
             }
         }
     }
 
     // Constructor por copia
-    InefficientMatrix<F, zero>(const InefficientMatrix<F, zero> &m) : Matrix<F>(m.rows(), m.columns()) {
-        this->matrix = new F*[this->rows()];
+    InefficientMatrix<F>(const InefficientMatrix<F> &m) : Matrix<F>(m.rows(), m.columns()) {
+        this->matrix = new F[this->rows()][this->columns()];
 
-        for (std::size_t i = 0; i < this->rows(); ++i) {
-            this->matrix[i] = new F[this->columns()];
-
-            for (std::size_t j = 0; j < this->columns(); ++j) {
+        for (auto i = 0; i < this->rows(); ++i) {
+            for (auto j = 0; j < this->columns(); ++j) {
                 this->matrix[i][j] = m(i, j);
             }
         }
@@ -194,25 +193,8 @@ public:
         return this->matrix[i][j];
     }
 
-    // TODO: lograr borrar estos dos metodos.
-    virtual const InefficientMatrix<F, zero> operator+(const InefficientMatrix<F, zero> &m) const {
-        InefficientMatrix<F, zero> output(*this);
-        output += m;
-        return output;
-    };
-
-    const InefficientMatrix<F, zero> operator*(const F &c) {
-        InefficientMatrix<F, zero> output(*this);
-        output *= c;
-        return output;
-    };
-
     // Destructor
     virtual ~InefficientMatrix() {
-        for (std::size_t i = 0; i < this->rows(); ++i) {
-            delete[] this->matrix[i];
-        }
-
         delete[] this->matrix;
     }
 private:
@@ -222,8 +204,10 @@ private:
 
 /*
 * Matriz Banda.
+* TODO: verificar que la indexación esté bien.
+* TODO: implementar algorítmos de triangulación y resolución de sistema.
 */
-template <class F, F zero>
+template <typename F, F zero>
 class BandMatrix : public Matrix<F> {
 public:
     // Constructor
@@ -248,27 +232,24 @@ upper triangular matrix; similarly, for k1 = n−1, k2 = 0 one obtains a lower t
 
         std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
 
-        this->matrix = new F*[this->rows()];
+        this->matrix = new F[this->rows()][bound];
 
-        for (std::size_t i = 0; i < this->rows(); ++i) {
-            this->matrix[i] = new F[bound];
-            for (std::size_t j = 0; j < bound; ++j) {
+        for (auto i = 0; i < this->rows(); ++i) {
+            for (auto j = 0; j < bound; ++j) {
                 this->matrix[i][j] = zero;
             }
         }
     }
 
     // Constructor por copia
-    BandMatrix<F, zero>(const BandMatrix<F, zero> &m)
+    BandMatrix<F>(const BandMatrix<F> &m)
             : Matrix<F>(m.rows(), m.columns()), lband(m.lower_bandwidth()), uband(m.upper_bandwidth()) {
         std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
 
-        this->matrix = new F*[this->rows()];
+        this->matrix = new F[this->rows()][bound];
 
-        for (std::size_t i = 0; i < this->rows(); ++i) {
-            this->matrix[i] = new F[bound];
-
-            for (std::size_t j = 0; j < bound; ++j) {
+        for (auto i = 0; i < this->rows(); ++i) {
+            for (auto j = 0; j < bound; ++j) {
                 this->matrix[i][j] = m.matrix[i][j];
             }
         }
@@ -288,12 +269,12 @@ upper triangular matrix; similarly, for k1 = n−1, k2 = 0 one obtains a lower t
         assert(j > 0 && j < this->columns());
         assert(i > 0 && i < this->rows());
 
-        if (i > j + this->lower_bandwidth()) {
+        if (i > j + lband) {
             return zero;
-        } else if (j > i + this->upper_bandwidth()) {
+        } else if (j > i + uband) {
             return zero;
         } else {
-            return matrix[i][j - i + this->lower_bandwidth()]; // +1
+            return matrix[i][j - i + this->lower_bandwidth() + 1];
         }
     }
 
@@ -302,82 +283,17 @@ upper triangular matrix; similarly, for k1 = n−1, k2 = 0 one obtains a lower t
         assert(j > 0 && j < this->columns());
         assert(i > 0 && i < this->rows());
 
-        if (i > j + this->lower_bandwidth()) {
+        if (i > j + lband) {
             return zero;
-        } else if (j > i + this->upper_bandwidth()) {
+        } else if (j > i + uband) {
             return zero;
         } else {
             return matrix[i][j - i + this->lower_bandwidth()]; // +1
         }
     }
 
-    F *triangulate(F *b) {
-        F *x = new F[this->rows()];
-        std::size_t min = (this->rows() <= this->columns())? this->rows():this->columns();
-        std::size_t d = 0;
-
-        while (d < min) {
-            std::size_t i = d + 1;
-
-            if ((*this)(d, d) == 0) {
-                // Hay un cero en la base
-                bool swap = false;
-
-                for (i = d + 1; i < d + this->lower_bandwidth(); ++i) {
-                    if ((*this)(i, d) != 0) {
-                        // Encontramos una fila más abajo que es distinta de 0
-                        swap = true;
-                        break;
-                    }
-                }
-
-                if (swap) {
-                    // Swappeamos las filas, sólo entre los elementos posibles.
-                    // TODO: cuidado, esto no podría romper la estructura de banda?
-                    for (std::size_t j = d - lower_bandwidth(); j < i + this->upper_bandwidth(); ++j) {
-                        F tmp = (*this)(d, j);
-                        (*this)(d, j) = (*this)(i, j);
-                        (*this)(i, j) = tmp;
-                    }
-
-                    // Realizamos el mismo cambio en la solución del sistema
-                    F tmp = b[d];
-                    b[d] = b[i];
-                    b[i] = b[d];
-                } else {
-                    ++d;
-                }
-            } else {
-                // Tenemos algo distinto de cero en la base
-                for (i = d + 1; i < d + this->lower_bandwidth(); ++i) {
-                    if ((*this)(i, d) != 0) {
-                        // Tenemos algo distinto de cero en alguna fila más abajo
-                        F coefficient = (*this)(i, d)/(*this)(d, d);
-
-                        // Setear esto en 0 debería reducir el error posible (por ejemplo, restando números muy chicos)
-                        (*this)(i, d) = 0;
-
-                        // Realizamos el mismo cambio en la solución del sistema
-                        b[i] -= coefficient * b[d];
-
-                        for (std::size_t j = d + 1; j < i + this->upper_bandwidth(); ++j) {
-                            // Realizamos la resta a toda la fila.
-                            (*this)(i, j) -=  coefficient * (*this)(d, j);
-                        }
-                    }
-                }
-
-                ++d;
-            }
-        }
-    }
-
     // Destructor
     virtual ~BandMatrix() {
-        for (std::size_t i = 0; i < this->rows(); ++i) {
-            delete[] this->matrix[i];
-        }
-
         delete[] this->matrix;
     }
 
@@ -389,9 +305,9 @@ upper triangular matrix; similarly, for k1 = n−1, k2 = 0 one obtains a lower t
         int k2 = lband;
         int s = 1;
 
-        for(int j = 1; j < M; j++){		// ciclo para recorrer las columnas
-            for(int i = s + k2; 0 < k2; k2--){	// ciclo para saber la cantidad de veces que tengo q restar las filas = cant de diagonales inferiores = k2
-                for(int l = j; l <= M; l++){	// ciclo para saber cuantas columnas tengo que restar entre 2 filas
+        for(int j = 1; j < M; j++){
+            for(int i = s + k2; 0 < k2; k2--){
+                for(int l = j; l <= M; l++){
                     m[i][j] = m[i][j] - (m[i - 1][j] * (m[i][j] / m[i - 1][j]));
                 }
             }
