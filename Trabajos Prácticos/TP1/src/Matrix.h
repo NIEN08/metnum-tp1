@@ -114,15 +114,15 @@ public:
         return *this;
     }
 
-    // Igualdad
+
+ // Igualdad
     bool operator==(const BandMatrix &m) const {
         if (this->rows() != m.rows() || this->columns() != m.columns()) {
             return false;
         } else {
-            std::size_t diagonal = std::min(this->rows(), this->columns());
-            std::size_t lower = std::max(this->lower_bandwidth(), m.lower_bandwidth());
-            std::size_t upper = std::max(this->upper_bandwidth(), m.upper_bandwidth());
-
+                std::size_t diagonal = std::min(this->rows(), this->columns());
+                std::size_t lower = std::max(this->lower_bandwidth(), m.lower_bandwidth());
+                std::size_t upper = std::max(this->upper_bandwidth(), m.upper_bandwidth());
             for (std::size_t d = 0; d < diagonal; ++d) {
                 for (std::size_t j = d - lower; j < d + upper; ++j) {
                     if ((*this)(d, j) != m(d, j)) {
@@ -130,10 +130,38 @@ public:
                     }
                 }
             }
+            return true;
+            }
+        }
+
+
+    // Igualdad  
+    // Esta version anda bien pero no se si es eficiente. 
+    // Recorre todas las posiciones de la matriz y se fija si todos los elementos son iguales
+    // si NO guardamos los 0 entonces tendria que servir este algoritmo.
+    /*bool operator==(const BandMatrix &m) const {
+        if (this->rows() != m.rows() || this->columns() != m.columns()) {
+            return false;
+        } else {
+            std::size_t diagonal = std::min(this->rows(), this->columns());
+            std::size_t lower = std::max(this->lower_bandwidth(), m.lower_bandwidth());
+            std::size_t upper = std::max(this->upper_bandwidth(), m.upper_bandwidth());
+
+
+            int ancho = this->columns();
+            int alto = this->rows();
+
+            for (std::size_t i = 0; i < alto; i++) {
+                for (std::size_t j = 0; j < ancho; j++) {
+                    if ((*this)(i, j) != m(i, j)) {
+                        return false;
+                    }
+                }
+            }
 
             return true;
         }
-    }
+    }*/
 
     // Desigualdad
     bool operator!=(const BandMatrix &m) const {
@@ -232,6 +260,30 @@ public:
         return *this;
     };
 
+    // Producto de matrices 
+    // ANDA MAL: CORREGIR
+    BandMatrix &operator*(const BandMatrix &m) {
+        BDouble tmp;
+        if(this->columns() == m.rows()){
+            for(int i = 0; i < this->rows(); i++){ // i se mueve por las filas i de la matriz A
+                for(int j = 0; j < m.columns(); j++){ // j se mueve en las columnas j de la matriz B
+                    for(int l = 0; l < this->columns(); l++){ // Ej: A[1][1]*B[1][1] + A[1][2]*B[2][1] + .. + A[1][l]*B[l][1]
+                       tmp += this->matrix[i][l] * m.matrix[l][j];
+                       //std::cout << this->matrix[i][l] << m.matrix[l][j] << tmp << std::endl;
+                    }
+                     this->matrix[i][j] = tmp; // una vez q ya se cuando da la sumatoria de la fila i por la columna j, pongo el valor en M[i][j] 
+                     tmp = 0;       // acá guardo el valor del producto de matrices en el índice i,j
+                }
+            }
+
+        } else{
+            // No podemos hacer el producto de matrices
+            throw new std::out_of_range("Different dimensions for matrix product");
+        }
+        return *this;
+    }
+
+
     BDouble *triangulate(BDouble *b) {
         //BDouble *x = new BDouble[this->rows()]; // TODO: esto
         std::size_t min = (this->rows() <= this->columns())? this->rows():this->columns();
@@ -292,6 +344,8 @@ public:
             }
         }
     }
+
+
 private:
     // Matrix
     std::size_t N;
