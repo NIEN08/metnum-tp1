@@ -113,23 +113,6 @@ private:
     size_t M;
 };
 
-template <class F>
-const Matrix<F> operator+(const Matrix<F> &m, const Matrix<F> &n) {
-    Matrix<F> output(m);
-    output += n;
-    return output;
-}
-
-template <class F>
-const Matrix<F> operator*(const Matrix<F> &m, const F &c) {
-    throw new std::runtime_error("Must implement operator for Matrix instance");
-}
-
-template <class F>
-const Matrix<F> operator*(const Matrix<F> &m, const Matrix<F> &n) {
-    throw new std::runtime_error("Must implement operator for Matrix instance");
-}
-
 // Impresión en pantalla
 template <class T>
 std::ostream &operator<<(std::ostream &os, const Matrix<T> &m) {
@@ -147,100 +130,12 @@ std::ostream &operator<<(std::ostream &os, const Matrix<T> &m) {
 }
 
 /*
-* Matriz ineficiente. Todos los algorítmos son malísimos.
-*/
-template <class F, F zero>
-class InefficientMatrix : public Matrix<F> {
-public:
-    // Constructor
-    InefficientMatrix(std::size_t N, std::size_t M) : Matrix<F>(N, M) {
-        this->matrix = new F*[N];
-
-        for (std::size_t i = 0; i < N; ++i) {
-            this->matrix[i] = new F[M];
-
-            for (std::size_t j = 0; j < M; ++j) {
-                this->matrix[i][j] = zero;
-            }
-        }
-    }
-
-    // Constructor por copia
-    InefficientMatrix<F, zero>(const InefficientMatrix<F, zero> &m) : Matrix<F>(m.rows(), m.columns()) {
-        this->matrix = new F*[this->rows()];
-
-        for (std::size_t i = 0; i < this->rows(); ++i) {
-            this->matrix[i] = new F[this->columns()];
-
-            for (std::size_t j = 0; j < this->columns(); ++j) {
-                this->matrix[i][j] = m(i, j);
-            }
-        }
-    }
-
-    // Lector de indice
-    F &operator()(std::size_t i, std::size_t j) {
-        assert(j >= 0 && j < this->columns());
-        assert(i >= 0 && i < this->rows());
-
-        return this->matrix[i][j];
-    }
-
-    // Lector de indice constante
-    const F &operator()(std::size_t i, std::size_t j) const {
-        assert(j >= 0 && j < this->columns());
-        assert(i >= 0 && i < this->rows());
-
-        return this->matrix[i][j];
-    }
-
-    // TODO: lograr borrar estos dos metodos.
-    virtual const InefficientMatrix<F, zero> operator+(const InefficientMatrix<F, zero> &m) const {
-        InefficientMatrix<F, zero> output(*this);
-        output += m;
-        return output;
-    };
-
-    const InefficientMatrix<F, zero> operator*(const F &c) {
-        InefficientMatrix<F, zero> output(*this);
-        output *= c;
-        return output;
-    };
-
-    // Destructor
-    virtual ~InefficientMatrix() {
-        for (std::size_t i = 0; i < this->rows(); ++i) {
-            delete[] this->matrix[i];
-        }
-
-        delete[] this->matrix;
-    }
-private:
-    // Matrix
-    F **matrix;
-};
-
-/*
 * Matriz Banda.
 */
 template <class F, F zero>
 class BandMatrix : public Matrix<F> {
 public:
     // Constructor
-    /*
-Formally, consider an n×n matrix A=(ai,j ). If all matrix elements are zero outside a diagonally bordered band whose range
-    is determined by constants k1 and k2:
-
-a_{i,j}=0 \quad\mbox{if}\quad j<i-k_1 \quad\mbox{ or }\quad j>i+k_2; \quad k_1, k_2 \ge 0.\,
-then the quantities k1 and k2 are called the lower and upper bandwidth, respectively.[1] The bandwidth of the matrix is
-    the maximum of k1 and k2; in other words, it is the number k such that  a_{i,j}=0  if  |i-j| > k .[2]
-
-A matrix is called a band matrix or banded matrix if its bandwidth is reasonably small.
-
-A band matrix with k1 = k2 = 0 is a diagonal matrix; a band matrix with k1 = k2 = 1 is a tridiagonal matrix; when
-k1 = k2 = 2 one has a pentadiagonal matrix and so on. If one puts k1 = 0, k2 = n−1, one obtains the definition of an
-upper triangular matrix; similarly, for k1 = n−1, k2 = 0 one obtains a lower triangular matrix.
-    */
     BandMatrix(std::size_t lband, std::size_t uband, std::size_t N, std::size_t M)
             : Matrix<F>(N, M), lband(lband), uband(uband) {
         assert(lband < N);
@@ -283,7 +178,6 @@ upper triangular matrix; similarly, for k1 = n−1, k2 = 0 one obtains a lower t
     }
 
     // Lector de indice
-    // TODO: esto SEGURO que está mal. Si te fuiste de rango de lo que "está definido", quiero que recibas una referencia que no haga nada.
     F &operator()(std::size_t i, std::size_t j) {
         assert(j > 0 && j < this->columns());
         assert(i > 0 && i < this->rows());
@@ -381,29 +275,9 @@ upper triangular matrix; similarly, for k1 = n−1, k2 = 0 one obtains a lower t
         delete[] this->matrix;
     }
 
-
-    // Eliminación Gaussiana
-    BandMatrix<F> EliminacionGaussiana( int M, BandMatrix<F> &m ){
-       
-        // Eliminacion gaussiana para matrices bandas
-        int k2 = lband;
-        int s = 1;
-
-        for(int j = 1; j < M; j++){		// ciclo para recorrer las columnas
-            for(int i = s + k2; 0 < k2; k2--){	// ciclo para saber la cantidad de veces que tengo q restar las filas = cant de diagonales inferiores = k2
-                for(int l = j; l <= M; l++){	// ciclo para saber cuantas columnas tengo que restar entre 2 filas
-                    m[i][j] = m[i][j] - (m[i - 1][j] * (m[i][j] / m[i - 1][j]));
-                }
-            }
-            s++;
-            k = lband;
-        }
-        return m;
-    }
-
     // Descomposición LU para matrices bandas
-    BandMatrix<F> DescomposicionLU( BandMatrix<F> &m, int M, double b[M] ){
-       
+    BandMatrix<F> LUDecomposition( BandMatrix<F> &m, int M, double b[M] ){
+
         // Primero no habria que aplicar eliminacion gaussiana para despues encontrar las soluciones?
         int i = M;
         int j = M;
@@ -426,5 +300,23 @@ private:
     std::size_t lband;
     F **matrix;
 };
+
+
+template <class F>
+const Matrix<F> operator+(const Matrix<F> &m, const Matrix<F> &n) {
+    Matrix<F> output(m);
+    output += n;
+    return output;
+}
+
+template <class F>
+const Matrix<F> operator*(const Matrix<F> &m, const F &c) {
+    throw new std::runtime_error("Must implement operator for Matrix instance");
+}
+
+template <class F>
+const Matrix<F> operator*(const Matrix<F> &m, const Matrix<F> &n) {
+    throw new std::runtime_error("Must implement operator for Matrix instance");
+}
 
 #endif //_TP1_MATRIX_H_
