@@ -1,7 +1,3 @@
-//
-// Created by Julian Bayardo on 3/25/15.
-//
-
 #ifndef _TP1_BDOUBLE_H_
 #define _TP1_BDOUBLE_H_
 
@@ -149,5 +145,7 @@ std::ostream &operator<<(std::ostream &os, const BDouble &m) {
     os << m.get();
     return os;
 }
+
+const BDouble zero = BDouble(0.0);
 
 #endif //_TP1_BOXEDDOUBLE_H_

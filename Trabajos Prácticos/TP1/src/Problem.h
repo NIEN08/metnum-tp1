@@ -3,7 +3,7 @@
 //
 
 #ifndef _TP1_PROBLEM_H_
-#define _TP1_PROBLEM_H_
+#define _TP1_PROBLEM_H_ 1
 
 #include <string>
 #include <cstdint>
