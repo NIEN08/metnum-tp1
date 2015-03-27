@@ -150,6 +150,4 @@ std::ostream &operator<<(std::ostream &os, const BDouble &m) {
     return os;
 }
 
-const BDouble zero = BDouble(0.0);
-
 #endif //_TP1_BOXEDDOUBLE_H_

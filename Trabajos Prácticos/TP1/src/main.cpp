@@ -1,6 +1,4 @@
 #include "Matrix.h"
-#include <iostream>
-#include <istream>
 
 int main(int argc, char *argv[]) {
     BandMatrix m(3, 3);
@@ -10,10 +8,10 @@ int main(int argc, char *argv[]) {
     m(1,1) = 2.0;
 
     BandMatrix n(m);
-    std::cout << m + n;
+    std::cout << (n + m);
     n(0, 0) = 30.0;
 
-    std::cout << m + n;
+    std::cout << (m + n);
 
     return 0;
 }
