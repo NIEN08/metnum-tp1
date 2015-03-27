@@ -1,6 +1,17 @@
-#include "Problem.h"
+#include "Matrix.h"
 
 int main(int argc, char *argv[]) {
-    Problem p(std::string(argv[1]), std::string(argv[2]), argv[3]);
-    return p.run();
+    BandMatrix m(3, 3);
+    m(0,0) = 2.0;
+    m(0,1) = 4.0;
+    m(1,0) = 4.0;
+    m(1,1) = 2.0;
+
+    BandMatrix n(m);
+    std::cout << (n + m);
+    n(0, 0) = 30.0;
+
+    std::cout << (m + n);
+
+    return 0;
 }
