@@ -81,6 +81,8 @@ public:
         delete[] this->matrix;
     }
 
+
+
     // Asignación
     BandMatrix &operator=(const BandMatrix &m) {
         if (*this != m) {
@@ -115,53 +117,68 @@ public:
     }
 
 
- // Igualdad
+
+    // Igualdad
+    // TODO: testear extensivamente.
     bool operator==(const BandMatrix &m) const {
         if (this->rows() != m.rows() || this->columns() != m.columns()) {
             return false;
         } else {
-                std::size_t diagonal = std::min(this->rows(), this->columns());
-                std::size_t lower = std::max(this->lower_bandwidth(), m.lower_bandwidth());
-                std::size_t upper = std::max(this->upper_bandwidth(), m.upper_bandwidth());
-            for (std::size_t d = 0; d < diagonal; ++d) {
-                for (std::size_t j = d - lower; j < d + upper; ++j) {
+            // Queremos: empezar por los numeros que estan fuera de la interseccion de las bandas
+            // Asumimos que las chances son que ahi alla algo distinto de 0, sino simplemente podriamos
+            // cambiar la cantidad de bandas de la matriz a la cantidad que sea menor!
+            long int diagonal = static_cast<long int>(std::min(this->rows(), this->columns()));
+
+            long int max_lower = static_cast<long int>(std::max(this->lower_bandwidth(), m.lower_bandwidth()));
+            long int min_lower = static_cast<long int>(std::min(this->lower_bandwidth(), m.lower_bandwidth()));
+
+            // Chequeamos la parte de la izquierda de la diagonal - max_lower
+            if (max_lower > min_lower) {
+                for (long int d = 0L; d < diagonal; ++d) {
+                    // No queremos irnos fuera de rango
+                    long int bound = std::max(d - min_lower, 0L);
+
+                    for (long int j = std::max(d - max_lower, 0L); j < bound; ++d) {
+                        if ((*this)(d, j) != m(d, j)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            long int max_upper = static_cast<long int>(std::max(this->upper_bandwidth(), m.upper_bandwidth()));
+            long int min_upper = static_cast<long int>(std::min(this->upper_bandwidth(), m.upper_bandwidth()));
+
+            // Chequeamos la parte de la derecha de la diagonal + min_lower
+            if (max_upper > min_upper) {
+                for (long int d = 0L; d < diagonal; ++d) {
+                    // No queremos irnos fuera de rango
+                    long int bound = std::min(d + max_upper, static_cast<long int>(this->columns()));
+
+                    for (long int j = std::min(d + min_upper, static_cast<long int>(this->columns())); j < bound; ++d) {
+                        if ((*this)(d, j) != m(d, j)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            // Si llegamos hasta aca, es porque los numeros que estan fuera de la interseccion son todos iguales,
+            // o porque tienen los mismos valores de upper y lower bandwidth
+            // Chequeamos la parte de la intersección de la banda
+            for (long int d = 0L; d < diagonal; ++d) {
+                long int bound = std::min(d + static_cast<long int>(this->upper_bandwidth()), static_cast<long int>(this->columns()));
+
+                for (long int j = std::max(d - static_cast<long int>(this->lower_bandwidth()), 0L); j < bound; ++j) {
                     if ((*this)(d, j) != m(d, j)) {
                         return false;
                     }
                 }
             }
-            return true;
-            }
-        }
-
-
-    // Igualdad  
-    // Esta version anda bien pero no se si es eficiente. 
-    // Recorre todas las posiciones de la matriz y se fija si todos los elementos son iguales
-    // si NO guardamos los 0 entonces tendria que servir este algoritmo.
-    /*bool operator==(const BandMatrix &m) const {
-        if (this->rows() != m.rows() || this->columns() != m.columns()) {
-            return false;
-        } else {
-            std::size_t diagonal = std::min(this->rows(), this->columns());
-            std::size_t lower = std::max(this->lower_bandwidth(), m.lower_bandwidth());
-            std::size_t upper = std::max(this->upper_bandwidth(), m.upper_bandwidth());
-
-
-            int ancho = this->columns();
-            int alto = this->rows();
-
-            for (std::size_t i = 0; i < alto; i++) {
-                for (std::size_t j = 0; j < ancho; j++) {
-                    if ((*this)(i, j) != m(i, j)) {
-                        return false;
-                    }
-                }
-            }
 
             return true;
         }
-    }*/
+    }
 
     // Desigualdad
     bool operator!=(const BandMatrix &m) const {
@@ -170,8 +187,11 @@ public:
 
     // Lector de indice
     BDouble &operator()(std::size_t i, std::size_t j) {
-        assert(j >= 0 && j < this->columns());
-        assert(i >= 0 && i < this->rows());
+        #ifdef DEBUG
+        if (j < 0 || i < 0 || j >= this->columns() || i >= this->rows()) {
+            throw new std::out_of_range("Index access out of range")
+        }
+        #endif
 
         if (i <= j + this->lower_bandwidth() && j <= i + this->upper_bandwidth()) {
             return matrix[i][j - i + this->lower_bandwidth()];
@@ -182,8 +202,11 @@ public:
 
     // Lector de indice constante
     const BDouble &operator()(std::size_t i, std::size_t j) const {
-        assert(j >= 0 && j < this->columns());
-        assert(i >= 0 && i < this->rows());
+        #ifdef DEBUG
+        if (j < 0 || i < 0 || j >= this->columns() || i >= this->rows()) {
+            throw new std::out_of_range("Index access out of range")
+        }
+        #endif
 
         if (i > j + this->lower_bandwidth()) {
             return zero;
@@ -261,7 +284,7 @@ public:
     };
 
     // Producto de matrices 
-    // ANDA MAL: CORREGIR
+    // TODO: Corregir. Sugerencia: fijarse qué pasa con las bandas. Esto va a ser una mierda.
     BandMatrix &operator*(const BandMatrix &m) {
         BDouble tmp;
         if(this->columns() == m.rows()){
