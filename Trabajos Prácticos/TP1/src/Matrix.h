@@ -1,7 +1,3 @@
-//
-// Created by julian on 3/21/15.
-//
-
 #ifndef _TP1_MATRIX_H_
 #define _TP1_MATRIX_H_ 1
 
@@ -10,9 +6,6 @@
 #include <stdexcept>
 #include <cassert>
 #include <utility>
-
-class Matrix;
-std::ostream &operator<<(std::ostream &os, const Matrix &m);
 
 enum Solutions {
     INFINITE,
@@ -28,15 +21,18 @@ enum Solutions {
 */
 class Matrix {
 public:
-    Matrix(std::size_t N, std::size_t M, std::size_t lband = MAGIC_NUMBER, std::size_t uband = MAGIC_NUMBER)
+    // TODO: usar esto o borrarlo
+    Matrix(std::size_t N, std::size_t M, BDouble (*decider)(std::size_t, std::size_t), std::size_t lband = MAGIC_NUMBER, std::size_t uband = MAGIC_NUMBER)
             : N(N), M(M), uband(uband), lband(lband) {
-        assert(N > 0 && M > 0);
+        if (this->rows() == 0 || this->columns() == 0) {
+            throw new std::out_of_range("Invalid matrix dimension");
+        }
 
-        if (lband == MAGIC_NUMBER) {
+        if (lband > N) {
             this->lband = N;
         }
 
-        if (uband == MAGIC_NUMBER) {
+        if (uband > M) {
             this->uband = M;
         }
 
@@ -47,7 +43,7 @@ public:
             this->matrix[i] = new BDouble[bound];
 
             for (std::size_t j = 0; j < bound; ++j) {
-                this->matrix[i][j] = 0.0;
+                this->matrix[i][j] = decider(i, i + j - this->lower_bandwidth());
             }
         }
     }
@@ -62,6 +58,32 @@ public:
 
             for (std::size_t j = 0; j < bound; ++j) {
                 this->matrix[i][j] = m.matrix[i][j];
+            }
+        }
+    }
+
+    Matrix(std::size_t N, std::size_t M, std::size_t lband = MAGIC_NUMBER, std::size_t uband = MAGIC_NUMBER)
+            : N(N), M(M), uband(uband), lband(lband) {
+        if (this->rows() == 0 || this->columns() == 0) {
+            throw new std::out_of_range("Invalid matrix dimension");
+        }
+
+        if (lband > N) {
+            this->lband = N;
+        }
+
+        if (uband > M) {
+            this->uband = M;
+        }
+
+        std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
+        this->matrix = new BDouble*[this->rows()];
+
+        for (std::size_t i = 0; i < this->rows(); ++i) {
+            this->matrix[i] = new BDouble[bound];
+
+            for (std::size_t j = 0; j < bound; ++j) {
+                this->matrix[i][j] = 0.0;
             }
         }
     }
@@ -88,7 +110,7 @@ public:
         }
 
         if (i <= j + this->lower_bandwidth() && j <= i + this->upper_bandwidth()) {
-            return matrix[i][j - i + this->lower_bandwidth() + 1];
+            return matrix[i][j - i + this->lower_bandwidth()];
         } else {
             throw new std::out_of_range("Out of modifiable range");
         }
@@ -104,7 +126,7 @@ public:
         } else if (j > i + this->upper_bandwidth()) {
             return zero;
         } else {
-            return matrix[i][j - i + this->lower_bandwidth() + 1];
+            return matrix[i][j - i + this->lower_bandwidth()];
         }
     }
 
@@ -246,7 +268,6 @@ public:
 
                 if (swap) {
                     // Swappeamos las filas, sólo entre los elementos posibles.
-                    // TODO: cuidado, esto no podría romper la estructura de banda?
                     for (std::size_t j = d - workspace.lower_bandwidth(); j < i + workspace.upper_bandwidth(); ++j) {
                         BDouble tmp = workspace(d, j);
                         workspace(d, j) = workspace(i, j);
@@ -298,6 +319,7 @@ public:
     }
 private:
     // m tiene que estar triangulada
+    // el usuario libera la memoria
     std::pair<BDouble *, enum Solutions> backward_substitution(Matrix &m, BDouble *b) {
         // TODO: caso en el que no hay solución. No queda claro cómo detectarlo.
         BDouble *x = new BDouble[m.columns()];
@@ -340,7 +362,7 @@ private:
 std::ostream &operator<<(std::ostream &os, const Matrix &m) {
     for (std::size_t i = 0; i < m.rows(); ++i) {
         for (std::size_t j = 0; j < m.columns(); ++j) {
-            os << m(i, j) << ' ';
+            os << m(i, j) << '\t';
         }
 
         os << std::endl;
@@ -363,9 +385,32 @@ Matrix operator*(const Matrix &m, const BDouble &c) {
     return output;
 }
 
-// TODO: todo esto
+// TODO: hay que revisar absolutamente TODOS los FOR que vayan por la diagonal:
+// TODO: restar puede llevar a irse a la mierda con el indice por ir a valores "negativos"
+// TODO: sumar puede terminar por irse a valores positivos chicos.
 Matrix operator*(const Matrix &m, const Matrix &n) {
-    throw new std::runtime_error("Must implement operator for Matrix instance");
+    if (m.columns() == n.rows()) {
+        std::size_t max_lower_upper = std::max(m.lower_bandwidth(), n.upper_bandwidth());
+        std::size_t max_upper_lower = std::max(m.upper_bandwidth(), n.lower_bandwidth());
+
+        Matrix output(m.rows(), n.columns(), max_lower_upper, max_upper_lower);
+
+        std::size_t diagonal = std::min(output.columns(), output.rows());
+
+        for (std::size_t d = 0; d < diagonal; ++d) {
+            for (std::size_t j = d - output.lower_bandwidth(); j < std::min(d + output.upper_bandwidth(), output.columns()); ++j) {
+                output(d, j) = 0.0;
+
+                for (std::size_t k = d - output.lower_bandwidth(); k < d + output.upper_bandwidth(); ++k) {
+                    output(d, j) += m(d, k) * n(k, j);
+                }
+            }
+        }
+
+        return output;
+    } else {
+        throw new std::out_of_range("Matrix product between incompatible matrices.");
+    }
 }
 
 #endif //_TP1_MATRIX_H_
