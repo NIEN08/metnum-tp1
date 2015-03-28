@@ -11,8 +11,8 @@
 #include <cassert>
 #include <utility>
 
-class BandMatrix;
-std::ostream &operator<<(std::ostream &os, const BandMatrix &m);
+class Matrix;
+std::ostream &operator<<(std::ostream &os, const Matrix &m);
 
 enum Solutions {
     INFINITE,
@@ -20,20 +20,23 @@ enum Solutions {
     NONE
 };
 
+// Este magic number nos dice cuándo convertir automáticamente una matriz banda en una matriz normal.
+#define MAGIC_NUMBER 5698904538L
+
 /*
 * Matriz Banda.
 */
-class BandMatrix {
+class Matrix {
 public:
-    BandMatrix(std::size_t N, std::size_t M, std::size_t lband = 5698904538L, std::size_t uband = 5698904538L)
+    Matrix(std::size_t N, std::size_t M, std::size_t lband = MAGIC_NUMBER, std::size_t uband = MAGIC_NUMBER)
             : N(N), M(M), uband(uband), lband(lband) {
         assert(N > 0 && M > 0);
 
-        if (lband == 5698904538L) {
+        if (lband == MAGIC_NUMBER) {
             this->lband = N;
         }
 
-        if (uband == 5698904538L) {
+        if (uband == MAGIC_NUMBER) {
             this->uband = M;
         }
 
@@ -49,7 +52,7 @@ public:
         }
     }
 
-    BandMatrix(const BandMatrix &m)
+    Matrix(const Matrix &m)
             : N(m.rows()), M(m.columns()), uband(m.upper_bandwidth()), lband(m.lower_bandwidth()) {
         std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
         this->matrix = new BDouble*[this->rows()];
@@ -63,24 +66,24 @@ public:
         }
     }
 
-    std::size_t rows() const {
+    inline std::size_t rows() const {
         return this->N;
     }
 
-    std::size_t columns() const {
+    inline std::size_t columns() const {
         return this->M;
     }
 
-    std::size_t upper_bandwidth() const {
+    inline std::size_t upper_bandwidth() const {
         return this->uband;
     }
 
-    std::size_t lower_bandwidth() const {
+    inline std::size_t lower_bandwidth() const {
         return this->lband;
     }
 
-    BDouble &operator()(std::size_t i, std::size_t j) {
-        if (j >= this->columns() || i >= this->rows()) {
+    BDouble &operator()(const std::size_t &i, const std::size_t &j) {
+        if (i >= this->rows() || j >= this->columns()) {
             throw new std::out_of_range("Index access out of range");
         }
 
@@ -91,8 +94,8 @@ public:
         }
     }
 
-    const BDouble &operator()(std::size_t i, std::size_t j) const {
-        if (j >= this->columns() || i >= this->rows()) {
+    const BDouble &operator()(const std::size_t &i, const std::size_t &j) const {
+        if (i >= this->rows() || j >= this->columns()) {
             throw new std::out_of_range("Index access out of range");
         }
 
@@ -105,7 +108,7 @@ public:
         }
     }
 
-    BandMatrix &operator=(const BandMatrix &m) {
+    Matrix &operator=(const Matrix &m) {
         if (*this != m) {
             // Limpiar memoria.
             for (std::size_t i = 0; i < this->rows(); ++i) {
@@ -137,7 +140,7 @@ public:
         return *this;
     }
 
-    bool operator==(const BandMatrix &m) const {
+    bool operator==(const Matrix &m) const {
         if (this->rows() != m.rows() || this->columns() != m.columns()) {
             return false;
         } else {
@@ -153,11 +156,11 @@ public:
         }
     }
 
-    bool operator!=(const BandMatrix &m) const {
+    bool operator!=(const Matrix &m) const {
         return !(*this == m);
     }
 
-    BandMatrix &operator+=(const BandMatrix &m) {
+    Matrix &operator+=(const Matrix &m) {
         if (this->rows() == m.rows() && this->columns() == m.columns()) {
             // Si podemos sumar
 
@@ -209,7 +212,7 @@ public:
         return *this;
     }
 
-    BandMatrix &operator*=(const BDouble &c) {
+    Matrix &operator*=(const BDouble &c) {
         std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
 
         for (std::size_t i = 0; i < this->rows(); ++i) {
@@ -222,7 +225,7 @@ public:
     }
 
     std::pair<BDouble *, enum Solutions> gaussian_elimination(BDouble *b) {
-        BandMatrix workspace(*this);
+        Matrix workspace(*this);
 
         std::size_t diagonal = std::min(workspace.columns(), workspace.rows());
 
@@ -233,7 +236,7 @@ public:
                 // Hay un cero en la base
                 bool swap = false;
 
-                for (i = d + 1; i < std::max(d + workspace.lower_bandwidth(), workspace.rows()); ++i) {
+                for (i = d + 1; i < std::min(d + workspace.lower_bandwidth(), workspace.rows()); ++i) {
                     if (workspace(i, d) != 0.0) {
                         // Encontramos una fila más abajo que es distinta de 0
                         swap = true;
@@ -270,7 +273,7 @@ public:
                         // Realizamos el mismo cambio en la solución del sistema
                         b[i] -= coefficient * b[d];
 
-                        for (std::size_t j = d + 1; j < i + this->upper_bandwidth(); ++j) {
+                        for (std::size_t j = d + 1; j < std::min(i + workspace.upper_bandwidth(), workspace.columns()); ++j) {
                             // Realizamos la resta a toda la fila.
                             workspace(i, j) -=  coefficient * workspace(d, j);
                         }
@@ -286,7 +289,7 @@ public:
     }
 
 
-    ~BandMatrix() {
+    ~Matrix() {
         for (std::size_t i = 0; i < this->rows(); ++i) {
             delete[] this->matrix[i];
         }
@@ -295,22 +298,31 @@ public:
     }
 private:
     // m tiene que estar triangulada
-    std::pair<BDouble *, enum Solutions> backward_substitution(BandMatrix &m, BDouble *b) {
-        BDouble *x = new BDouble[m.rows()];
+    std::pair<BDouble *, enum Solutions> backward_substitution(Matrix &m, BDouble *b) {
+        // TODO: caso en el que no hay solución. No queda claro cómo detectarlo.
+        BDouble *x = new BDouble[m.columns()];
         enum Solutions solution = SINGLE;
 
-        for (std::size_t i = m.rows() - 1; i > 0; --i) {
+        for (std::size_t i = std::min(m.rows(), m.columns()) - 1; i >= 0; --i) {
             if (m(i, i) == 0.0) {
+                x[i] = 1.0;
                 solution = INFINITE;
             } else {
-                std::cout << m;
+                std::size_t bound = std::min(m.columns(), i + m.upper_bandwidth());
                 x[i] = b[i];
 
-                for (std::size_t j = m.columns() - 1; j >= i; --j) {
-                    x[i] -= m(i, j + 1) * x[i+1];
+                for (std::size_t j = i + 1; j < bound; ++j) {
+                    if (m(i, j) != 0.0) {
+                        x[i] -= m(i, j) * x[j];
+                    }
                 }
 
                 x[i] /= m(i, i);
+            }
+
+            // When i = 0, decreasing i will land it to MAX_SIZE, which is higher than 0, producing an error.
+            if (i == 0) {
+                break;
             }
         }
 
@@ -325,7 +337,7 @@ private:
     BDouble **matrix;
 };
 
-std::ostream &operator<<(std::ostream &os, const BandMatrix &m) {
+std::ostream &operator<<(std::ostream &os, const Matrix &m) {
     for (std::size_t i = 0; i < m.rows(); ++i) {
         for (std::size_t j = 0; j < m.columns(); ++j) {
             os << m(i, j) << ' ';
@@ -339,20 +351,20 @@ std::ostream &operator<<(std::ostream &os, const BandMatrix &m) {
     return os;
 }
 
-BandMatrix operator+(const BandMatrix &m, const BandMatrix &n) {
-    BandMatrix output(m);
+Matrix operator+(const Matrix &m, const Matrix &n) {
+    Matrix output(m);
     output += n;
     return output;
 }
 
-BandMatrix operator*(const BandMatrix &m, const BDouble &c) {
-    BandMatrix output(m);
+Matrix operator*(const Matrix &m, const BDouble &c) {
+    Matrix output(m);
     output *= c;
     return output;
 }
 
 // TODO: todo esto
-BandMatrix operator*(const BandMatrix &m, const BandMatrix &n) {
+Matrix operator*(const Matrix &m, const Matrix &n) {
     throw new std::runtime_error("Must implement operator for Matrix instance");
 }
 
