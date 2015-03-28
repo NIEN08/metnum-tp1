@@ -21,33 +21,6 @@ enum Solutions {
 */
 class Matrix {
 public:
-    // TODO: usar esto o borrarlo
-    Matrix(std::size_t N, std::size_t M, BDouble (*decider)(std::size_t, std::size_t), std::size_t lband = MAGIC_NUMBER, std::size_t uband = MAGIC_NUMBER)
-            : N(N), M(M), uband(uband), lband(lband) {
-        if (this->rows() == 0 || this->columns() == 0) {
-            throw new std::out_of_range("Invalid matrix dimension");
-        }
-
-        if (lband > N) {
-            this->lband = N;
-        }
-
-        if (uband > M) {
-            this->uband = M;
-        }
-
-        std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
-        this->matrix = new BDouble*[this->rows()];
-
-        for (std::size_t i = 0; i < this->rows(); ++i) {
-            this->matrix[i] = new BDouble[bound];
-
-            for (std::size_t j = 0; j < bound; ++j) {
-                this->matrix[i][j] = decider(i, i + j - this->lower_bandwidth());
-            }
-        }
-    }
-
     Matrix(const Matrix &m)
             : N(m.rows()), M(m.columns()), uband(m.upper_bandwidth()), lband(m.lower_bandwidth()) {
         std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
@@ -362,7 +335,12 @@ private:
 std::ostream &operator<<(std::ostream &os, const Matrix &m) {
     for (std::size_t i = 0; i < m.rows(); ++i) {
         for (std::size_t j = 0; j < m.columns(); ++j) {
-            os << m(i, j) << '\t';
+            if (i <= j + m.lower_bandwidth() && j <= i + m.upper_bandwidth()) {
+                os << "\033[1;31m" << m(i, j) << "\033[0m" << '\t';
+            } else {
+                os << m(i, j) << '\t';
+            }
+
         }
 
         os << std::endl;
@@ -388,6 +366,7 @@ Matrix operator*(const Matrix &m, const BDouble &c) {
 // TODO: hay que revisar absolutamente TODOS los FOR que vayan por la diagonal:
 // TODO: restar puede llevar a irse a la mierda con el indice por ir a valores "negativos"
 // TODO: sumar puede terminar por irse a valores positivos chicos.
+// TODO: esto no funciona.
 Matrix operator*(const Matrix &m, const Matrix &n) {
     if (m.columns() == n.rows()) {
         std::size_t max_lower_upper = std::max(m.lower_bandwidth(), n.upper_bandwidth());
@@ -399,9 +378,8 @@ Matrix operator*(const Matrix &m, const Matrix &n) {
 
         for (std::size_t d = 0; d < diagonal; ++d) {
             for (std::size_t j = d - output.lower_bandwidth(); j < std::min(d + output.upper_bandwidth(), output.columns()); ++j) {
-                output(d, j) = 0.0;
 
-                for (std::size_t k = d - output.lower_bandwidth(); k < d + output.upper_bandwidth(); ++k) {
+                for (std::size_t k = 0; k < output.columns();  ++k) {
                     output(d, j) += m(d, k) * n(k, j);
                 }
             }

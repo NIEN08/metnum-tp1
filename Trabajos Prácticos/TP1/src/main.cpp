@@ -1,7 +1,7 @@
 #include "Matrix.h"
 
 int main(int argc, char *argv[]) {
-    Matrix m(3,3);
+    Matrix m(3,3, 0, 1);
     m(0,1) = 1.0;
     Matrix g(3,4);
     g(0, 1) = 1.0;
