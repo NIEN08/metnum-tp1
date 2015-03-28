@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include "BDouble.h"
-#include <limits>
+#include <stdexcept>
 #include <cassert>
 #include <utility>
 
@@ -25,15 +25,15 @@ enum Solutions {
 */
 class BandMatrix {
 public:
-    BandMatrix(std::size_t N, std::size_t M, std::size_t lband = SIZE_MAX, std::size_t uband = SIZE_MAX)
+    BandMatrix(std::size_t N, std::size_t M, std::size_t lband = 5698904538L, std::size_t uband = 5698904538L)
             : N(N), M(M), uband(uband), lband(lband) {
         assert(N > 0 && M > 0);
 
-        if (lband == SIZE_MAX) {
+        if (lband == 5698904538L) {
             this->lband = N;
         }
 
-        if (uband == SIZE_MAX) {
+        if (uband == 5698904538L) {
             this->uband = M;
         }
 
@@ -80,32 +80,28 @@ public:
     }
 
     BDouble &operator()(std::size_t i, std::size_t j) {
-#ifdef DEBUG
-        if (j < 0 || i < 0 || j >= this->columns() || i >= this->rows()) {
+        if (j >= this->columns() || i >= this->rows()) {
             throw new std::out_of_range("Index access out of range");
         }
-        #endif
 
         if (i <= j + this->lower_bandwidth() && j <= i + this->upper_bandwidth()) {
-            return matrix[i][j - i + this->lower_bandwidth()];
+            return matrix[i][j - i + this->lower_bandwidth() + 1];
         } else {
             throw new std::out_of_range("Out of modifiable range");
         }
     }
 
     const BDouble &operator()(std::size_t i, std::size_t j) const {
-#ifdef DEBUG
-        if (j < 0 || i < 0 || j >= this->columns() || i >= this->rows()) {
+        if (j >= this->columns() || i >= this->rows()) {
             throw new std::out_of_range("Index access out of range");
         }
-        #endif
 
         if (i > j + this->lower_bandwidth()) {
             return zero;
         } else if (j > i + this->upper_bandwidth()) {
             return zero;
         } else {
-            return matrix[i][j - i + this->lower_bandwidth()];
+            return matrix[i][j - i + this->lower_bandwidth() + 1];
         }
     }
 
@@ -237,7 +233,7 @@ public:
                 // Hay un cero en la base
                 bool swap = false;
 
-                for (i = d + 1; i < d + workspace.lower_bandwidth(); ++i) {
+                for (i = d + 1; i < std::max(d + workspace.lower_bandwidth(), workspace.rows()); ++i) {
                     if (workspace(i, d) != 0.0) {
                         // Encontramos una fila más abajo que es distinta de 0
                         swap = true;
@@ -284,8 +280,6 @@ public:
                 ++d;
             }
         }
-
-        std::cout << workspace;
 
         // Workspace esta triangulado, b siguió igual
         return backward_substitution(workspace, b);
