@@ -5,7 +5,6 @@
 #include "Problem.h"
 #include <fstream>
 #include <iostream>
-//using namespace std;
 
 Problem::Problem(enum Method method, std::string input = "entrada.txt", std::string output = "salida.txt") :
         input(input), output(output), method(method), width(0), height(0), h(0.0), amount(0) {
@@ -13,8 +12,8 @@ Problem::Problem(enum Method method, std::string input = "entrada.txt", std::str
 
     handle >> this->width >> this->height >> this->h >> this->amount;
 
-    unsigned xCoordinates = this->width / this->h + 1;
-    unsigned yCoordinates = this->height / this->h + 1;
+    unsigned xCoordinates = std::round(this->width / this->h) + 1;
+    unsigned yCoordinates = std::round(this->height / this->h) + 1;
 
     // Creamos la matriz de temperaturas
     this->temperatures = Matrix(xCoordinates, yCoordinates);
@@ -37,14 +36,30 @@ Problem::Problem(enum Method method, std::string input = "entrada.txt", std::str
         handle >> x >> y >> r >> t;
 
         // Distribuimos las temperaturas de las sanguijuelas
-        BDouble ceilY = std::ceil(y), floorY = std::floor(y);
-        BDouble ceilX = std::ceil(x), floorX = std::floor(x);
+        long topX = std::round(x + r),
+                bottomX = std::round(x - r),
+                topY = std::round(y + r),
+                bottomY = std::round(y - r);
 
-        BDouble ceilYR = std::ceil(y + r), floorY = std::floor(y - r);
-        BDouble ceilXR = std::ceil(x + r), floorX = std::floor(x - r);
-        std
+        // Ponemos las coordenadas en rango
+        topX = std::min(std::max(topX, 0.0), xCoordinates);
+        bottomX = std::min(std::max(bottomX, 0.0), xCoordinates);
+
+        topY = std::min(std::max(topY, 0.0), yCoordinates);
+        bottomY = std::min(std::max(bottomY, 0.0), yCoordinates);
+
+        // Seteamos las temperaturas en la matriz.
+        // Cabe destacar, la temperatura de cada sanguijuela es igual para todos los puntos que cubre.
+        for (long i = bottomX; i < topX; ++i) {
+            for (long j = bottomY; j < topY; ++j) {
+                this-temperatures(i, j) = t;
+            }
+        }
     }
 
+    // Planteamos la matriz banda del sistema
+
+    // Resolvemos el problema según el método especificado
     switch(method) {
         case BAND_GAUSSIAN_ELEMINATION:
             break;
