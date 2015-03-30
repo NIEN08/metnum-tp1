@@ -20,6 +20,7 @@ enum Solutions {
 * Matriz Banda.
 */
 class Matrix {
+    friend std::ostream &operator<<(std::ostream &, const Matrix &);
 public:
     Matrix(const Matrix &m)
             : N(m.rows()), M(m.columns()), uband(m.upper_bandwidth()), lband(m.lower_bandwidth()) {
@@ -281,22 +282,22 @@ public:
         // Workspace esta triangulado, b siguió igual
         return backward_substitution(workspace, b);
     }
-    
-    
+
+
 	std::pair<Matrix *, Matrix *> LU_factorization(BDouble *b) {
 		//Original matrix
 		Matrix* pA = this;
 		std::size_t N = std::min(pA->rows(), pA->columns());
-		
+
 		//Lower and Upper triangular matrix
 		Matrix* pL = new Matrix(pA->rows(), pA->columns(), 0, pA->lower_bandwidth());
 		Matrix* pU = new Matrix(pA->rows(), pA->columns(), pA->upper_bandwidth(), 0);
-		
+
 		//Syntactic sugar on pointers
 		Matrix& A = *pA;
 		Matrix& L = *pL;
 		Matrix& U = *pU;
-		
+
 		//Init L and U as identity matrixs
 		for (std::size_t i = 0; i < std::min(A.rows(), A.columns()); i++) {
 			L(i,i) = 1.0;
@@ -312,22 +313,22 @@ public:
 		//Arbitraty choose that satisfy L(0,0) * U(0,0) = A(0,0)
 		U(0,0) = A(0,0);
 		L(0,0) = 1.0;
-		
+
 		if ( U (0,0) == 0.0) {
 			  // No podemos factorizar
             throw new std::out_of_range("Factorization impossible");
 		}
-		
+
 		//Set first row of U and firt column of L
 		for (std::size_t i = 1; i < N; i++) {
 			U(0,i) = A(0,i) / L(0,0);
 			L(i,0) = A(i,0) / U(0,0);
         }
-		
+
 		//Set rows/columns from 1 to n-1
 		for (std::size_t i = 1; i < N - 1; i++) {
 			U(i,i) = A(i,i);
-			
+
 			//Aprovechamos banda
 			std::size_t bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
 			for (std::size_t h = 1; h < bound; h ++) {
@@ -335,13 +336,13 @@ public:
 					U(i,i) -= L(i, i - h) * U(i - h,i);
 				}
 			}
-			
+
 			if ( U (i,i) == 0.0) {
 				// No podemos factorizar
 				throw new std::out_of_range("Factorization impossible");
 			}
 			U(i,i) /= L(i,i);
-			
+
 			for (std::size_t j = i+1; j < N; j++) {
 				U(i,j) = A(i,j);
 				L(j,i) = A(j,i);
@@ -349,7 +350,7 @@ public:
 				//Aprovechamos banda
 				std::size_t bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
 				for (std::size_t h = 1; h < bound; h++) {
-					
+
 					//U(i,j) -= L(i,k) * U(k,j); // iº ROW OF U
 					//L(j,i) -= L(j,k) * U(k,i); // jº COLUMN OF L
 					if ( i > h) {
@@ -360,9 +361,9 @@ public:
 				U(i,j) /= L(i,i);
 				L(j,i) /= U(i,i);
 			}
-			
+
 		}
-		
+
 		//Set last position
 		U(N,N) = A(N,N);
 		//TODO: Aprovechar Banda
@@ -374,7 +375,7 @@ public:
 			U(N,N) -= L(N,N-h) * U(N-h,N);
 		}
 		U(N,N) /= L(N,N);
-			
+
 		return std::pair<Matrix*, Matrix*>(pL, pU);
 	}
 
@@ -389,6 +390,7 @@ public:
 private:
     // m tiene que estar triangulada
     // el usuario libera la memoria
+    // TODO: revisar problema numeros unsigned.
     std::pair<BDouble *, enum Solutions> backward_substitution(Matrix &m, BDouble *b) {
         // TODO: caso en el que no hay solución. No queda claro cómo detectarlo.
         BDouble *x = new BDouble[m.columns()];
