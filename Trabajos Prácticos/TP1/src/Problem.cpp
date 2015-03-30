@@ -7,64 +7,56 @@
 #include <iostream>
 //using namespace std;
 
-Problem::Problem(std::string input, std::string output, enum Method method) :
-        input("entrada2.txt"), output("salida.txt"), method(method), width(0), height(0), h(0.0), amount(0) {
-    //std::ifstream handle(input, std::ifstream::in);
-    
+Problem::Problem(enum Method method, std::string input = "entrada.txt", std::string output = "salida.txt") :
+        input(input), output(output), method(method), width(0), height(0), h(0.0), amount(0) {
+    std::ifstream handle(input, std::ifstream::in);
 
-    
-    std::fstream fs;
-    fs.open ("entrada.txt");
+    handle >> this->width >> this->height >> this->h >> this->amount;
 
-    double width, height; 
-    unsigned int h, amount;
+    unsigned xCoordinates = this->width / this->h + 1;
+    unsigned yCoordinates = this->height / this->h + 1;
 
-    fs >> width >> height >> h >> amount;
+    // Creamos la matriz de temperaturas
+    this->temperatures = Matrix(xCoordinates, yCoordinates);
 
-    unsigned int positionX[amount];
-    unsigned int positionY[amount];
-    double radio[amount];
-    double temperature[amount];
-
-
-    int i = 0;
-    // Espero que esto tire exceptions...
-    while (i < amount) {
-        // Acá hay que meter los puntos en algún lado que sea útil
-        fs >> positionX[i] >> positionY[i] >> radio[i] >> temperature[i]; 
-        i++;
-    }
-
-    double matriz[(int)height+1][(int)width+1];    
-    // la idea es guardar los resultados en esta matriz 
-    // para despues imprimir el archivo de salida con los resultados
-
-    switch(method){
-       case BAND_GAUSSIAN_ELEMINATION:
-       break;
-       case LU_FACTORIZATION:
-       break;
-       case SIMPLE_ALGORITHM:
-       break;
-       case SHERMAN_MORRISON:
-       break; 
-    ;}
-
-    
-    // esta parte imprime la salida en un archivo
-    // ANDA BIEN
-    std::fstream outputFile;        
-    outputFile.open("salida.txt");
-
-    for(int i = 0; i < height; i++){
-        for(int j = 0; j < width; j++){
-            outputFile << i << " " << j << " " << matriz[i][j] << std::endl;
+    // Ponemos los bordes en -100.0C
+    for (std::size_t i = 0; i < xCoordinates; ++i) {
+        if (i == 0 || i == xCoordinates - 1) {
+            for (std::size_t j = 0; j < yCoordinates; ++j) {
+                this->temperatures(i, j) = -100.0;
+            }
+        } else {
+            this->temperatures(i, 0) = -100.0;
+            this->temperatures(i, yCoordinates - 1) = -100.0;
         }
     }
-    
-    fs.close();
-    outputFile.close();
-     
+
+    // Levantamos las posiciones de las sanguijuelas
+    for (unsigned i = 0; i < this->amount; ++i) {
+        BDouble x, y, r, t;
+        handle >> x >> y >> r >> t;
+
+        // Distribuimos las temperaturas de las sanguijuelas
+        BDouble ceilY = std::ceil(y), floorY = std::floor(y);
+        BDouble ceilX = std::ceil(x), floorX = std::floor(x);
+
+        BDouble ceilYR = std::ceil(y + r), floorY = std::floor(y - r);
+        BDouble ceilXR = std::ceil(x + r), floorX = std::floor(x - r);
+        std
+    }
+
+    switch(method) {
+        case BAND_GAUSSIAN_ELEMINATION:
+            break;
+        case LU_FACTORIZATION:
+            break;
+        case SIMPLE_ALGORITHM:
+            break;
+        case SHERMAN_MORRISON:
+            break;
+    };
+
+    handle.close();
 }
 
 int Problem::run() {

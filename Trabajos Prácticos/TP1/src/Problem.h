@@ -7,6 +7,8 @@
 
 #include <string>
 #include <cstdint>
+#include "BDouble.h"
+#include "Matrix.h"
 
 class Problem {
 public:
@@ -23,10 +25,11 @@ private:
     std::string input;
     std::string output;
     enum Method method;
-    uint64_t width;
-    uint64_t height;
-    double h;
-    uint64_t amount;
+    unsigned width;
+    unsigned height;
+    Matrix temperatures;
+    BDouble h;
+    unsigned amount;
 };
 
 
