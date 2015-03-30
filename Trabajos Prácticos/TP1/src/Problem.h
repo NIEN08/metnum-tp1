@@ -1,35 +1,35 @@
-//
-// Created by julian on 3/21/15.
-//
-
 #ifndef _TP1_PROBLEM_H_
 #define _TP1_PROBLEM_H_ 1
 
-#include <string>
-#include <cstdint>
-#include "BDouble.h"
 #include "Matrix.h"
+
+enum Method {
+    BAND_GAUSSIAN_ELIMINATION,
+    LU_FACTORIZATION,
+    SIMPLE_ALGORITHM,
+    SHERMAN_MORRISON
+};
 
 class Problem {
 public:
-    enum Method {
-        BAND_GAUSSIAN_ELEMINATION,
-        LU_FACTORIZATION,
-        SIMPLE_ALGORITHM,
-        SHERMAN_MORRISON
-    };
+    Problem(enum Method method, const Matrix &input)
+            : temperatures(input), method(method) { }
 
-    Problem(std::string, std::string, enum Method);
-    int run();
+    Matrix run() {
+        switch (method) {
+            case BAND_GAUSSIAN_ELIMINATION:
+                break;
+            case LU_FACTORIZATION:
+                break;
+            case SIMPLE_ALGORITHM:
+                break;
+            case SHERMAN_MORRISON:
+                break;
+        }
+    }
 private:
-    std::string input;
-    std::string output;
-    enum Method method;
-    unsigned width;
-    unsigned height;
     Matrix temperatures;
-    BDouble h;
-    unsigned amount;
+    enum Method method;
 };
 
 

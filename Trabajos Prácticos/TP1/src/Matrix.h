@@ -2,10 +2,8 @@
 #define _TP1_MATRIX_H_ 1
 
 #include <iostream>
-#include "BDouble.h"
 #include <stdexcept>
-#include <cassert>
-#include <utility>
+#include "BDouble.h"
 
 enum Solutions {
     INFINITE,
@@ -390,13 +388,14 @@ public:
 private:
     // m tiene que estar triangulada
     // el usuario libera la memoria
-    // TODO: revisar problema numeros unsigned.
     std::pair<BDouble *, enum Solutions> backward_substitution(Matrix &m, BDouble *b) {
         // TODO: caso en el que no hay solución. No queda claro cómo detectarlo.
         BDouble *x = new BDouble[m.columns()];
         enum Solutions solution = SINGLE;
 
-        for (std::size_t i = std::min(m.rows(), m.columns()) - 1; i >= 0; --i) {
+        std::size_t i = std::min(m.rows(), m.columns()) - 1;
+
+        while (true) {
             if (m(i, i) == 0.0) {
                 x[i] = 1.0;
                 solution = INFINITE;
@@ -417,6 +416,8 @@ private:
             if (i == 0) {
                 break;
             }
+
+            --i;
         }
 
         return std::pair<BDouble *, enum Solutions>(x, solution);
@@ -429,7 +430,7 @@ private:
         BDouble *x = new BDouble[m.columns()];
         enum Solutions solution = SINGLE;
 
-        for (std::size_t i = 0; i < std::min(m.rows(), m.columns()) ; i++) {
+        for (std::size_t i = 0; i < std::min(m.rows(), m.columns()) ; ++i) {
             if (m(i, i) == 0.0) {
                 x[i] = 1.0;
                 solution = INFINITE;
