@@ -281,6 +281,102 @@ public:
         // Workspace esta triangulado, b siguió igual
         return backward_substitution(workspace, b);
     }
+    
+    
+	std::pair<Matrix *, Matrix *> LU_factorization(BDouble *b) {
+		//Original matrix
+		Matrix* pA = this;
+		std::size_t N = std::min(pA->rows(), pA->columns());
+		
+		//Lower and Upper triangular matrix
+		Matrix* pL = new Matrix(pA->rows(), pA->columns(), 0, pA->lower_bandwidth());
+		Matrix* pU = new Matrix(pA->rows(), pA->columns(), pA->upper_bandwidth(), 0);
+		
+		//Syntactic sugar on pointers
+		Matrix& A = *pA;
+		Matrix& L = *pL;
+		Matrix& U = *pU;
+		
+		//Init L and U as identity matrixs
+		for (std::size_t i = 0; i < std::min(A.rows(), A.columns()); i++) {
+			L(i,i) = 1.0;
+			U(i,i) = 1.0;
+        }
+		Matrix Z(3,3);
+		std::cout << "Z: " << std::endl;
+		std::cout << Z << std::endl;
+		//std::cout << "L: " << endl;
+		//std::cout << L << endl;
+		//std::cout << "U: " << endl;
+		//std::cout << U << endl;
+		//Arbitraty choose that satisfy L(0,0) * U(0,0) = A(0,0)
+		U(0,0) = A(0,0);
+		L(0,0) = 1.0;
+		
+		if ( U (0,0) == 0.0) {
+			  // No podemos factorizar
+            throw new std::out_of_range("Factorization impossible");
+		}
+		
+		//Set first row of U and firt column of L
+		for (std::size_t i = 1; i < N; i++) {
+			U(0,i) = A(0,i) / L(0,0);
+			L(i,0) = A(i,0) / U(0,0);
+        }
+		
+		//Set rows/columns from 1 to n-1
+		for (std::size_t i = 1; i < N - 1; i++) {
+			U(i,i) = A(i,i);
+			
+			//Aprovechamos banda
+			std::size_t bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
+			for (std::size_t h = 1; h < bound; h ++) {
+				if ( i > h) {
+					U(i,i) -= L(i, i - h) * U(i - h,i);
+				}
+			}
+			
+			if ( U (i,i) == 0.0) {
+				// No podemos factorizar
+				throw new std::out_of_range("Factorization impossible");
+			}
+			U(i,i) /= L(i,i);
+			
+			for (std::size_t j = i+1; j < N; j++) {
+				U(i,j) = A(i,j);
+				L(j,i) = A(j,i);
+
+				//Aprovechamos banda
+				std::size_t bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
+				for (std::size_t h = 1; h < bound; h++) {
+					
+					//U(i,j) -= L(i,k) * U(k,j); // iº ROW OF U
+					//L(j,i) -= L(j,k) * U(k,i); // jº COLUMN OF L
+					if ( i > h) {
+						U(i,j) -= L(i,i-h) * U(i-h,j); // iº ROW OF U
+						L(j,i) -= L(j,i-h) * U(i-h,i); // jº COLUMN OF L
+					}
+				}
+				U(i,j) /= L(i,i);
+				L(j,i) /= U(i,i);
+			}
+			
+		}
+		
+		//Set last position
+		U(N,N) = A(N,N);
+		//TODO: Aprovechar Banda
+		//for (std::size_t k = 0; k < N-1; k++) {
+		//	U(N,N) -= L(N,k) * U(k,N);
+		//}
+		std::size_t bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
+		for (std::size_t h = 1; h < bound; h++) {
+			U(N,N) -= L(N,N-h) * U(N-h,N);
+		}
+		U(N,N) /= L(N,N);
+			
+		return std::pair<Matrix*, Matrix*>(pL, pU);
+	}
 
 
     ~Matrix() {
@@ -323,6 +419,40 @@ private:
 
         return std::pair<BDouble *, enum Solutions>(x, solution);
     }
+    
+    // m tiene que estar triangulada
+    // el usuario libera la memoria
+    std::pair<BDouble *, enum Solutions> forward_substitution(Matrix &m, BDouble *b) {
+        // TODO: caso en el que no hay solución. No queda claro cómo detectarlo.
+        BDouble *x = new BDouble[m.columns()];
+        enum Solutions solution = SINGLE;
+
+        for (std::size_t i = 0; i < std::min(m.rows(), m.columns()) ; i++) {
+            if (m(i, i) == 0.0) {
+                x[i] = 1.0;
+                solution = INFINITE;
+            } else {
+                std::size_t bound = std::min(m.columns(), i + m.lower_bandwidth());
+                x[i] = b[i];
+
+                for (std::size_t h = 0; h < bound; h++) {
+                    if (m(i, i-h) != 0.0) {
+                        x[i] -= m(i, i-h) * x[i-h];
+                    }
+                }
+
+                x[i] /= m(i, i);
+            }
+
+            // When i = 0, decreasing i will land it to MAX_SIZE, which is higher than 0, producing an error.
+            if (i == 0) {
+                break;
+            }
+        }
+
+        return std::pair<BDouble *, enum Solutions>(x, solution);
+    }
+
 
     // Matrix
     std::size_t N;
