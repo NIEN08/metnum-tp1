@@ -4,18 +4,15 @@
 #include <cmath>
 #include <limits>
 #include <utility>
-#include <iostream>
 
 class BDouble {
-    friend std::ostream &operator<<(std::ostream &, const BDouble &);
-    friend std::istream &operator>>(std::istream &, BDouble &);
 public:
     BDouble() : x(0.0) { }
     BDouble(double x) : x(x) { }
     BDouble(float x): x(x) { }
     BDouble(const BDouble &d) : x(d.x) { }
 
-    operator double() { return this->x; }
+    double get() const { return this->x; }
 
     BDouble &operator=(const BDouble &rhs) {
         this->x = rhs.x;
@@ -145,13 +142,8 @@ BDouble operator/(const BDouble &lhs, const double &rhs) {
 }
 
 std::ostream &operator<<(std::ostream &os, const BDouble &m) {
-    os << m;
+    os << m.get();
     return os;
-}
-
-std::istream &operator>>(std::istream &is, BDouble &v) {
-    is >> v.x;
-    return is;
 }
 
 const BDouble zero = BDouble(0.0);

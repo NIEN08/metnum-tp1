@@ -2,8 +2,11 @@
 #define _TP1_MATRIX_H_ 1
 
 #include <iostream>
-#include <stdexcept>
 #include "BDouble.h"
+#include <stdexcept>
+#include <cassert>
+#include <utility>
+
 
 enum Solutions {
     INFINITE,
@@ -41,11 +44,11 @@ public:
         }
 
         if (lband > N) {
-            this->lband = N;
+            this->lband = N-1;
         }
 
         if (uband > M) {
-            this->uband = M;
+            this->uband = M-1;
         }
 
         std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
@@ -283,33 +286,31 @@ public:
 
 
 	std::pair<Matrix *, Matrix *> LU_factorization(BDouble *b) {
+	
 		//Original matrix
 		Matrix* pA = this;
 		std::size_t N = std::min(pA->rows(), pA->columns());
 
 		//Lower and Upper triangular matrix
-		Matrix* pL = new Matrix(pA->rows(), pA->columns(), 0, pA->lower_bandwidth());
-		Matrix* pU = new Matrix(pA->rows(), pA->columns(), pA->upper_bandwidth(), 0);
+		Matrix* pL = new Matrix(pA->rows(), pA->columns(), pA->upper_bandwidth(), 0);
+		Matrix* pU = new Matrix(pA->rows(), pA->columns(), 0, pA->lower_bandwidth());
 
 		//Syntactic sugar on pointers
 		Matrix& A = *pA;
 		Matrix& L = *pL;
 		Matrix& U = *pU;
 
+
 		//Init L and U as identity matrixs
 		for (std::size_t i = 0; i < std::min(A.rows(), A.columns()); i++) {
 			L(i,i) = 1.0;
 			U(i,i) = 1.0;
         }
-		Matrix Z(3,3);
-		std::cout << "Z: " << std::endl;
-		std::cout << Z << std::endl;
-		//std::cout << "L: " << endl;
-		//std::cout << L << endl;
-		//std::cout << "U: " << endl;
-		//std::cout << U << endl;
+		
+		
+		
 		//Arbitraty choose that satisfy L(0,0) * U(0,0) = A(0,0)
-		U(0,0) = A(0,0);
+		U(0,0) = A(0,0);	
 		L(0,0) = 1.0;
 
 		if ( U (0,0) == 0.0) {
@@ -325,54 +326,50 @@ public:
 
 		//Set rows/columns from 1 to n-1
 		for (std::size_t i = 1; i < N - 1; i++) {
+			
 			U(i,i) = A(i,i);
-
 			//Aprovechamos banda
 			std::size_t bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
-			for (std::size_t h = 1; h < bound; h ++) {
-				if ( i > h) {
+			for (std::size_t h = 1; h <= bound; h++) {
+				if ( i >=h ) {
 					U(i,i) -= L(i, i - h) * U(i - h,i);
 				}
 			}
+			U(i,i) /= L(i,i);
 
 			if ( U (i,i) == 0.0) {
 				// No podemos factorizar
 				throw new std::out_of_range("Factorization impossible");
 			}
-			U(i,i) /= L(i,i);
-
+			
+			
 			for (std::size_t j = i+1; j < N; j++) {
 				U(i,j) = A(i,j);
 				L(j,i) = A(j,i);
-
+				
 				//Aprovechamos banda
 				std::size_t bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
-				for (std::size_t h = 1; h < bound; h++) {
-
-					//U(i,j) -= L(i,k) * U(k,j); // iº ROW OF U
-					//L(j,i) -= L(j,k) * U(k,i); // jº COLUMN OF L
-					if ( i > h) {
+				for (std::size_t h = 1; h <= bound; h++) {
+					if ( i >= h) {
 						U(i,j) -= L(i,i-h) * U(i-h,j); // iº ROW OF U
 						L(j,i) -= L(j,i-h) * U(i-h,i); // jº COLUMN OF L
 					}
 				}
 				U(i,j) /= L(i,i);
 				L(j,i) /= U(i,i);
+
 			}
 
 		}
-
+		
 		//Set last position
-		U(N,N) = A(N,N);
-		//TODO: Aprovechar Banda
-		//for (std::size_t k = 0; k < N-1; k++) {
-		//	U(N,N) -= L(N,k) * U(k,N);
-		//}
+		U(N-1,N-1) = A(N-1,N-1);
+		
 		std::size_t bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
-		for (std::size_t h = 1; h < bound; h++) {
-			U(N,N) -= L(N,N-h) * U(N-h,N);
+		for (std::size_t h = 1; h <= bound; h++) {
+			U(N-1,N-1) -= L(N-1,N-1-h) * U(N-1-h,N-1);
 		}
-		U(N,N) /= L(N,N);
+		U(N-1,N-1) /= L(N-1,N-1);
 
 		return std::pair<Matrix*, Matrix*>(pL, pU);
 	}

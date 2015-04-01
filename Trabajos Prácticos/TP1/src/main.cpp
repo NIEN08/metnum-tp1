@@ -1,8 +1,7 @@
-#include "Problem.h"
-#include <fstream>
-
-int main(int argc, char *argv[]) {
-    std::string input(argv[1]), output(argv[2]);
+//#include "Problem.h"
+//#include <fstream>
+#include "Matrix.h"
+/*
     enum Method solvingMethod = BAND_GAUSSIAN_ELIMINATION;
 
     if ((*argv[3]) == '1') {
@@ -84,4 +83,36 @@ int main(int argc, char *argv[]) {
 
     out_handle.close();
     return 0;
+}*/
+
+int main(int argc, char *argv[]) {
+    Matrix A(3,3);
+
+	A(0,0) = 2.0;
+	A(0,1) = 4.0;
+	A(0,2) = -2.0;
+	A(1,0) = 4.0;
+	A(1,1) = 9.0;
+	A(1,2) = -3.0;
+	A(2,0) = -2.0;
+	A(2,1) = -3.0;
+	A(2,2) = 7.0;
+	
+	BDouble b[3] = {2.0, 8.0, 10.0};
+	
+	std::pair<Matrix*, Matrix*> LU = A.LU_factorization(b);
+	
+	Matrix& L = *LU.first;
+	Matrix& U = *LU.second;
+	
+	std::cout << "L: " << std::endl;
+	std::cout << L << std::endl;
+	std::cout << "U: " << std::endl;
+	std::cout << U << std::endl;
+	std::cout << "A: " << std::endl;
+	std::cout << A << std::endl;
+
+	
+	return 0;
 }
+
