@@ -1,8 +1,23 @@
-//#include "Problem.h"
-//#include <fstream>
+#include "Problem.h"
+#include <fstream>
 #include "Matrix.h"
-/*
+
+struct info { 
+  BDouble posX;
+  BDouble posY;
+  BDouble radio;
+  BDouble temperature;
+  BDouble dif;
+};
+
+std::vector<info> vectorInfo;
+
+
+
+int main(int argc, char *argv[]) {
+    std::string input(argv[1]), output(argv[2]);
     enum Method solvingMethod = BAND_GAUSSIAN_ELIMINATION;
+
 
     if ((*argv[3]) == '1') {
         solvingMethod = LU_FACTORIZATION;
@@ -28,15 +43,30 @@
     Matrix temperatures = Matrix(xCoordinates + 1, yCoordinates + 1);
 
     // Levantamos las posiciones de las sanguijuelas
-    for (unsigned i = 0; i < amount; ++i) {
+    unsigned int i;
+    for (i = 0; i < amount; i++) {
         BDouble x, y, r, t;
         handle >> x >> y >> r >> t;
 
+        info aux;
+        aux.posX = x;
+        aux.posY = y;
+        aux.radio = r;
+        aux.temperature = t;
+        // calculo la diferencia que hay entre el punto (x,y) y el punto critico.
+        aux.dif = sqrt(pow((double)(width/2) - x, 2) + pow((double)(height/2) - y, 2));
+
+        // Me fijo si el punto critico esta dentro del radio de la sanguijuela i.
+        if(aux.dif < aux.radio){
+            vectorInfo.push_back(aux);
+        }
+
+
         // Distribuimos las temperaturas de las sanguijuelas
-        int topX = std::floor(x + r),
-                bottomX = std::ceil(x - r),
-                topY = std::floor(y + r),
-                bottomY = std::ceil(y - r);
+        int topX = std::floor(x + r);
+        int bottomX = std::ceil(x - r);
+        int topY = std::floor(y + r);
+        int bottomY = std::ceil(y - r);
 
         // Ponemos las coordenadas en rango
         topX = std::min(std::max(topX, 0), xCoordinates);
@@ -47,10 +77,10 @@
 
         // Seteamos las temperaturas en la matriz.
         // Cabe destacar, la temperatura de cada sanguijuela es igual para todos los puntos que cubre.
-        for (int i = bottomX; i <= topX; ++i) {
+        for (int l = bottomX; l <= topX; ++l) {
             for (int j = bottomY; j <= topY; ++j) {
-                if (temperatures(i, j) < t) {
-                    temperatures(i, j) = t;
+                if (temperatures(l, j) < t) {
+                    temperatures(l, j) = t;
                 }
             }
         }
@@ -59,7 +89,7 @@
     handle.close();
 
     // Ponemos los bordes en -100.0C
-    for (int i = 0; i <= xCoordinates; ++i) {
+    for(unsigned int i = 0; i <= xCoordinates; ++i){
         if (i == 0 || i == xCoordinates) {
             for (std::size_t j = 0; j <= yCoordinates; ++j) {
                 temperatures(i, j) = -100.0;
@@ -83,8 +113,8 @@
 
     out_handle.close();
     return 0;
-}*/
-
+}
+/*
 int main(int argc, char *argv[]) {
     Matrix A(3,3);
 
@@ -116,3 +146,4 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
+*/

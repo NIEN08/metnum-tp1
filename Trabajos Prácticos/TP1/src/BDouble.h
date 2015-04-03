@@ -82,6 +82,10 @@ public:
         return rhs.x - this->x < std::numeric_limits<double>::epsilon();
     }
 
+    bool operator>(const BDouble &rhs) const {
+        return rhs.x - this->x > std::numeric_limits<double>::epsilon();
+    }
+
     bool operator!=(const BDouble &m) const {
         return !(*this == m);
     }
