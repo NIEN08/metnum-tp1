@@ -47,10 +47,28 @@ bool myfunction (info i,info j) { return (i.dif < j.dif); }
 
 std::tuple<bool, info> simple_algotithm(std::vector<info> myvector){
     
+        std::std::vector<info> vectorResult;
+
+        for(int i = 0; i < myvector.size(); i++){
+            // calculo la diferencia que hay entre el punto (x,y) y el punto critico.
+            myvector[i].dif = sqrt(pow((double)(width/2) - myvector[i].posX, 2) + pow((double)(height/2) - myvector[i].posY, 2));
+
+            // Me fijo si el punto critico esta dentro del radio de la sanguijuela i.
+            if(myvector[i].dif < myvector[i].radio){
+                vectorResult.push_back(myvector[i]);
+            }   
+        }
+
+
+
+
+
+
+
     // ordeno el vector de menor a mayor con respecto a la variable dif.
     // dif = sqrt[(x-x1)^2 + (y-y1)^2]   
     // dif es la distancia de un punto con respecto al punto critico.
-    sort (myvector.begin(), myvector.end(), myfunction);
+    sort(myvector.begin(), myvector.end(), myfunction);
 
     info result;
     std::tuple<bool, info> res(false, result);
@@ -75,6 +93,17 @@ std::tuple<bool, info> simple_algotithm(std::vector<info> myvector){
             result.dif = myvector[i].dif;
         }
     }
+
+    
+
+
+
+
+
+
+
+
+
 
     std::tuple<bool, info> res2(true, result);
     return res2;

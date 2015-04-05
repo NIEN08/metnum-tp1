@@ -53,14 +53,9 @@ int main(int argc, char *argv[]) {
         aux.posY = y;
         aux.radio = r;
         aux.temperature = t;
-        // calculo la diferencia que hay entre el punto (x,y) y el punto critico.
-        aux.dif = sqrt(pow((double)(width/2) - x, 2) + pow((double)(height/2) - y, 2));
+        aux.dif = 0;
 
-        // Me fijo si el punto critico esta dentro del radio de la sanguijuela i.
-        if(aux.dif < aux.radio){
-            vectorInfo.push_back(aux);
-        }
-
+        vectorInfo.push_back(aux);
 
         // Distribuimos las temperaturas de las sanguijuelas
         int topX = std::floor(x + r);
