@@ -1,0 +1,74 @@
+\section{Introducci\'on}
+
+En este informe se detalla el dise\~no e implementaci\'on de algoritmos que modelan los metodos de Eliminaci\'on Gaussiana y factorizaci\'on LU,
+para resoluci\'on de sistemas de ecuaciones lineales. Tambien se presentan algoritmos para la aplicaci\'on de la formula de Sherman-Morrison y
+una estructura para el almacenamiento de matrices banda, con el fin de mejorar la complejidad espacial y la temporal. Luego de realizamos una %extremadamente 
+breve experimentaci\'on para analizar la calidad de las soluciones, performance de los algoritmos, realismo del modelado, etc.
+
+Esto se realiza al resolver un problema practico mendiante el modelado y discretizaci\'on del mismo. Este problema consiste en, dado un parabrisas 
+P que esta siendo atacado por sanguijuelas mutantes, a las que llamaremos $S_i$, averiguar la temperatura del punto critico que se
+halla en el centro de P. P cuenta con un sistema de refrigeracion que mantiene el borde a temperatura constante
+$-100^o$C. Cada sanguijela $S_i$ cuenta con una pocision $(x_i, y_i)$, un radio $r_i$ y una temperatura $t_i$. Si un punto del
+parabrisas, $P_{k,j}$, 
+pertenece al area afectada por algun $r_i$ y no pertenece al borde de P, la temperatura de dicho punto es $t_i$, donde por area afectada nos referimos a la circunsferencia de 
+radio $r_i $ y centro $(x_i, y_i)$. Si pertenece a mas de un radio, es decir
+$P_{k,j} \in {r'_i}, i\in (1..k) $, entonces su temperatura sera 
+$t_k=max_{i\in (1..k)}(r'_i) $. Si el punto $P_{k,j}$ no pertenece a ninguno de los anteriores,
+su temperatura esta determinada por la siguiente formula:
+
+
+\begin{equation}\label{eq:calor}
+\frac{\partial^2T(x,y)}{\partial x^{2}}+\frac{\partial^2 T(x,y)}{\partial y^{2}} = 0.
+\end{equation}
+
+Ademas, si el punto critico supera los $235^o $C, se desea saber si eliminando tan solo una sanguijuela, y cual es dicha sanguijuela,
+se puede lograr que la 
+temperatura se redusca por debajo de este margen, pues de lo contrario el parabrisas se rompera.
+
+Como P tiene una superficie continua y dado que es imposible representar valores continuos en una PC,
+debemos discretizar nuestro sistema. Por lo tanto vamos a modelar la superficie de P de tal forma que P sea representado por una matriz de
+temperaturas. Es decir, solo consideraremos los puntos h-distantes para el modelado, donde h es un parametro del problema. 
+%Por simplicidad, se asume que el ancho y el largo, a y b respectivamente, son multiplos de h.
+Solo seran afectados por una sanguijuela $S_i$ los puntos h-distantes que esten incluidos en el radio de $S_i$. Si el radio de una sanguijuela $S_i$ no 
+afecta ningun punto de la discretizacion, esta no se tendra en cuenta en la modelizacion del problema. 
+
+Una vez discritezado el problema de esta manera, podemos$^2$ estimar la ecuacion (1) de la siguiente forma:
+\begin{equation}
+t_{ij} \ =\ \frac{ t_{i-1,j} + t_{i+1,j} + t_{i,j-1} + t_{i,j+1}}{4}.\label{eq:calordd}
+\end{equation}
+
+\footnotetext[2]{ Explicaci\'on al respecto en el apendice A}
+
+%Por lo tanto, obtenemos la siguiente funcion de temperatura global (lo completare si me viene en gana)
+
+A partir de este modelo, despejando las ecuaciones de calor, obtenemos un sistema de ecuaciones lineales.
+Para la resolucion del sistema resultante, vamos a aplicar dos metodos. Estos seran Eliminaci\'on Gaussiana y factorizaci\'on LU.
+
+En el caso de que debamos decidir que sanguijuela eliminar, aplicaremos en primera instancia la tecnica de Backtraking. Luego aplicaremos
+la formula de Sherman-Morrison, para optimizar. 
+
+Detallando los m\'etodos utilizados, notamos que el m\'etodo de Eliminacion Gaussiana consta de dos pasos: en primer
+lugar, transforma el sistema original a uno equivalente donde la matriz es triangular
+superior, con costo $O(n^3)$ donde n es el n\'umero de inc\'ognitas. Luego procede a resolver dicho
+sistema, con costo $O(n^2)$. Por otro lado, el m\'etodo de descomposici\'on LU descompone el sistema original
+$Ax = b$ en un sistema del tipo $LUx = b$, donde $L$ es una matriz triangular inferior y $U$ es una matriz
+triangular superior, con costo $O(n^3)$. Luego resuelve los sistemas $Ly = b$ y
+$Ux = y$ para obtener el valor de soluci\'on $x$, con costo $O(n^2)$ en cada caso. 
+En t\'erminos asint\'eticos ambos m\'etodos tienen una $complejidad O(n^3)$, sin embargo, la factorizaci\'on LU presenta 
+una ventaja por sobre EG. Si el sistema se debe resolver para un b diferente, no hace falta realizar nuevamente la factorizaci\'on,
+sino que simplemente basta con resolver los dos sistemas triangulares usando las mismas matrices L y
+U lo que resulta en un costo cuadratico, en lugar del costo cubico asociado a la Eliminaci\'on Gaussiana. \\\\
+
+
+Ademas se\~nalamos que como la matriz asociada al problema es
+banda y sus columnas son linealmente independientes$^5$,
+\footnotetext[5]{La demostraci\'on de esta propiedad excede los objetivos de este informe, por lo cual se asume como un resultado valido. Sin embargo, 
+presentamos una idea intuitiva del motivo de esta propiedad en la secci\'on Desarrollo.
+Para mas detalles sobre la demostraci\'on formal de esta propiedad, consulte a su docente amigo del laboratorio de la materia Metodos Numericos.}
+el sistema de ecuaciones
+derivado de ella admite una descomposici\'on LU o, lo que es equivalente, que se pueden hacer todas
+las iteraciones del m\'etodo de triangulaci\'on de Gauss sin necesidad de pivotear en ning\'un paso. 
+%La demostraci\'on se describe en el Ap\'endice C. 
+Este resultado fue muy importante a la hora de realizar
+el desarrollo, pues nos permiti\'o evitar tener que implementar y testear t\'ecnicas de pivoteo de filas y
+columnas.

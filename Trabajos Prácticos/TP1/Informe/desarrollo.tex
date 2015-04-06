@@ -1,0 +1,131 @@
+\section{Desarrollo}
+
+En principio, y con la intencion de entender el problema en profundidad, planteamos un ejemplo que resolvimos manualmente. A partir de este ejemplo
+notamos un patron en el comportamiento del sistema. Por lo tanto recrearemos a continuaci\'on dicho ejemplo, para dar una noci\'on clara de nuestra 
+evoluci\'on en la comprenci\'on de este problema particular.
+
+Asumamos que recibimos un archivo de entrada con los siguientes parametros:\\
+3 3 1 1\\
+0.5 2.5 1 500
+
+entonces el problema modelado es de la pinta$^6$:\footnotetext[6]{Aclaramos, para los portadores de una imaginacion poco delirante, 
+que la circusferencia negra representa una sanguijuela mutante y el cuadrado celeste, al parabrisas.}
+
+\begin{figure}[H]
+    \includegraphics[width=0.3\textwidth]{ejP01}
+    \caption{Imagen ilustrativa del parabrisas.}
+\end{figure}
+Luego lo representaremos como muestra el grafico a continuacion, donde cada intersecion de las lineas representa una variable del modelo, de la cual
+debemos averiguar su temperatura.
+\begin{figure}[H]
+    \includegraphics[width=0.3\textwidth]{ejP02}
+    \caption{Representaci\'on visual del modelo discretizado.}
+\end{figure}
+
+Notese que, si bien C, D y H pertenecen al radio de una sanguijuela, al formar parte del borde estan acondicionados por el sistema de refrigeracion,
+por lo cual su temperatura es $-100$ en lugar de $500$.
+
+Planteando la ecuacion de temperatura para cada variable y despejando, obtenemos el siguiente sistema de ecuaciones $Ax=B$:
+\begin{equation}
+ a\ =\ -100
+\end{equation}
+\begin{equation}
+ b\ =\ -100
+\end{equation}
+\begin{equation}
+ c\ =\ -100
+\end{equation}
+\begin{equation}
+ d\ =\ -100
+\end{equation}
+\begin{equation}
+ e\ =\ -100
+\end{equation}
+\begin{equation}
+ f - \frac{b}{4} - \frac{e}{4} - \frac{g}{4} - \frac{j}{4}\ =\ 0
+\end{equation}
+\begin{equation}
+ g\ =\ 500
+\end{equation}
+\begin{equation}
+ h\ =\ -100
+\end{equation}
+\begin{equation}
+ i\ =\ -100
+\end{equation}
+\begin{equation}
+ j- \frac{f}{4} - \frac{i}{4} - \frac{k}{4} - \frac{n}{4}\ =\ 0
+\end{equation}
+\begin{equation}
+ k- \frac{g}{4} - \frac{j}{4} - \frac{l}{4} - \frac{o}{4}\ =\ 0
+\end{equation}
+\begin{equation}
+ l\ =\ -100
+\end{equation}
+\begin{equation}
+ m\ =\ -100
+\end{equation}
+\begin{equation}
+ n\ =\ -100
+\end{equation}
+\begin{equation}
+ o\ =\ -100
+\end{equation}
+\begin{equation}
+ p\ =\ -100
+\end{equation}
+ del cual la matriz asociada $A$ es la siguiente:
+%Matriz del sistema
+\begin{center}
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c |c | c |c | c |c | c | c | c | c | c | c | c |c | c |c | c |c | c |c | c |}
+     \hline
+       & a  & b & c & d & e & f & g & h & i & j & k & l & m & n & o & p  \\ \hline
+   (3) & 1  & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+   (4) & 0  & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+   (5) & 0  & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+   (6) & 0  & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+   (7) & 0  & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+   (8) & 0  & $-\frac{1}{4} $ & 0 & 0 & $-\frac{1}{4} $ & 1 & $-\frac{1}{4} $ & 0 & 0 & $-\frac{1}{4} $& 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+   (9) & 0  & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+   (10) & 0  & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+   (11) & 0  & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+   (12) & 0  & 0 & 0 & 0 & 0 & $-\frac{1}{4} $ & 0 & 0 & $-\frac{1}{4} $ & 1 & $-\frac{1}{4} $ & 0 & 0 & $-\frac{1}{4} $ & 0 & 0 \\ \hline
+   (13) & 0  & 0 & 0 & 0 & 0 & 0 & $-\frac{1}{4} $ & 0 & 0 & $-\frac{1}{4} $ & 1 & $-\frac{1}{4} $ & 0 & 0 & $-\frac{1}{4} $ & 0 \\ \hline
+   (14) & 0  & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\ \hline
+   (15) & 0  & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hline
+   (16) & 0  & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\ \hline
+   (17) & 0  & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hline
+   (18) & 0  & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\ \hline
+   \end{tabular}
+\end{center}
+siendo la ecuacion (3) la resultante de despejar la ecuacion de temperatura para la variable $a$, (4) para la variable $b$ y asi sucesivamente.
+Ordenandolo de esta manera, la matriz asociada $A$ es una matriz banda de ancho y altura n, donde n es la cantidad de columnas 
+de la matriz de temperaturas. Esto lo deducimos observando la figura 2 y la matriz A,
+ya que notamos que para averiguar el valor de la variable $v_{i}$ son necesarios$^7$ los valores de las variables $v_{i-n}$, $v_{i-1}$, 
+$v_{i+1}$, $v_{i+n}$.
+\footnotetext[7]{Siempre y cuando $v_{i}$ no pertenesca a un borde o este cubierta por una sanguijuela.}
+
+Dejaremos el ejemplo hasta aqui, pues la resolucion del sistema no aporta informaci\'on util. Sin embargo, una vez que hallamos esta estructura 
+procedimos a realizar la carga de datos de modo que la matriz asociada a nuestro sistema fuese una matriz banda-n. Cabe destacar, que mientras dos 
+miembros del grupo buscaban comprender en profundidad las propiedad del modelo, los otros dos implementaron la estructura para la matriz banda$^8$,
+y los algoritmos de Eliminaci\'on Gaussiana y Factorizaci\'on LU. Ahora explicaremos el desarrollo del c\'odigo.
+\footnotetext[8]{Por dato del enunciado, en ese momento sabiamos que debiamos obtener una matriz banda a partir del sistema, si bien no sabiamos como
+organizar los datos para obtenerla.}
+
+El lenguaje empleado para la implementaci\'on es C++. Si bien la elecci\'on del lenguaje podria considerarse arbitraria, se debio principalmente a la 
+cantidad de herramientas y librerias provistas por este lenguaje. 
+
+En primer instancia, creamos una clase llamada BDouble para representar decimales de
+precision doble (((?) por que mierda)). Luego creamos la clase Matrix, que representa a las matrices como un vector de vectores de BDouble. 
+Ademas guarda la dimension de la matriz, el ancho y alto de la banda. Para mejorar la complejidad espacial, solo guarda por fila aquellos
+coeficientes pertenecientes a la banda, o sea, aquellos que no valen necesariamente cero. Esta clase provee las funciones basicas para matriz, como 
+consultar su dimencion o sumar multiplos de filas entre si(?), pero ademas, contiene las funciones gaussian\_elimination, LU\_factorization, backward\_substitution y 
+forward\_substitution. 
+
+Si bien nuestra primera idea fue crear una clase aparte para estos metodos, y por claridad abstraernos en esta de la 
+representacion interna de la matriz, al hacerlo nos topamos con un problema en los header's del codigo. (?) Al no poder descubrir el motivo
+de dicho problema, recurrimos a la catedra en busca de consejo. Aun asi, no encontramos el motivo. Es por esto que incluimos la implementacion de
+estos algoritmos en la clase Matrix. 
+
+Testeamos estos algoritmos con ejemplos peque\~nos escritos a mano, para verificar que se realizaban las cuentas correctamente. Notese que en 
+este momento del desarrollo la carga de datos no estaba implementada, por lo que resultaba imposible correr los test provistos por la catedra.
