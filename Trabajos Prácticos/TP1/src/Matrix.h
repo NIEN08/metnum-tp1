@@ -24,19 +24,19 @@ class Matrix {
 public:
     Matrix(const Matrix &m)
             : N(m.rows()), M(m.columns()), uband(m.upper_bandwidth()), lband(m.lower_bandwidth()) {
-        std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
+        int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
         this->matrix = new BDouble*[this->rows()];
 
-        for (std::size_t i = 0; i < this->rows(); ++i) {
+        for (int i = 0; i < this->rows(); ++i) {
             this->matrix[i] = new BDouble[bound];
 
-            for (std::size_t j = 0; j < bound; ++j) {
+            for (int j = 0; j < bound; ++j) {
                 this->matrix[i][j] = m.matrix[i][j];
             }
         }
     }
 
-    Matrix(std::size_t N, std::size_t M, std::size_t lband = MAGIC_NUMBER, std::size_t uband = MAGIC_NUMBER)
+    Matrix(int N, int M, int lband = MAGIC_NUMBER, int uband = MAGIC_NUMBER)
             : N(N), M(M), uband(uband), lband(lband) {
         if (this->rows() == 0 || this->columns() == 0) {
             throw new std::out_of_range("Invalid matrix dimension");
@@ -50,35 +50,35 @@ public:
             this->uband = M-1;
         }
 
-        std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
+        int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
         this->matrix = new BDouble*[this->rows()];
 
-        for (std::size_t i = 0; i < this->rows(); ++i) {
+        for (int i = 0; i < this->rows(); ++i) {
             this->matrix[i] = new BDouble[bound];
 
-            for (std::size_t j = 0; j < bound; ++j) {
+            for (int j = 0; j < bound; ++j) {
                 this->matrix[i][j] = 0.0;
             }
         }
     }
 
-    inline std::size_t rows() const {
+    inline int rows() const {
         return this->N;
     }
 
-    inline std::size_t columns() const {
+    inline int columns() const {
         return this->M;
     }
 
-    inline std::size_t upper_bandwidth() const {
+    inline int upper_bandwidth() const {
         return this->uband;
     }
 
-    inline std::size_t lower_bandwidth() const {
+    inline int lower_bandwidth() const {
         return this->lband;
     }
 
-    BDouble &operator()(const std::size_t &i, const std::size_t &j) {
+    BDouble &operator()(const int &i, const int &j) {
         if (i >= this->rows() || j >= this->columns()) {
             throw new std::out_of_range("Index access out of range");
         }
@@ -90,7 +90,7 @@ public:
         }
     }
 
-    const BDouble &operator()(const std::size_t &i, const std::size_t &j) const {
+    const BDouble &operator()(const int &i, const int &j) const {
         if (i >= this->rows() || j >= this->columns()) {
             throw new std::out_of_range("Index access out of range");
         }
@@ -107,7 +107,7 @@ public:
     Matrix &operator=(const Matrix &m) {
         if (*this != m) {
             // Limpiar memoria.
-            for (std::size_t i = 0; i < this->rows(); ++i) {
+            for (int i = 0; i < this->rows(); ++i) {
                 delete[] this->matrix[i];
             }
 
@@ -120,13 +120,13 @@ public:
             this->uband = m.upper_bandwidth();
 
             // Crear matriz nueva
-            std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
+            int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
             this->matrix = new BDouble*[m.rows()];
 
-            for (std::size_t i = 0; i < this->rows(); ++i) {
+            for (int i = 0; i < this->rows(); ++i) {
                 this->matrix[i] = new BDouble[bound];
 
-                for (std::size_t j = 0; j < bound; ++j) {
+                for (int j = 0; j < bound; ++j) {
                     // Copiar los valores de la matriz
                     this->matrix[i][j] = m.matrix[i][j];
                 }
@@ -140,8 +140,8 @@ public:
         if (this->rows() != m.rows() || this->columns() != m.columns()) {
             return false;
         } else {
-            for (std::size_t i = 0; i < this->rows(); i++) {
-                for (std::size_t j = 0; j < this->columns(); j++) {
+            for (int i = 0; i < this->rows(); i++) {
+                for (int j = 0; j < this->columns(); j++) {
                     if ((*this)(i, j) != m(i, j)) {
                         return false;
                     }
@@ -162,26 +162,26 @@ public:
 
             if (this->lower_bandwidth() == m.lower_bandwidth() && this->upper_bandwidth() == m.upper_bandwidth()) {
                 // Si tenemos dos matrices banda con los mismos anchos de banda, simplemente sumamos la matriz miembro a miembro.
-                std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
+                int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
 
-                for (std::size_t i = 0; i < this->rows(); ++i) {
-                    for (std::size_t j = 0; j < bound; ++j) {
+                for (int i = 0; i < this->rows(); ++i) {
+                    for (int j = 0; j < bound; ++j) {
                         this->matrix[i][j] += m.matrix[i][j];
                     }
                 }
             } else {
                 // Si no, nos fijamos cuales son los nuevos anchos de banda
-                std::size_t new_lband = std::max(this->lower_bandwidth(), m.lower_bandwidth());
-                std::size_t new_uband = std::max(this->upper_bandwidth(), m.lower_bandwidth());
-                std::size_t new_bound = new_lband + new_uband + 1;
+                int new_lband = std::max(this->lower_bandwidth(), m.lower_bandwidth());
+                int new_uband = std::max(this->upper_bandwidth(), m.lower_bandwidth());
+                int new_bound = new_lband + new_uband + 1;
 
                 // Creamos una nueva matriz que guarda directamente la suma
                 BDouble **output = new BDouble*[this->rows()];
 
-                for (std::size_t i = 0; i < this->rows(); ++i) {
+                for (int i = 0; i < this->rows(); ++i) {
                     output[i] = new BDouble[new_bound];
 
-                    for (std::size_t j = 0; j < new_bound; ++j) {
+                    for (int j = 0; j < new_bound; ++j) {
                         output[i][j] = this->matrix[i][j + i - this->lower_bandwidth()] + m.matrix[i][j + i - m.lower_bandwidth()];
                     }
                 }
@@ -191,7 +191,7 @@ public:
                 this->uband = new_uband;
 
                 // Borramos la matriz vieja
-                for (std::size_t i = 0; i < this->rows(); ++i) {
+                for (int i = 0; i < this->rows(); ++i) {
                     delete[] this->matrix[i];
                 }
 
@@ -209,10 +209,10 @@ public:
     }
 
     Matrix &operator*=(const BDouble &c) {
-        std::size_t bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
+        int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
 
-        for (std::size_t i = 0; i < this->rows(); ++i) {
-            for (std::size_t j = 0; j < bound; ++j) {
+        for (int i = 0; i < this->rows(); ++i) {
+            for (int j = 0; j < bound; ++j) {
                 this->matrix[i][j] *= c;
             }
         }
@@ -223,10 +223,10 @@ public:
     std::pair<BDouble *, enum Solutions> gaussian_elimination(BDouble *b) {
         Matrix workspace(*this);
 
-        std::size_t diagonal = std::min(workspace.columns(), workspace.rows());
+        int diagonal = std::min(workspace.columns(), workspace.rows());
 
-        for (std::size_t d = 0; d < diagonal; ++d) {
-            std::size_t i = d + 1;
+        for (int d = 0; d < diagonal; ++d) {
+            int i = d + 1;
 
             if (workspace(d, d) == 0.0) {
                 // Hay un cero en la base
@@ -242,7 +242,7 @@ public:
 
                 if (swap) {
                     // Swappeamos las filas, sólo entre los elementos posibles.
-                    for (std::size_t j = d - workspace.lower_bandwidth(); j < i + workspace.upper_bandwidth(); ++j) {
+                    for (int j = d - workspace.lower_bandwidth(); j < i + workspace.upper_bandwidth(); ++j) {
                         BDouble tmp = workspace(d, j);
                         workspace(d, j) = workspace(i, j);
                         workspace(i, j) = tmp;
@@ -268,7 +268,7 @@ public:
                         // Realizamos el mismo cambio en la solución del sistema
                         b[i] -= coefficient * b[d];
 
-                        for (std::size_t j = d + 1; j < std::min(i + workspace.upper_bandwidth(), workspace.columns()); ++j) {
+                        for (int j = d + 1; j < std::min(i + workspace.upper_bandwidth(), workspace.columns()); ++j) {
                             // Realizamos la resta a toda la fila.
                             workspace(i, j) -=  coefficient * workspace(d, j);
                         }
@@ -288,7 +288,7 @@ public:
 	
 		//Original matrix
 		Matrix* pA = this;
-		std::size_t N = std::min(pA->rows(), pA->columns());
+		int N = std::min(pA->rows(), pA->columns());
 
 		//Lower and Upper triangular matrix
 		Matrix* pL = new Matrix(pA->rows(), pA->columns(), pA->upper_bandwidth(), 0);
@@ -301,7 +301,7 @@ public:
 
 
 		//Init L and U as identity matrixs
-		for (std::size_t i = 0; i < std::min(A.rows(), A.columns()); i++) {
+		for (int i = 0; i < std::min(A.rows(), A.columns()); i++) {
 			L(i,i) = 1.0;
 			U(i,i) = 1.0;
         }
@@ -318,18 +318,18 @@ public:
 		}
 
 		//Set first row of U and firt column of L
-		for (std::size_t i = 1; i < N; i++) {
+		for (int i = 1; i < N; i++) {
 			U(0,i) = A(0,i) / L(0,0);
 			L(i,0) = A(i,0) / U(0,0);
         }
 
 		//Set rows/columns from 1 to n-1
-		for (std::size_t i = 1; i < N - 1; i++) {
+		for (int i = 1; i < N - 1; i++) {
 			
 			U(i,i) = A(i,i);
 			//Aprovechamos banda
-			std::size_t bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
-			for (std::size_t h = 1; h <= bound; h++) {
+			int bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
+			for (int h = 1; h <= bound; h++) {
 				if ( i >=h ) {
 					U(i,i) -= L(i, i - h) * U(i - h,i);
 				}
@@ -342,13 +342,13 @@ public:
 			}
 			
 			
-			for (std::size_t j = i+1; j < N; j++) {
+			for (int j = i+1; j < N; j++) {
 				U(i,j) = A(i,j);
 				L(j,i) = A(j,i);
 				
 				//Aprovechamos banda
-				std::size_t bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
-				for (std::size_t h = 1; h <= bound; h++) {
+				int bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
+				for (int h = 1; h <= bound; h++) {
 					if ( i >= h) {
 						U(i,j) -= L(i,i-h) * U(i-h,j); // iº ROW OF U
 						L(j,i) -= L(j,i-h) * U(i-h,i); // jº COLUMN OF L
@@ -364,8 +364,8 @@ public:
 		//Set last position
 		U(N-1,N-1) = A(N-1,N-1);
 		
-		std::size_t bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
-		for (std::size_t h = 1; h <= bound; h++) {
+		int bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
+		for (int h = 1; h <= bound; h++) {
 			U(N-1,N-1) -= L(N-1,N-1-h) * U(N-1-h,N-1);
 		}
 		U(N-1,N-1) /= L(N-1,N-1);
@@ -383,14 +383,14 @@ public:
 	**/
 	std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix* pL, 
 												Matrix* pU, 
-												std::size_t i, 
-												std::size_t j,
+												int i, 
+												int j,
 												BDouble a,
 												BDouble *b) {
 	
 		//Original matrix
 		Matrix* pA = this;
-		std::size_t N = std::min(pA->rows(), pA->columns());
+		int N = std::min(pA->rows(), pA->columns());
 
 		//Syntactic sugar on pointers
 		Matrix& A = *pA;
@@ -402,7 +402,7 @@ public:
 		BDouble* u = new BDouble[N];
 		BDouble* v = new BDouble[N];
 		
-		for (std::size_t k = 0; k < N; k++) {
+		for (int k = 0; k < N; k++) {
 			u[k] = 0.0;
 			v[k] = 0.0;
 		}
@@ -444,13 +444,13 @@ public:
 		//First we calculate k = (v' y)/(1 + v' z) (scalar value)
 		BDouble vy = 0.0;
 		BDouble vz = 1.0;
-		for (std::size_t h = 0; h < N; h++) {
+		for (int h = 0; h < N; h++) {
 			vy += v[h] * y[h];
 			vz += v[h] * z[h];
         }
 		
 		//Finally we calculate x = y + z * k
-		for (std::size_t h = 0; h < N; h++) {
+		for (int h = 0; h < N; h++) {
 			x[h] = y[h] - (z[h] * (vy / vz));
         }
 		delete[] y;
@@ -471,7 +471,7 @@ public:
 
 
     ~Matrix() {
-        for (std::size_t i = 0; i < this->rows(); ++i) {
+        for (int i = 0; i < this->rows(); ++i) {
             delete[] this->matrix[i];
         }
 
@@ -485,19 +485,19 @@ private:
         BDouble *x = new BDouble[m.columns()];
         enum Solutions solution = SINGLE;
 
-		std::size_t N = std::min(m.rows(), m.columns());
-        std::size_t i = N - 1;
+		int N = std::min(m.rows(), m.columns());
+        int i = N - 1;
 
         while (true) {
             if (m(i, i) == 0.0) {
                 x[i] = 1.0;
                 solution = INFINITE;
             } else {
-                std::size_t bound = std::min(m.columns(), m.upper_bandwidth());
+                int bound = std::min(m.columns(), m.upper_bandwidth());
                 x[i] = b[i];
 				
 				//std::cout << "x" << i << "= [b" << i;
-                for (std::size_t h = 1; h <= bound; h++) {
+                for (int h = 1; h <= bound; h++) {
                     if(i + h < N) {
 						//std::cout << "- M(" << i << ", " << i+h << ") * x" << i+h;
                         x[i] -= m(i, i+h) * x[i+h];
@@ -527,18 +527,18 @@ private:
         BDouble *x = new BDouble[m.columns()];
         enum Solutions solution = SINGLE;
 
-		std::size_t N = std::min(m.rows(), m.columns());
+		int N = std::min(m.rows(), m.columns());
 
-        for (std::size_t i = 0; i < N; ++i) {
+        for (int i = 0; i < N; ++i) {
             if (m(i, i) == 0.0) {
                 x[i] = 1.0;
                 solution = INFINITE;
             } else {
-                std::size_t bound = std::min(i, m.lower_bandwidth());
+                int bound = std::min(i, m.lower_bandwidth());
                 //std::cout << "bound: " << bound << std::endl;
                 x[i] = b[i];
                 //std::cout << "x" << i << "= [b" << i;
-                for (std::size_t h = 1; h <= bound; h++) {
+                for (int h = 1; h <= bound; h++) {
                     //if (m(i, i+h) != 0.0) {
                     if(i >= h) {
 						//std::cout << "- M(" << i << ", " << i-h << ") * x" << i-h;
@@ -563,16 +563,16 @@ private:
 
 
     // Matrix
-    std::size_t N;
-    std::size_t M;
-    std::size_t uband;
-    std::size_t lband;
+    int N;
+    int M;
+    int uband;
+    int lband;
     BDouble **matrix;
 };
 
 std::ostream &operator<<(std::ostream &os, const Matrix &m) {
-    for (std::size_t i = 0; i < m.rows(); ++i) {
-        for (std::size_t j = 0; j < m.columns(); ++j) {
+    for (int i = 0; i < m.rows(); ++i) {
+        for (int j = 0; j < m.columns(); ++j) {
             if (i <= j + m.lower_bandwidth() && j <= i + m.upper_bandwidth()) {
                 os << "\033[1;31m" << m(i, j) << "\033[0m" << '\t';
             } else {
@@ -607,17 +607,17 @@ Matrix operator*(const Matrix &m, const BDouble &c) {
 // TODO: esto no funciona.
 Matrix operator*(const Matrix &m, const Matrix &n) {
     if (m.columns() == n.rows()) {
-        std::size_t max_lower_upper = std::max(m.lower_bandwidth(), n.upper_bandwidth());
-        std::size_t max_upper_lower = std::max(m.upper_bandwidth(), n.lower_bandwidth());
+        int max_lower_upper = std::max(m.lower_bandwidth(), n.upper_bandwidth());
+        int max_upper_lower = std::max(m.upper_bandwidth(), n.lower_bandwidth());
 
         Matrix output(m.rows(), n.columns(), max_lower_upper, max_upper_lower);
 
-        std::size_t diagonal = std::min(output.columns(), output.rows());
+        int diagonal = std::min(output.columns(), output.rows());
 
-        for (std::size_t d = 0; d < diagonal; ++d) {
-            for (std::size_t j = d - output.lower_bandwidth(); j < std::min(d + output.upper_bandwidth(), output.columns()); ++j) {
+        for (int d = 0; d < diagonal; ++d) {
+            for (int j = d - output.lower_bandwidth(); j < std::min(d + output.upper_bandwidth(), output.columns()); ++j) {
 
-                for (std::size_t k = 0; k < output.columns();  ++k) {
+                for (int k = 0; k < output.columns();  ++k) {
                     output(d, j) += m(d, k) * n(k, j);
                 }
             }
