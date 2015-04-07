@@ -19,7 +19,14 @@
 \usepackage{slashbox}
 \usepackage[spanish,noline,longend]{algorithm2e}
 \usepackage{pdfpages}
+
 %\usepackage{aed2-tad,aed2-symb,aed2-itef}
+
+%basofia del enunciado 
+\usepackage[spanish]{babel}
+\usepackage{a4wide,amsmath,amsfonts,graphicx,color,todonotes}
+
+
 \input{codesnippet}
 \newcommand{\moduloNombre}[1]{\textbf{#1}}
 
@@ -179,13 +186,28 @@
 
 \newcommand{\DRef}{\ensuremath{\rightarrow}}
 
+%basofia para el enunciado, borrar luego
+\newcommand{\real}{\mathbb{R}}
+\newcommand{\nat}{\mathbb{N}}
+
+\newcommand{\atacante}{sanguijuela}
+\newcommand{\capitan}{Capit\'an Guybrush Threepwood}
+\newcommand{\objeto}{parabrisas}
+\newcommand{\nave}{El Pepino Marino}
+\newcommand{\titulotp}{``No creo que a \'el le gustar\'a eso''}
+
+\newcommand{\revJ}[1]{{\color{red} #1}}
+%hasta aqui
+
 \pagestyle{fancy}
 \thispagestyle{fancy}
 \addtolength{\headheight}{1pt}
-\lhead{Organización del computador II}
-\rhead{$2^{\mathrm{do}}$ cuatrimestre de 2014}
+\addtolength{\textheight}{2.2cm}
+\addtolength{\textwidth}{-.5cm}
+\lhead{M\'etodos Num\'ericos}
+\rhead{$1^{\mathrm{er}}$ cuatrimestre de 2015}
 %\cfoot{\thepage /\pageref{LastPage}}
-\cfoot{\thepage /19}
+\cfoot{\thepage /15}
 \renewcommand{\footrulewidth}{0.4pt}
 
 %\author{Algoritmos y Estructuras de Datos II, DC, UBA.}
@@ -194,12 +216,12 @@
 
 \titulo{Trabajo Práctico I}
 \fecha{10 / 04 / 2015}
-\materia{Metodos Numericos}
-\grupo{Titulo: Lalalalala}
+\materia{M\'etodos Num\'ericos}
+\grupo{Aplicaci\'on de metodos b\'asicos de Aritmetica de Palitos$^1$ para la resoluci\'on de sistemas de ecuaciones lineales.}
 \integrante{Abdala, Leila}{950/12}{abdalaleila@gmail.com}
-\integrante{}{}{}
-\integrante{}{}{}
-\integrante{}{}{}
+\integrante{Albertini, Alejandro}{}{ale.dc@hotmail.com}
+\integrante{Bayardo, Julian}{}{julian@bayardo.com.ar}
+\integrante{Niesz, Ignacio}{}{ignacio.niesz@gmail.com}
 
 \begin{document}
 
@@ -207,9 +229,25 @@
 \tableofcontents
 \newpage
 
-\input{comentarios.tex}
+% descomentar cuando sea necesario
+%\input{comentarios.tex}
+%\newpage
+
+\input{intro.tex}
+\newpage
+\input{desarrollo.tex}
+\newpage
+\input{res.tex}
+\newpage
+\input{conclusiones.tex}
+\newpage
+\input{apn1.tex}
+\newpage
+\input{apn2.tex}
 \newpage
 
-
+% descomentar cuando sea necesario
+%\input{apn3.tex}
+%\newpage
 
 \end{document}
