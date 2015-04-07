@@ -28,9 +28,10 @@ public:
             const BDouble &height,
             const BDouble &h,
             std::list<Leech> &leeches)
-            : xCoordinates(std::round(height / h)), yCoordinates(std::round(width / h)),
-              width(width), height(height), h(h),
-              leeches(leeches), temperatures(xCoordinates + 1, yCoordinates + 1), method(method) {
+            : width(width), height(height), h(h), leeches(leeches), method(method),
+              xCoordinates(static_cast<int>(std::round(height.get() / h.get()))),
+              yCoordinates(static_cast<int>(std::round(width.get() / h.get()))),
+              temperatures(Matrix(xCoordinates + 1, yCoordinates + 1)) {
 
         for (std::list<Leech>::iterator b = leeches.begin(); b != leeches.end(); ++b) {
             // Distribuimos las temperaturas de la sanguijuela
@@ -144,14 +145,14 @@ private:
 
     }
 
-    int xCoordinates;
-    int yCoordinates;
     BDouble width;
     BDouble height;
     BDouble h;
     std::list<Leech> leeches;
-    Matrix temperatures;
     enum Method method;
+    int xCoordinates;
+    int yCoordinates;
+    Matrix temperatures;
 };
 
 

@@ -15,7 +15,9 @@ public:
     BDouble(float x): x(x) { }
     BDouble(const BDouble &d) : x(d.x) { }
 
-    operator double() { return this->x; }
+    operator double() const { return this->x; }
+
+    double get() const { return this->x; }
 
     BDouble &operator=(const BDouble &rhs) {
         this->x = rhs.x;
