@@ -1,5 +1,6 @@
 \section{Desarrollo}
 
+\subsection{Sobre la implementaci\'on}
 En principio, y con la intencion de entender el problema en profundidad, planteamos un ejemplo que resolvimos manualmente. A partir de este ejemplo
 notamos un patron en el comportamiento del sistema. Por lo tanto recrearemos a continuaci\'on dicho ejemplo, para dar una noci\'on clara de nuestra 
 evoluci\'on en la comprenci\'on de este problema particular.
@@ -103,7 +104,12 @@ Ordenandolo de esta manera, la matriz asociada $A$ es una matriz banda de ancho 
 de la matriz de temperaturas. Esto lo deducimos observando la figura 2 y la matriz A,
 ya que notamos que para averiguar el valor de la variable $v_{i}$ son necesarios$^7$ los valores de las variables $v_{i-n}$, $v_{i-1}$, 
 $v_{i+1}$, $v_{i+n}$.
-\footnotetext[7]{Siempre y cuando $v_{i}$ no pertenesca a un borde o este cubierta por una sanguijuela.}
+\footnotetext[7]{Siempre y cuando $v_{i}$ no pertenesca a un borde o este cubierta por una sanguijuela.}.
+Notese que en las ecuaciones, o lo que es lo mismo, matriz asociada al sistema no se hicieron remplazos previos. Con esto nos referimos a no reemplazar
+ en las ecuaciones de calor automaticamente los valores conocidos, como los del borde o los afectados por sanguijuelas. Un ejemplo de esto se daria 
+ al usar las ecuaciones 4, 7 y 9 para reemplazar los valores en la ecuacion 8. Tomamos esta decision porque consideramos que esos reemplazos son parte
+ de la resolucion total del sistema, por lo que deberian verse reflejados en la medicion de tiempos. SIn embargo, si hicieramos los reemplazos 
+ en la generacion de la matriz asociada al sistema, no podriamos medirlos con confiabilidad pues tendriamos la lectura de datos como outlier.
 
 Dejaremos el ejemplo hasta aqui, pues la resolucion del sistema no aporta informaci\'on util. Sin embargo, una vez que hallamos esta estructura 
 procedimos a realizar la carga de datos de modo que la matriz asociada a nuestro sistema fuese una matriz banda-n. Cabe destacar, que mientras dos 
@@ -129,3 +135,26 @@ estos algoritmos en la clase Matrix.
 
 Testeamos estos algoritmos con ejemplos peque\~nos escritos a mano, para verificar que se realizaban las cuentas correctamente. Notese que en 
 este momento del desarrollo la carga de datos no estaba implementada, por lo que resultaba imposible correr los test provistos por la catedra.
+
+Luego procedimos a crear la interfaz del problema en si, es decir la entrada y salida de datos, la organizacion del sistema, ect. Mientras 
+implementabamos backtraking simple para calcular cual sanguijuela eliminar, y un backtraking mejorado con la Formula de Sherman-Morrison. 
+
+
+\subsection{Sobre la experimentaci\'on}
+
+Teniendo todo el codigo implementado, empezamos a correr ejemplos para la experimentacion. Dichos ejemplos los habiamos dise\~nado previamente.
+
+Para medir los tiempos de resoluci\'on, utilizamos la funci\'on gettimeof day, que permite medir con
+facilidad el lapso de tiempo entre dos momentos de la ejecuci ́on del programa. Decidimos medir
+\'unicamente los tiempos que estuvieran estrictamente relacionados a la resoluci\'on del sistema,
+dejando afuera, por ejemplo, el tiempo empleado para escribir las soluciones en archivos de salida. La
+idea de fondo que nos llev\'o a medir de esta manera fue la de intentar que las magnitudes de los tiempos
+empleados por los m\'etodos de triangulaci\'on de Gauss y LU no se vieran afectadas por tiempos mucho
+mayores que distorsionaran la distancia relativa entre ellas.
+
+Los ejemplos planteanteados fueron los descriptos a continuacion. Corrimos los tests para los cuatro metodos.
+
+%La posicion de las sanguijuelas asi como el radio debe ser aleatoria, pero con un minimo de sentido. En
+%el caso de la pocision los numeros random se deben multiplicar por el n, donde n es la dimension del parabrisas, y luego tomarlos modulo n. Para el radio
+%deberia multiplicarse por un diez por ciento del tamano del parabrisas o algo asi, para no perderlos.
+

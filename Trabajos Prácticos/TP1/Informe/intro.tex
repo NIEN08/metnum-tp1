@@ -59,16 +59,5 @@ una ventaja por sobre EG. Si el sistema se debe resolver para un b diferente, no
 sino que simplemente basta con resolver los dos sistemas triangulares usando las mismas matrices L y
 U lo que resulta en un costo cuadratico, en lugar del costo cubico asociado a la Eliminaci\'on Gaussiana. \\\\
 
-
-Ademas se\~nalamos que como la matriz asociada al problema es
-banda y sus columnas son linealmente independientes$^5$,
-\footnotetext[5]{La demostraci\'on de esta propiedad excede los objetivos de este informe, por lo cual se asume como un resultado valido. Sin embargo, 
-presentamos una idea intuitiva del motivo de esta propiedad en la secci\'on Desarrollo.
-Para mas detalles sobre la demostraci\'on formal de esta propiedad, consulte a su docente amigo del laboratorio de la materia Metodos Numericos.}
-el sistema de ecuaciones
-derivado de ella admite una descomposici\'on LU o, lo que es equivalente, que se pueden hacer todas
-las iteraciones del m\'etodo de triangulaci\'on de Gauss sin necesidad de pivotear en ning\'un paso. 
-%La demostraci\'on se describe en el Ap\'endice C. 
-Este resultado fue muy importante a la hora de realizar
-el desarrollo, pues nos permiti\'o evitar tener que implementar y testear t\'ecnicas de pivoteo de filas y
-columnas.
+Notese ademas que para las matrices de este problema se puede$^3$ aplicar Eliminacion Gaussiana sin pivotear, o lo que es lo mismo, existe Factorizaci\'on LU
+\footnotetext[3]{Para una demostracion de esta propiedad consulte a su docente amigo de Metodos Numericos.}
