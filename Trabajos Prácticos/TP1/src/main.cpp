@@ -5,7 +5,6 @@
 
 
 int main(int argc, char *argv[]) {
-    std::string input(argv[1]), output(argv[2]);
     enum Method solvingMethod = BAND_GAUSSIAN_ELIMINATION;
 
     // Selección del método de resolución
@@ -21,7 +20,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Abrir el archivo de entrada
-    std::ifstream handle(input, std::ifstream::in);
+    std::ifstream handle(argv[1], std::ifstream::in);
     BDouble width, height, h;
     unsigned amount;
 
@@ -44,10 +43,10 @@ int main(int argc, char *argv[]) {
     Matrix temperatures = solver.run();
 
     // Imprimimos la salida del método
-    std::ofstream out_handle(output, std::ostream::out);
+    std::ofstream out_handle(argv[2], std::ostream::out);
 
-    for (std::size_t i = 0; i < temperatures.rows(); ++i) {
-        for (std::size_t j = 0; j < temperatures.columns(); ++j) {
+    for (int i = 0; i < temperatures.rows(); ++i) {
+        for (int j = 0; j < temperatures.columns(); ++j) {
             out_handle << i << " " << j << " " << temperatures(i, j) << std::endl;
         }
     }

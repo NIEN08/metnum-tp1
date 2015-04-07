@@ -2,6 +2,7 @@
 #define _TP1_PROBLEM_H_ 1
 
 #include <list>
+#include <cmath>
 #include "Matrix.h"
 
 enum Method {
@@ -12,6 +13,7 @@ enum Method {
 };
 
 typedef struct _Leech {
+public:
     BDouble x;
     BDouble y;
     BDouble radio;
@@ -25,17 +27,17 @@ public:
             const BDouble &width,
             const BDouble &height,
             const BDouble &h,
-            const std::list<Leech> &leeches)
-            : width(width), height(height), h(h),
-              xCoordinates(std::round(height / h)), yCoordinates(std::round(width / h)),
-              leeches(leeches), method(method), temperatures(xCoordinates + 1, yCoordinates + 1) {
+            std::list<Leech> &leeches)
+            : xCoordinates(std::round(height / h)), yCoordinates(std::round(width / h)),
+              width(width), height(height), h(h),
+              leeches(leeches), temperatures(xCoordinates + 1, yCoordinates + 1), method(method) {
 
-        for (std::list<Leech>::Iterator b = leeches.begin(); b != leeches.end(); ++leeches) {
+        for (std::list<Leech>::iterator b = leeches.begin(); b != leeches.end(); ++b) {
             // Distribuimos las temperaturas de la sanguijuela
-            int topX = std::floor(b.x + b.radio);
-            int bottomX = std::ceil(b.x - b.radio);
-            int topY = std::floor(b.y + b.radio);
-            int bottomY = std::ceil(b.y - b.radio);
+            int topX = std::floor(b->x + b->radio);
+            int bottomX = std::ceil(b->x - b->radio);
+            int topY = std::floor(b->y + b->radio);
+            int bottomY = std::ceil(b->y - b->radio);
 
             // Ponemos las coordenadas en rango
             topX = std::min(std::max(topX, 0), xCoordinates);
@@ -46,20 +48,20 @@ public:
 
             // Seteamos las temperaturas en la matriz.
             // Cabe destacar, la temperatura de cada sanguijuela es igual para todos los puntos que cubre.
-            for (int l = bottomX; l <= topX; ++l) {
+            for (int i = bottomX; i <= topX; ++i) {
                 for (int j = bottomY; j <= topY; ++j) {
                     // Sólo queda la temperatura más alta
-                    if (temperatures(l, j) < t) {
-                        temperatures(l, j) = t;
+                    if (this->temperatures(i, j) < b->temperature) {
+                        this->temperatures(i, j) = b->temperature;
                     }
                 }
             }
         }
 
         // Ponemos los bordes en -100.0C
-        for(i = 0; i <= xCoordinates; ++i){
+        for(int i = 0; i <= xCoordinates; ++i){
             if (i == 0 || i == xCoordinates) {
-                for (std::size_t j = 0; j <= yCoordinates; ++j) {
+                for (int j = 0; j <= yCoordinates; ++j) {
                     temperatures(i, j) = -100.0;
                 }
             } else {
@@ -78,6 +80,7 @@ public:
         BDouble *b = new BDouble[dims];
 
         // Creamos la matriz inicial del sistema
+        // TODO: chequear que esto anda
         for (int d = 0; d < dims; ++d) {
             for (int j = std::min(0, d - 4); d < std::min(d + 4, this->temperatures.columns()); ++j) {
                 system(d, j) = 1.0;
@@ -88,7 +91,7 @@ public:
             int j = d % this->temperatures.columns();
             int k = j % this->temperatures.rows();
 
-            b[d] = 4.0 * this->temperatures(k, j);
+            b[d] = this->temperatures(k, j) * 4.0;
         }
 
         // Hacemos el "pase de variables al otro lado" para conseguir el b que buscamos.
@@ -96,102 +99,56 @@ public:
         // Variamos nuestra solución según el método
         switch (method) {
             case BAND_GAUSSIAN_ELIMINATION:
+                this->band_gaussian_elimination(system, b);
                 break;
             case LU_FACTORIZATION:
+                this->lu_factorization(system, b);
                 break;
             case SIMPLE_ALGORITHM:
+                this->simple_algorithm(system, b);
                 break;
             case SHERMAN_MORRISON:
+                this->sherman_morrison(system, b);
                 break;
         }
+
+        return this->temperatures;
     }
-
-
-    std::tuple<bool, Leech> simple_algotithm(std::list<Leech> leeches){
-
-        Leech result;
-        std::tuple<bool, Leech> res(false, result);
-        if(leeches.size() == 0){
-            return res;
-        }
-
-        /*result.x = leeches.front().x;
-        result.y = leeches.front().y;
-        result.radio = leeches.front().radio;
-        result.temperature = leeches.front().temperature;*/
-        result.tempPC = 9999999999999;
-
-
-        for (std::list<Leech>::Iterator a = leeches.begin(); a != leeches.end(); ++leeches) {
-
-            for (std::list<Leech>::Iterator b = leeches.begin(); b != leeches.end(); ++leeches) {
-
-                if(a != b){
-                    // Distribuimos las temperaturas de la sanguijuela
-                    int topX = std::floor(b.x + b.radio);
-                    int bottomX = std::ceil(b.x - b.radio);
-                    int topY = std::floor(b.y + b.radio);
-                    int bottomY = std::ceil(b.y - b.radio);
-
-                    // Ponemos las coordenadas en rango
-                    topX = std::min(std::max(topX, 0), xCoordinates);
-                    bottomX = std::min(std::max(bottomX, 0), xCoordinates);
-
-                    topY = std::min(std::max(topY, 0), yCoordinates);
-                    bottomY = std::min(std::max(bottomY, 0), yCoordinates);
-
-                    // Seteamos las temperaturas en la matriz.
-                    // Cabe destacar, la temperatura de cada sanguijuela es igual para todos los puntos que cubre.
-                    for (int l = bottomX; l <= topX; ++l) {
-                        for (int j = bottomY; j <= topY; ++j) {
-                            // Sólo queda la temperatura más alta
-                            if (temperatures(l, j) < t) {
-                                temperatures(l, j) = t;
-                            }
-                        }
-                    }
-                }
-
-            }
-
-
-            // Ponemos los bordes en -100.0C
-            for(i = 0; i <= xCoordinates; ++i){
-                if (i == 0 || i == xCoordinates) {
-                    for (std::size_t j = 0; j <= yCoordinates; ++j) {
-                        temperatures(i, j) = -100.0;
-                    }
-                } else {
-                    temperatures(i, 0) = -100.0;
-                    temperatures(i, yCoordinates) = -100.0;
-                }
-            }
-
-            if(temperatures(width/2, height/2) < 235){
-
-                // guardo la temperatura del punto critico sin a, eso me sirve para saber cual es el que genera menor temperatura en el punto critico.
-                a.tempPC = temperatures(width/2, height/2);
-
-                // me fijo si la temperatura del punto critico de la sanguijuela a es la que hace que el punto critico tenga la menor temperatura.
-                if(result.tempPC > a.tempPC){
-                    result.x = a.x;
-                    result.y = a.y;
-                    result.radio = a.radio;
-                    result.temperature = a.temperature;
-                    result.tempPC = a.tempPC;
-                }
-            }
-        }
-
-        std::tuple<bool, Leech> res2(true, result);
-        return res2;
-
-    }
-
-
 private:
-    int xCoordinates, yCoordinates;
-    BDouble width, height, h;
+    void band_gaussian_elimination(const Matrix &system, BDouble *b) {
+        // Resolver el problema
+        std::pair<BDouble *, enum Solutions> solution = gaussian_elimination(system, b);
+
+        // Cargar los datos en la matriz
+
+        // Borrar el espacio extra
+        delete[] solution.first;
+    }
+
+    void lu_factorization(const Matrix &system, BDouble *b) {
+        std::pair<Matrix, Matrix> factors = LU_factorization(system);
+        std::pair<BDouble *, enum Solutions> j = gaussian_elimination(factors.first, b);
+        std::pair<BDouble *, enum Solutions> x = gaussian_elimination(factors.second, j.first);
+        // x tiene la solución definitiva al sistema.
+
+        // Liberamos la memoria que usamos.
+        delete[] j.first;
+        delete[] x.first;
+    }
+
+    void simple_algorithm(const Matrix &system, BDouble *b) {
+
+    }
+
+    void sherman_morrison(const Matrix &system, BDouble *b) {
+
+    }
+
+    int xCoordinates;
+    int yCoordinates;
+    BDouble width;
+    BDouble height;
+    BDouble h;
     std::list<Leech> leeches;
     Matrix temperatures;
     enum Method method;

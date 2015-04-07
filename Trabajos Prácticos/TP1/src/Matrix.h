@@ -14,7 +14,7 @@ enum Solutions {
 };
 
 // Este magic number nos dice cuándo convertir automáticamente una matriz banda en una matriz normal.
-#define MAGIC_NUMBER 5698904538L
+#define MAGIC_NUMBER 562154
 
 /*
 * Matriz Banda.
@@ -220,256 +220,6 @@ public:
         return *this;
     }
 
-    std::pair<BDouble *, enum Solutions> gaussian_elimination(BDouble *b) {
-        Matrix workspace(*this);
-
-        int diagonal = std::min(workspace.columns(), workspace.rows());
-
-        for (int d = 0; d < diagonal; ++d) {
-            int i = d + 1;
-
-            if (workspace(d, d) == 0.0) {
-                // Hay un cero en la base
-                bool swap = false;
-
-                for (i = d + 1; i < std::min(d + workspace.lower_bandwidth(), workspace.rows()); ++i) {
-                    if (workspace(i, d) != 0.0) {
-                        // Encontramos una fila más abajo que es distinta de 0
-                        swap = true;
-                        break;
-                    }
-                }
-
-                if (swap) {
-                    // Swappeamos las filas, sólo entre los elementos posibles.
-                    for (int j = d - workspace.lower_bandwidth(); j < i + workspace.upper_bandwidth(); ++j) {
-                        BDouble tmp = workspace(d, j);
-                        workspace(d, j) = workspace(i, j);
-                        workspace(i, j) = tmp;
-                    }
-
-                    // Realizamos el mismo cambio en la solución del sistema
-                    BDouble tmp = b[d];
-                    b[d] = b[i];
-                    b[i] = tmp;
-                } else {
-                    ++d;
-                }
-            } else {
-                // Tenemos algo distinto de cero en la base
-                for (i = d + 1; i < d + workspace.lower_bandwidth(); ++i) {
-                    if (workspace(i, d) != 0.0) {
-                        // Tenemos algo distinto de cero en alguna fila más abajo
-                        BDouble coefficient = workspace(i, d)/workspace(d, d);
-
-                        // Setear esto en 0 debería reducir el error posible (por ejemplo, restando números muy chicos)
-                        workspace(i, d) = 0.0;
-
-                        // Realizamos el mismo cambio en la solución del sistema
-                        b[i] -= coefficient * b[d];
-
-                        for (int j = d + 1; j < std::min(i + workspace.upper_bandwidth(), workspace.columns()); ++j) {
-                            // Realizamos la resta a toda la fila.
-                            workspace(i, j) -=  coefficient * workspace(d, j);
-                        }
-                    }
-                }
-
-                ++d;
-            }
-        }
-
-        // Workspace esta triangulado, b siguió igual
-        return backward_substitution(workspace, b);
-    }
-
-
-	std::pair<Matrix *, Matrix *> LU_factorization(BDouble *b) {
-	
-		//Original matrix
-		Matrix* pA = this;
-		int N = std::min(pA->rows(), pA->columns());
-
-		//Lower and Upper triangular matrix
-		Matrix* pL = new Matrix(pA->rows(), pA->columns(), pA->upper_bandwidth(), 0);
-		Matrix* pU = new Matrix(pA->rows(), pA->columns(), 0, pA->lower_bandwidth());
-
-		//Syntactic sugar on pointers
-		Matrix& A = *pA;
-		Matrix& L = *pL;
-		Matrix& U = *pU;
-
-
-		//Init L and U as identity matrixs
-		for (int i = 0; i < std::min(A.rows(), A.columns()); i++) {
-			L(i,i) = 1.0;
-			U(i,i) = 1.0;
-        }
-		
-		
-		
-		//Arbitraty choose that satisfy L(0,0) * U(0,0) = A(0,0)
-		U(0,0) = A(0,0);	
-		L(0,0) = 1.0;
-
-		if ( U (0,0) == 0.0) {
-			  // No podemos factorizar
-            throw new std::out_of_range("Factorization impossible");
-		}
-
-		//Set first row of U and firt column of L
-		for (int i = 1; i < N; i++) {
-			U(0,i) = A(0,i) / L(0,0);
-			L(i,0) = A(i,0) / U(0,0);
-        }
-
-		//Set rows/columns from 1 to n-1
-		for (int i = 1; i < N - 1; i++) {
-			
-			U(i,i) = A(i,i);
-			//Aprovechamos banda
-			int bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
-			for (int h = 1; h <= bound; h++) {
-				if ( i >=h ) {
-					U(i,i) -= L(i, i - h) * U(i - h,i);
-				}
-			}
-			U(i,i) /= L(i,i);
-
-			if ( U (i,i) == 0.0) {
-				// No podemos factorizar
-				throw new std::out_of_range("Factorization impossible");
-			}
-			
-			
-			for (int j = i+1; j < N; j++) {
-				U(i,j) = A(i,j);
-				L(j,i) = A(j,i);
-				
-				//Aprovechamos banda
-				int bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
-				for (int h = 1; h <= bound; h++) {
-					if ( i >= h) {
-						U(i,j) -= L(i,i-h) * U(i-h,j); // iº ROW OF U
-						L(j,i) -= L(j,i-h) * U(i-h,i); // jº COLUMN OF L
-					}
-				}
-				U(i,j) /= L(i,i);
-				L(j,i) /= U(i,i);
-
-			}
-
-		}
-		
-		//Set last position
-		U(N-1,N-1) = A(N-1,N-1);
-		
-		int bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
-		for (int h = 1; h <= bound; h++) {
-			U(N-1,N-1) -= L(N-1,N-1-h) * U(N-1-h,N-1);
-		}
-		U(N-1,N-1) /= L(N-1,N-1);
-
-		return std::pair<Matrix*, Matrix*>(pL, pU);
-	}
-	
-	/**
-	* - L matriz triangular inferior de la descomposicion.
-	* - U matriz triangular superior de la descomposicion.
-	* - i fila del elemento a modificar.
-	* - j columna del elemento a modificar.
-	* - a nuevo valor de la posicion (i, j)
-	* A matrix original del sistema.
-	**/
-	std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix* pL, 
-												Matrix* pU, 
-												int i, 
-												int j,
-												BDouble a,
-												BDouble *b) {
-	
-		//Original matrix
-		Matrix* pA = this;
-		int N = std::min(pA->rows(), pA->columns());
-
-		//Syntactic sugar on pointers
-		Matrix& A = *pA;
-		Matrix& L = *pL;
-		Matrix& U = *pU;
-		
-		//Sherman-Morrison formula vectors
-		//Altered system: A2 = (A + uv')
-		BDouble* u = new BDouble[N];
-		BDouble* v = new BDouble[N];
-		
-		for (int k = 0; k < N; k++) {
-			u[k] = 0.0;
-			v[k] = 0.0;
-		}
-		//Column vector
-		u[i] = 1.0;
-		
-		//Row vector
-		v[j] = a - A(i,j);
-		
-		//From Sherman-Morrison
-		// A^-1 b = y <=> Ay = b
-		// A^-1 u = z <=> Az = u
-		
-		//First we solve:
-		// L y2 = b and L z2 = u
-		BDouble* y2;
-		BDouble* z2;
-		
-		std::pair<BDouble *, enum Solutions> solution; 
-		solution = L.forward_substitution(L, b);
-		y2 = solution.first;
-		solution = L.forward_substitution(L, u);
-		z2 = solution.first;
-		
-		//Then we solve:
-		// U y = y2 and U z = z2
-		BDouble* y;
-		BDouble* z;
-		solution = L.backward_substitution(U, y2);
-		y = solution.first;
-		solution = L.backward_substitution(U, z2);
-		z = solution.first;
-		delete[] y2;
-		delete[] z2;
-		
-		//Finally x = y - z * [(v' y)/(1 + v' z)]
-		BDouble* x = new BDouble[N];
-		
-		//First we calculate k = (v' y)/(1 + v' z) (scalar value)
-		BDouble vy = 0.0;
-		BDouble vz = 1.0;
-		for (int h = 0; h < N; h++) {
-			vy += v[h] * y[h];
-			vz += v[h] * z[h];
-        }
-		
-		//Finally we calculate x = y + z * k
-		for (int h = 0; h < N; h++) {
-			x[h] = y[h] - (z[h] * (vy / vz));
-        }
-		delete[] y;
-		delete[] z;
-		
-		return  std::pair<BDouble *, enum Solutions>(x, SINGLE);
-	}
-	
-	// m tiene que estar triangulada
-    // el usuario libera la memoria
-    std::pair<BDouble *, enum Solutions> forward_substitution(BDouble *b) {
-		return forward_substitution(*this, b); 
-    }
-	
-	std::pair<BDouble *, enum Solutions> backward_substitution(BDouble *b) {
-		return backward_substitution(*this, b); 
-	}
-
-
     ~Matrix() {
         for (int i = 0; i < this->rows(); ++i) {
             delete[] this->matrix[i];
@@ -478,90 +228,6 @@ public:
         delete[] this->matrix;
     }
 private:
-    // m tiene que estar triangulada
-    // el usuario libera la memoria
-    std::pair<BDouble *, enum Solutions> backward_substitution(Matrix &m, BDouble *b) {
-        // TODO: caso en el que no hay solución. No queda claro cómo detectarlo.
-        BDouble *x = new BDouble[m.columns()];
-        enum Solutions solution = SINGLE;
-
-		int N = std::min(m.rows(), m.columns());
-        int i = N - 1;
-
-        while (true) {
-            if (m(i, i) == 0.0) {
-                x[i] = 1.0;
-                solution = INFINITE;
-            } else {
-                int bound = std::min(m.columns(), m.upper_bandwidth());
-                x[i] = b[i];
-				
-				//std::cout << "x" << i << "= [b" << i;
-                for (int h = 1; h <= bound; h++) {
-                    if(i + h < N) {
-						//std::cout << "- M(" << i << ", " << i+h << ") * x" << i+h;
-                        x[i] -= m(i, i+h) * x[i+h];
-                    }
-                }
-
-                x[i] /= m(i, i);
-                //std::cout << "] / M(" << i << ", " << i << ") " << std::endl; 
-                
-            }
-
-            // When i = 0, decreasing i will land it to MAX_SIZE, which is higher than 0, producing an error.
-            if (i == 0) {
-                break;
-            }
-
-            --i;
-        }
-
-        return std::pair<BDouble *, enum Solutions>(x, solution);
-    }
-    
-    // m tiene que estar triangulada
-    // el usuario libera la memoria
-    std::pair<BDouble *, enum Solutions> forward_substitution(Matrix &m, BDouble *b) {
-        // TODO: caso en el que no hay solución. No queda claro cómo detectarlo.
-        BDouble *x = new BDouble[m.columns()];
-        enum Solutions solution = SINGLE;
-
-		int N = std::min(m.rows(), m.columns());
-
-        for (int i = 0; i < N; ++i) {
-            if (m(i, i) == 0.0) {
-                x[i] = 1.0;
-                solution = INFINITE;
-            } else {
-                int bound = std::min(i, m.lower_bandwidth());
-                //std::cout << "bound: " << bound << std::endl;
-                x[i] = b[i];
-                //std::cout << "x" << i << "= [b" << i;
-                for (int h = 1; h <= bound; h++) {
-                    //if (m(i, i+h) != 0.0) {
-                    if(i >= h) {
-						//std::cout << "- M(" << i << ", " << i-h << ") * x" << i-h;
-						x[i] -= m(i, i-h) * x[i-h];
-					}
-                        //x[i] -= m(i, i+h) * x[i+h];
-                    //}
-                }
-
-                x[i] /= m(i, i);
-                //std::cout << "] / M(" << i << ", " << i << ") " << std::endl; 
-            }
-
-            // When i = 0, decreasing i will land it to MAX_SIZE, which is higher than 0, producing an error.
-            //if (i == 0) {
-            //    break;
-            //}
-        }
-
-        return std::pair<BDouble *, enum Solutions>(x, solution);
-    }
-
-
     // Matrix
     int N;
     int M;
@@ -628,5 +294,318 @@ Matrix operator*(const Matrix &m, const Matrix &n) {
         throw new std::out_of_range("Matrix product between incompatible matrices.");
     }
 }
+
+/***********************************************************************************************************************
+ * Acá empieza la parte de resolver los sistemas.
+ **********************************************************************************************************************/
+
+// m tiene que estar triangulada
+// el usuario libera la memoria
+std::pair<BDouble *, enum Solutions> backward_substitution(const Matrix &m, BDouble *b) {
+    // TODO: caso en el que no hay solución. No queda claro cómo detectarlo.
+    BDouble *x = new BDouble[m.columns()];
+    enum Solutions solution = SINGLE;
+
+    int N = std::min(m.rows(), m.columns());
+    int i = N - 1;
+
+    while (true) {
+        if (m(i, i) == 0.0) {
+            x[i] = 1.0;
+            solution = INFINITE;
+        } else {
+            int bound = std::min(m.columns(), m.upper_bandwidth());
+            x[i] = b[i];
+
+            //std::cout << "x" << i << "= [b" << i;
+            for (int h = 1; h <= bound; h++) {
+                if(i + h < N) {
+                    //std::cout << "- M(" << i << ", " << i+h << ") * x" << i+h;
+                    x[i] -= m(i, i+h) * x[i+h];
+                }
+            }
+
+            x[i] /= m(i, i);
+            //std::cout << "] / M(" << i << ", " << i << ") " << std::endl;
+
+        }
+
+        // When i = 0, decreasing i will land it to MAX_SIZE, which is higher than 0, producing an error.
+        if (i == 0) {
+            break;
+        }
+
+        --i;
+    }
+
+    return std::pair<BDouble *, enum Solutions>(x, solution);
+}
+
+// m tiene que estar triangulada
+// el usuario libera la memoria
+std::pair<BDouble *, enum Solutions> forward_substitution(const Matrix &m, BDouble *b) {
+    // TODO: caso en el que no hay solución. No queda claro cómo detectarlo.
+    BDouble *x = new BDouble[m.columns()];
+    enum Solutions solution = SINGLE;
+
+    int N = std::min(m.rows(), m.columns());
+
+    for (int i = 0; i < N; ++i) {
+        if (m(i, i) == 0.0) {
+            x[i] = 1.0;
+            solution = INFINITE;
+        } else {
+            int bound = std::min(i, m.lower_bandwidth());
+            //std::cout << "bound: " << bound << std::endl;
+            x[i] = b[i];
+            //std::cout << "x" << i << "= [b" << i;
+            for (int h = 1; h <= bound; h++) {
+                //if (m(i, i+h) != 0.0) {
+                if(i >= h) {
+                    //std::cout << "- M(" << i << ", " << i-h << ") * x" << i-h;
+                    x[i] -= m(i, i-h) * x[i-h];
+                }
+                //x[i] -= m(i, i+h) * x[i+h];
+                //}
+            }
+
+            x[i] /= m(i, i);
+            //std::cout << "] / M(" << i << ", " << i << ") " << std::endl;
+        }
+
+        // When i = 0, decreasing i will land it to MAX_SIZE, which is higher than 0, producing an error.
+        //if (i == 0) {
+        //    break;
+        //}
+    }
+
+    return std::pair<BDouble *, enum Solutions>(x, solution);
+}
+
+std::pair<BDouble *, enum Solutions> gaussian_elimination(Matrix workspace, BDouble *b) {
+    int diagonal = std::min(workspace.columns(), workspace.rows());
+
+    for (int d = 0; d < diagonal; ++d) {
+        int i = d + 1;
+
+        if (workspace(d, d) == 0.0) {
+            // Hay un cero en la base
+            bool swap = false;
+
+            for (i = d + 1; i < std::min(d + workspace.lower_bandwidth(), workspace.rows()); ++i) {
+                if (workspace(i, d) != 0.0) {
+                    // Encontramos una fila más abajo que es distinta de 0
+                    swap = true;
+                    break;
+                }
+            }
+
+            if (swap) {
+                // Swappeamos las filas, sólo entre los elementos posibles.
+                for (int j = d - workspace.lower_bandwidth(); j < i + workspace.upper_bandwidth(); ++j) {
+                    BDouble tmp = workspace(d, j);
+                    workspace(d, j) = workspace(i, j);
+                    workspace(i, j) = tmp;
+                }
+
+                // Realizamos el mismo cambio en la solución del sistema
+                BDouble tmp = b[d];
+                b[d] = b[i];
+                b[i] = tmp;
+            } else {
+                ++d;
+            }
+        } else {
+            // Tenemos algo distinto de cero en la base
+            for (i = d + 1; i < d + workspace.lower_bandwidth(); ++i) {
+                if (workspace(i, d) != 0.0) {
+                    // Tenemos algo distinto de cero en alguna fila más abajo
+                    BDouble coefficient = workspace(i, d)/workspace(d, d);
+
+                    // Setear esto en 0 debería reducir el error posible (por ejemplo, restando números muy chicos)
+                    workspace(i, d) = 0.0;
+
+                    // Realizamos el mismo cambio en la solución del sistema
+                    b[i] -= coefficient * b[d];
+
+                    for (int j = d + 1; j < std::min(i + workspace.upper_bandwidth(), workspace.columns()); ++j) {
+                        // Realizamos la resta a toda la fila.
+                        workspace(i, j) -=  coefficient * workspace(d, j);
+                    }
+                }
+            }
+
+            ++d;
+        }
+    }
+
+    return backward_substitution(workspace, b);
+}
+
+
+std::pair<Matrix, Matrix> LU_factorization(const Matrix &A) {
+    // El tamaño de la diagonal
+    int N = std::min(A.rows(), A.columns());
+
+    // Matriz L triangular inferior, U triangular superior
+    Matrix L(A.rows(), A.columns(), A.upper_bandwidth(), 0);
+    Matrix U(A.rows(), A.columns(), 0, A.lower_bandwidth());
+
+    // Las inicializamos como la matriz identidad
+    for (int i = 0; i < N; ++i) {
+        L(i,i) = 1.0;
+        U(i,i) = 1.0;
+    }
+
+    // Elegimos, arbitrariamente, que L(0,0) * U(0,0) = A(0,0)
+    U(0,0) = A(0,0);
+    L(0,0) = 1.0;
+
+    if (U(0,0) == 0.0) {
+        // No podemos factorizar
+        throw new std::out_of_range("Factorization impossible");
+    }
+
+    //Set first row of U and firt column of L
+    for (int i = 1; i < N; i++) {
+        U(0, i) = A(0, i) / L(0, 0);
+        L(i, 0) = A(i, 0) / U(0, 0);
+    }
+
+    //Set rows/columns from 1 to n-1
+    for (int i = 1; i < N - 1; i++) {
+
+        U(i,i) = A(i,i);
+        //Aprovechamos banda
+        int bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
+        for (int h = 1; h <= bound; h++) {
+            if ( i >=h ) {
+                U(i,i) -= L(i, i - h) * U(i - h,i);
+            }
+        }
+        U(i,i) /= L(i,i);
+
+        if ( U (i,i) == 0.0) {
+            // No podemos factorizar
+            throw new std::out_of_range("Factorization impossible");
+        }
+
+
+        for (int j = i+1; j < N; j++) {
+            U(i,j) = A(i,j);
+            L(j,i) = A(j,i);
+
+            //Aprovechamos banda
+            int bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
+            for (int h = 1; h <= bound; h++) {
+                if ( i >= h) {
+                    U(i,j) -= L(i,i-h) * U(i-h,j); // iº ROW OF U
+                    L(j,i) -= L(j,i-h) * U(i-h,i); // jº COLUMN OF L
+                }
+            }
+            U(i,j) /= L(i,i);
+            L(j,i) /= U(i,i);
+
+        }
+
+    }
+
+    //Set last position
+    U(N-1,N-1) = A(N-1,N-1);
+
+    int bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
+    for (int h = 1; h <= bound; h++) {
+        U(N-1,N-1) -= L(N-1,N-1-h) * U(N-1-h,N-1);
+    }
+    U(N-1,N-1) /= L(N-1,N-1);
+
+    return std::pair<Matrix, Matrix>(L, U);
+}
+
+/**
+* - L matriz triangular inferior de la descomposicion.
+* - U matriz triangular superior de la descomposicion.
+* - i fila del elemento a modificar.
+* - j columna del elemento a modificar.
+* - a nuevo valor de la posicion (i, j)
+* A matrix original del sistema.
+**/
+/*std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix* pL,
+                                                      Matrix* pU,
+                                                      int i,
+                                                      int j,
+                                                      BDouble a,
+                                                      BDouble *b) {
+
+    //Original matrix
+    Matrix* pA = this;
+    int N = std::min(pA->rows(), pA->columns());
+
+    //Syntactic sugar on pointers
+    Matrix& A = *pA;
+    Matrix& L = *pL;
+    Matrix& U = *pU;
+
+    //Sherman-Morrison formula vectors
+    //Altered system: A2 = (A + uv')
+    BDouble* u = new BDouble[N];
+    BDouble* v = new BDouble[N];
+
+    for (int k = 0; k < N; k++) {
+        u[k] = 0.0;
+        v[k] = 0.0;
+    }
+    //Column vector
+    u[i] = 1.0;
+
+    //Row vector
+    v[j] = a - A(i,j);
+
+    //From Sherman-Morrison
+    // A^-1 b = y <=> Ay = b
+    // A^-1 u = z <=> Az = u
+
+    //First we solve:
+    // L y2 = b and L z2 = u
+    BDouble* y2;
+    BDouble* z2;
+
+    std::pair<BDouble *, enum Solutions> solution;
+    solution = L.forward_substitution(L, b);
+    y2 = solution.first;
+    solution = L.forward_substitution(L, u);
+    z2 = solution.first;
+
+    //Then we solve:
+    // U y = y2 and U z = z2
+    BDouble* y;
+    BDouble* z;
+    solution = L.backward_substitution(U, y2);
+    y = solution.first;
+    solution = L.backward_substitution(U, z2);
+    z = solution.first;
+    delete[] y2;
+    delete[] z2;
+
+    //Finally x = y - z * [(v' y)/(1 + v' z)]
+    BDouble* x = new BDouble[N];
+
+    //First we calculate k = (v' y)/(1 + v' z) (scalar value)
+    BDouble vy = 0.0;
+    BDouble vz = 1.0;
+    for (int h = 0; h < N; h++) {
+        vy += v[h] * y[h];
+        vz += v[h] * z[h];
+    }
+
+    //Finally we calculate x = y + z * k
+    for (int h = 0; h < N; h++) {
+        x[h] = y[h] - (z[h] * (vy / vz));
+    }
+    delete[] y;
+    delete[] z;
+
+    return  std::pair<BDouble *, enum Solutions>(x, SINGLE);
+}*/
 
 #endif //_TP1_MATRIX_H_
