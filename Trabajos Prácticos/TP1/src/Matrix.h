@@ -378,6 +378,7 @@ public:
 	* - U matriz triangular superior de la descomposicion.
 	* - i fila del elemento a modificar.
 	* - j columna del elemento a modificar.
+	* - a nuevo valor de la posicion (i, j)
 	* A matrix original del sistema.
 	**/
 	std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix* pL, 
@@ -427,7 +428,7 @@ public:
 		z2 = solution.first;
 		
 		//Then we solve:
-		// U y = y2 and Y z = z2
+		// U y = y2 and U z = z2
 		BDouble* y;
 		BDouble* z;
 		solution = L.backward_substitution(U, y2);
@@ -437,7 +438,7 @@ public:
 		delete[] y2;
 		delete[] z2;
 		
-		//Finally x = y + z * [(v' y)/(1 + v' z)]
+		//Finally x = y - z * [(v' y)/(1 + v' z)]
 		BDouble* x = new BDouble[N];
 		
 		//First we calculate k = (v' y)/(1 + v' z) (scalar value)
@@ -450,7 +451,7 @@ public:
 		
 		//Finally we calculate x = y + z * k
 		for (std::size_t h = 0; h < N; h++) {
-			x[h] = y[h] + (z[h] * vy / vz);
+			x[h] = y[h] - (z[h] * (vy / vz));
         }
 		delete[] y;
 		delete[] z;
@@ -484,23 +485,28 @@ private:
         BDouble *x = new BDouble[m.columns()];
         enum Solutions solution = SINGLE;
 
-        std::size_t i = std::min(m.rows(), m.columns()) - 1;
+		std::size_t N = std::min(m.rows(), m.columns());
+        std::size_t i = N - 1;
 
         while (true) {
             if (m(i, i) == 0.0) {
                 x[i] = 1.0;
                 solution = INFINITE;
             } else {
-                std::size_t bound = std::min(m.columns(), i + m.upper_bandwidth());
+                std::size_t bound = std::min(m.columns(), m.upper_bandwidth());
                 x[i] = b[i];
-
-                for (std::size_t j = i + 1; j < bound; ++j) {
-                    if (m(i, j) != 0.0) {
-                        x[i] -= m(i, j) * x[j];
+				
+				//std::cout << "x" << i << "= [b" << i;
+                for (std::size_t h = 1; h <= bound; h++) {
+                    if(i + h < N) {
+						//std::cout << "- M(" << i << ", " << i+h << ") * x" << i+h;
+                        x[i] -= m(i, i+h) * x[i+h];
                     }
                 }
 
                 x[i] /= m(i, i);
+                //std::cout << "] / M(" << i << ", " << i << ") " << std::endl; 
+                
             }
 
             // When i = 0, decreasing i will land it to MAX_SIZE, which is higher than 0, producing an error.
@@ -521,27 +527,35 @@ private:
         BDouble *x = new BDouble[m.columns()];
         enum Solutions solution = SINGLE;
 
-        for (std::size_t i = 0; i < std::min(m.rows(), m.columns()) ; ++i) {
+		std::size_t N = std::min(m.rows(), m.columns());
+
+        for (std::size_t i = 0; i < N; ++i) {
             if (m(i, i) == 0.0) {
                 x[i] = 1.0;
                 solution = INFINITE;
             } else {
-                std::size_t bound = std::min(m.columns(), i + m.lower_bandwidth());
+                std::size_t bound = std::min(i, m.lower_bandwidth());
+                //std::cout << "bound: " << bound << std::endl;
                 x[i] = b[i];
-
-                for (std::size_t h = 0; h < bound; h++) {
-                    if (m(i, i-h) != 0.0) {
-                        x[i] -= m(i, i-h) * x[i-h];
-                    }
+                //std::cout << "x" << i << "= [b" << i;
+                for (std::size_t h = 1; h <= bound; h++) {
+                    //if (m(i, i+h) != 0.0) {
+                    if(i >= h) {
+						//std::cout << "- M(" << i << ", " << i-h << ") * x" << i-h;
+						x[i] -= m(i, i-h) * x[i-h];
+					}
+                        //x[i] -= m(i, i+h) * x[i+h];
+                    //}
                 }
 
                 x[i] /= m(i, i);
+                //std::cout << "] / M(" << i << ", " << i << ") " << std::endl; 
             }
 
             // When i = 0, decreasing i will land it to MAX_SIZE, which is higher than 0, producing an error.
-            if (i == 0) {
-                break;
-            }
+            //if (i == 0) {
+            //    break;
+            //}
         }
 
         return std::pair<BDouble *, enum Solutions>(x, solution);
