@@ -1,8 +1,9 @@
 #include <fstream>
 #include <list>
 #include "Matrix.h"
-#include "Problem.h"
+//#include "Problem.h"
 
+/*
 int main(int argc, char *argv[]) {
     std::string input(argv[1]), output(argv[2]);
     enum Method solvingMethod = BAND_GAUSSIAN_ELIMINATION;
@@ -54,16 +55,17 @@ int main(int argc, char *argv[]) {
     out_handle.close();
 
     return 0;
-}
-/*
+}*/
+
 int main(int argc, char *argv[]) {
     Matrix A(3,3);
-
+	std::size_t N = std::min(A.rows(), A.columns());
 	A(0,0) = 2.0;
 	A(0,1) = 4.0;
 	A(0,2) = -2.0;
 	A(1,0) = 4.0;
-	A(1,1) = 9.0;
+	// Original 9.0
+	A(1,1) = 18.0;
 	A(1,2) = -3.0;
 	A(2,0) = -2.0;
 	A(2,1) = -3.0;
@@ -76,15 +78,22 @@ int main(int argc, char *argv[]) {
 	Matrix& L = *LU.first;
 	Matrix& U = *LU.second;
 	
+	std::cout << "A: " << std::endl;
+	std::cout << A << std::endl;
 	std::cout << "L: " << std::endl;
 	std::cout << L << std::endl;
 	std::cout << "U: " << std::endl;
 	std::cout << U << std::endl;
-	std::cout << "A: " << std::endl;
-	std::cout << A << std::endl;
-
+	
+	BDouble* y;
+	std::pair<BDouble *, enum Solutions> solution; 
+	solution = L.forward_substitution(b);
+	y = solution.first;
+		
+	//Finally we calculate x = y + z * k
+	for (std::size_t h = 0; h < N; h++) {
+		std::cout << y[h] << " " << std::endl; 
+    }
 	
 	return 0;
 }
-
-*/

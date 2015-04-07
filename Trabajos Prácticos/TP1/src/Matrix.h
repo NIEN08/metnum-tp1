@@ -372,6 +372,101 @@ public:
 
 		return std::pair<Matrix*, Matrix*>(pL, pU);
 	}
+	
+	/**
+	* - L matriz triangular inferior de la descomposicion.
+	* - U matriz triangular superior de la descomposicion.
+	* - i fila del elemento a modificar.
+	* - j columna del elemento a modificar.
+	* A matrix original del sistema.
+	**/
+	std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix* pL, 
+												Matrix* pU, 
+												std::size_t i, 
+												std::size_t j,
+												BDouble a,
+												BDouble *b) {
+	
+		//Original matrix
+		Matrix* pA = this;
+		std::size_t N = std::min(pA->rows(), pA->columns());
+
+		//Syntactic sugar on pointers
+		Matrix& A = *pA;
+		Matrix& L = *pL;
+		Matrix& U = *pU;
+		
+		//Sherman-Morrison formula vectors
+		//Altered system: A2 = (A + uv')
+		BDouble* u = new BDouble[N];
+		BDouble* v = new BDouble[N];
+		
+		for (std::size_t k = 0; k < N; k++) {
+			u[k] = 0.0;
+			v[k] = 0.0;
+		}
+		//Column vector
+		u[i] = 1.0;
+		
+		//Row vector
+		v[j] = a - A(i,j);
+		
+		//From Sherman-Morrison
+		// A^-1 b = y <=> Ay = b
+		// A^-1 u = z <=> Az = u
+		
+		//First we solve:
+		// L y2 = b and L z2 = u
+		BDouble* y2;
+		BDouble* z2;
+		
+		std::pair<BDouble *, enum Solutions> solution; 
+		solution = L.forward_substitution(L, b);
+		y2 = solution.first;
+		solution = L.forward_substitution(L, u);
+		z2 = solution.first;
+		
+		//Then we solve:
+		// U y = y2 and Y z = z2
+		BDouble* y;
+		BDouble* z;
+		solution = L.backward_substitution(U, y2);
+		y = solution.first;
+		solution = L.backward_substitution(U, z2);
+		z = solution.first;
+		delete[] y2;
+		delete[] z2;
+		
+		//Finally x = y + z * [(v' y)/(1 + v' z)]
+		BDouble* x = new BDouble[N];
+		
+		//First we calculate k = (v' y)/(1 + v' z) (scalar value)
+		BDouble vy = 0.0;
+		BDouble vz = 1.0;
+		for (std::size_t h = 0; h < N; h++) {
+			vy += v[h] * y[h];
+			vz += v[h] * z[h];
+        }
+		
+		//Finally we calculate x = y + z * k
+		for (std::size_t h = 0; h < N; h++) {
+			x[h] = y[h] + (z[h] * vy / vz);
+        }
+		delete[] y;
+		delete[] z;
+		
+		return  std::pair<BDouble *, enum Solutions>(x, SINGLE);
+	}
+	
+	// m tiene que estar triangulada
+    // el usuario libera la memoria
+    std::pair<BDouble *, enum Solutions> forward_substitution(BDouble *b) {
+		return forward_substitution(*this, b); 
+    }
+	
+	std::pair<BDouble *, enum Solutions> backward_substitution(BDouble *b) {
+		return backward_substitution(*this, b); 
+	}
 
 
     ~Matrix() {
