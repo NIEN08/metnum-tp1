@@ -559,18 +559,18 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix &A, Matrix &L, Matr
     BDouble* z2;
 
     std::pair<BDouble *, enum Solutions> solution;
-    solution = L.forward_substitution(L, b);
+    solution = forward_substitution(L, b);
     y2 = solution.first;
-    solution = L.forward_substitution(L, u);
+    solution = forward_substitution(U, u);
     z2 = solution.first;
 
     //Then we solve:
     // U y = y2 and U z = z2
     BDouble* y;
     BDouble* z;
-    solution = L.backward_substitution(U, y2);
+    solution = backward_substitution(L, y2);
     y = solution.first;
-    solution = L.backward_substitution(U, z2);
+    solution = backward_substitution(U, z2);
     z = solution.first;
     delete[] y2;
     delete[] z2;
