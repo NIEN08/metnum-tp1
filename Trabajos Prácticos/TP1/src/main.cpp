@@ -29,8 +29,7 @@ int main(int argc, char *argv[]) {
     // Levantamos las posiciones de las sanguijuelas
     std::list<Leech> leeches = std::list<Leech>();
 
-    unsigned int i;
-    for (i = 0; i < amount; i++) {
+    for (int i = 0; i < amount; i++) {
         Leech l = Leech();
         handle >> l.x >> l.y >> l.radio >> l.temperature;
         leeches.push_back(l);
