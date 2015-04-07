@@ -17,8 +17,6 @@ public:
 
     operator double() const { return this->x; }
 
-    double get() const { return this->x; }
-
     BDouble &operator=(const BDouble &rhs) {
         this->x = rhs.x;
         return *this;

@@ -29,8 +29,8 @@ public:
             const BDouble &h,
             std::list<Leech> &leeches)
             : width(width), height(height), h(h), leeches(leeches), method(method),
-              xCoordinates(static_cast<int>(std::round(height.get() / h.get()))),
-              yCoordinates(static_cast<int>(std::round(width.get() / h.get()))),
+              xCoordinates(std::round(height / h)),
+              yCoordinates(std::lround(width / h)),
               temperatures(Matrix(xCoordinates + 1, yCoordinates + 1)) {
 
         for (std::list<Leech>::iterator b = leeches.begin(); b != leeches.end(); ++b) {
