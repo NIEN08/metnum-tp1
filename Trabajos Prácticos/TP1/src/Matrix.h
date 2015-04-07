@@ -523,28 +523,16 @@ std::pair<Matrix, Matrix> LU_factorization(const Matrix &A) {
 }
 
 /**
+* - A matrix original del sistema.
 * - L matriz triangular inferior de la descomposicion.
 * - U matriz triangular superior de la descomposicion.
 * - i fila del elemento a modificar.
 * - j columna del elemento a modificar.
 * - a nuevo valor de la posicion (i, j)
-* A matrix original del sistema.
 **/
-/*std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix* pL,
-                                                      Matrix* pU,
-                                                      int i,
-                                                      int j,
-                                                      BDouble a,
-                                                      BDouble *b) {
-
-    //Original matrix
-    Matrix* pA = this;
-    int N = std::min(pA->rows(), pA->columns());
-
-    //Syntactic sugar on pointers
-    Matrix& A = *pA;
-    Matrix& L = *pL;
-    Matrix& U = *pU;
+std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix &A, Matrix &L, Matrix &U,
+                                                      int i, int j, BDouble a, BDouble *b) {
+    int N = std::min(A.rows(), A.columns());
 
     //Sherman-Morrison formula vectors
     //Altered system: A2 = (A + uv')
@@ -606,6 +594,6 @@ std::pair<Matrix, Matrix> LU_factorization(const Matrix &A) {
     delete[] z;
 
     return  std::pair<BDouble *, enum Solutions>(x, SINGLE);
-}*/
+}
 
 #endif //_TP1_MATRIX_H_
