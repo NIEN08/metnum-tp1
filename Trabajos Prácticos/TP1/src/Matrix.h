@@ -1,12 +1,11 @@
 #ifndef _TP1_MATRIX_H_
 #define _TP1_MATRIX_H_ 1
 
-#include <iostream>
-#include "BDouble.h"
 #include <stdexcept>
 #include <cassert>
 #include <utility>
-
+#include <iostream>
+#include "BDouble.h"
 
 enum Solutions {
     INFINITE,

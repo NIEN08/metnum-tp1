@@ -1,10 +1,8 @@
 #ifndef _TP1_PROBLEM_H_
 #define _TP1_PROBLEM_H_ 1
 
+#include <list>
 #include "Matrix.h"
-#include <vector>
-#include <tuple>
-#include <algorithm>
 
 enum Method {
     BAND_GAUSSIAN_ELIMINATION,
@@ -13,14 +11,66 @@ enum Method {
     SHERMAN_MORRISON
 };
 
-// extern vectorInfo;
+typedef struct _Leech {
+    BDouble x;
+    BDouble y;
+    BDouble radio;
+    BDouble temperature;
+    BDouble dif;
+} Leech;
 
 class Problem {
 public:
-    Problem(enum Method method, const Matrix &input)
-            : temperatures(input), method(method) { }
+    Problem(enum Method method,
+            const BDouble &width,
+            const BDouble &height,
+            const BDouble &h,
+            const std::list<Leech> &leeches)
+            : width(width), height(height), h(h),
+              xCoordinates(std::round(height / h)), yCoordinates(std::round(width / h)),
+              leeches(leeches), method(method), temperatures(xCoordinates + 1, yCoordinates + 1) {
+
+        for (std::list<Leech>::Iterator b = leeches.begin(); b != leeches.end(); ++leeches) {
+            // Distribuimos las temperaturas de la sanguijuela
+            int topX = std::floor(b.x + b.radio);
+            int bottomX = std::ceil(b.x - b.radio);
+            int topY = std::floor(b.y + b.radio);
+            int bottomY = std::ceil(b.y - b.radio);
+
+            // Ponemos las coordenadas en rango
+            topX = std::min(std::max(topX, 0), xCoordinates);
+            bottomX = std::min(std::max(bottomX, 0), xCoordinates);
+
+            topY = std::min(std::max(topY, 0), yCoordinates);
+            bottomY = std::min(std::max(bottomY, 0), yCoordinates);
+
+            // Seteamos las temperaturas en la matriz.
+            // Cabe destacar, la temperatura de cada sanguijuela es igual para todos los puntos que cubre.
+            for (int l = bottomX; l <= topX; ++l) {
+                for (int j = bottomY; j <= topY; ++j) {
+                    // Sólo queda la temperatura más alta
+                    if (temperatures(l, j) < t) {
+                        temperatures(l, j) = t;
+                    }
+                }
+            }
+        }
+
+        // Ponemos los bordes en -100.0C
+        for(i = 0; i <= xCoordinates; ++i){
+            if (i == 0 || i == xCoordinates) {
+                for (std::size_t j = 0; j <= yCoordinates; ++j) {
+                    temperatures(i, j) = -100.0;
+                }
+            } else {
+                temperatures(i, 0) = -100.0;
+                temperatures(i, yCoordinates) = -100.0;
+            }
+        }
+    }
 
     Matrix run() {
+        // Variamos nuestra solución según el método
         switch (method) {
             case BAND_GAUSSIAN_ELIMINATION:
                 break;
@@ -32,86 +82,10 @@ public:
                 break;
         }
     }
-
-
-
-struct info { 
-  BDouble posX;
-  BDouble posY;
-  BDouble radio;
-  BDouble temperature;
-  BDouble dif;
-};
-
-bool myfunction (info i,info j) { return (i.dif < j.dif); }
-
-std::tuple<bool, info> simple_algotithm(std::vector<info> myvector){
-    
-        std::std::vector<info> vectorResult;
-
-        for(int i = 0; i < myvector.size(); i++){
-            // calculo la diferencia que hay entre el punto (x,y) y el punto critico.
-            myvector[i].dif = sqrt(pow((double)(width/2) - myvector[i].posX, 2) + pow((double)(height/2) - myvector[i].posY, 2));
-
-            // Me fijo si el punto critico esta dentro del radio de la sanguijuela i.
-            if(myvector[i].dif < myvector[i].radio){
-                vectorResult.push_back(myvector[i]);
-            }   
-        }
-
-
-
-
-
-
-
-    // ordeno el vector de menor a mayor con respecto a la variable dif.
-    // dif = sqrt[(x-x1)^2 + (y-y1)^2]   
-    // dif es la distancia de un punto con respecto al punto critico.
-    sort(myvector.begin(), myvector.end(), myfunction);
-
-    info result;
-    std::tuple<bool, info> res(false, result);
-
-    if(myvector.size() == 0){
-        return res;
-    }
-
-    result.posX = myvector[0].posX;
-    result.posY = myvector[0].posY;
-    result.radio = myvector[0].radio;
-    result.temperature = myvector[0].temperature;
-    result.dif = myvector[0].dif;
-
-    for(int i = 1; i < myvector.size(); i++){
-        
-        if(myvector[i].temperature > result.temperature){
-            result.posX = myvector[i].posX;
-            result.posY = myvector[i].posY;
-            result.radio = myvector[i].radio;
-            result.temperature = myvector[i].temperature;
-            result.dif = myvector[i].dif;
-        }
-    }
-
-    
-
-
-
-
-
-
-
-
-
-
-    std::tuple<bool, info> res2(true, result);
-    return res2;
-}
-
-
-
 private:
+    int xCoordinates, yCoordinates;
+    BDouble width, height, h;
+    std::list<Leech> leeches;
     Matrix temperatures;
     enum Method method;
 };

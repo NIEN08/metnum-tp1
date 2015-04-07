@@ -1,24 +1,13 @@
-#include "Problem.h"
 #include <fstream>
+#include <list>
 #include "Matrix.h"
-
-struct info { 
-  BDouble posX;
-  BDouble posY;
-  BDouble radio;
-  BDouble temperature;
-  BDouble dif;
-};
-
-std::vector<info> vectorInfo;
-
-
+#include "Problem.h"
 
 int main(int argc, char *argv[]) {
     std::string input(argv[1]), output(argv[2]);
     enum Method solvingMethod = BAND_GAUSSIAN_ELIMINATION;
 
-
+    // Selección del método de resolución
     if ((*argv[3]) == '1') {
         solvingMethod = LU_FACTORIZATION;
     } else if ((*argv[3]) == '2') {
@@ -30,75 +19,31 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    // Abrir el archivo de entrada
     std::ifstream handle(input, std::ifstream::in);
     BDouble width, height, h;
     unsigned amount;
 
     handle >> width >> height >> h >> amount;
 
-    int xCoordinates = std::round(width / h);
-    int yCoordinates = std::round(height / h);
-
-    // Creamos la matriz de temperaturas
-    Matrix temperatures = Matrix(xCoordinates + 1, yCoordinates + 1);
-
     // Levantamos las posiciones de las sanguijuelas
+    std::list<Leech> leeches = std::list<Leech>();
+
     unsigned int i;
     for (i = 0; i < amount; i++) {
-        BDouble x, y, r, t;
-        handle >> x >> y >> r >> t;
-
-        info aux;
-        aux.posX = x;
-        aux.posY = y;
-        aux.radio = r;
-        aux.temperature = t;
-        aux.dif = 0;
-
-        vectorInfo.push_back(aux);
-
-        // Distribuimos las temperaturas de las sanguijuelas
-        int topX = std::floor(x + r);
-        int bottomX = std::ceil(x - r);
-        int topY = std::floor(y + r);
-        int bottomY = std::ceil(y - r);
-
-        // Ponemos las coordenadas en rango
-        topX = std::min(std::max(topX, 0), xCoordinates);
-        bottomX = std::min(std::max(bottomX, 0), xCoordinates);
-
-        topY = std::min(std::max(topY, 0), yCoordinates);
-        bottomY = std::min(std::max(bottomY, 0), yCoordinates);
-
-        // Seteamos las temperaturas en la matriz.
-        // Cabe destacar, la temperatura de cada sanguijuela es igual para todos los puntos que cubre.
-        for (int l = bottomX; l <= topX; ++l) {
-            for (int j = bottomY; j <= topY; ++j) {
-                if (temperatures(l, j) < t) {
-                    temperatures(l, j) = t;
-                }
-            }
-        }
+        Leech l = Leech();
+        handle >> l.x >> l.y >> l.radio >> l.temperature;
+        leeches.push_back(l);
     }
 
     handle.close();
 
-    // Ponemos los bordes en -100.0C
-    for(unsigned int i = 0; i <= xCoordinates; ++i){
-        if (i == 0 || i == xCoordinates) {
-            for (std::size_t j = 0; j <= yCoordinates; ++j) {
-                temperatures(i, j) = -100.0;
-            }
-        } else {
-            temperatures(i, 0) = -100.0;
-            temperatures(i, yCoordinates) = -100.0;
-        }
-    }
+    // Resolvemos el problema
+    Problem solver(solvingMethod, width, height, h, leeches);
+    Matrix temperatures = solver.run();
 
-    Problem solver(solvingMethod, temperatures);
-    temperatures = solver.run();
-
-    std::ofstream out_handle(output, std::ofstream::out);
+    // Imprimimos la salida del método
+    std::ofstream out_handle(output, std::ostream::out);
 
     for (std::size_t i = 0; i < temperatures.rows(); ++i) {
         for (std::size_t j = 0; j < temperatures.columns(); ++j) {
@@ -107,6 +52,7 @@ int main(int argc, char *argv[]) {
     }
 
     out_handle.close();
+
     return 0;
 }
 /*
