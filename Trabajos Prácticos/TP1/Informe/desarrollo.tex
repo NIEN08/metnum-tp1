@@ -142,19 +142,30 @@ implementabamos backtraking simple para calcular cual sanguijuela eliminar, y un
 
 \subsection{Sobre la experimentaci\'on}
 
-Teniendo todo el codigo implementado, empezamos a correr ejemplos para la experimentacion. Dichos ejemplos los habiamos dise\~nado previamente.
-
 Para medir los tiempos de resoluci\'on, utilizamos la funci\'on gettimeof day, que permite medir con
-facilidad el lapso de tiempo entre dos momentos de la ejecuci ́on del programa. Decidimos medir
+facilidad el lapso de tiempo entre dos momentos de la ejecuci\'on del programa. Decidimos medir
 \'unicamente los tiempos que estuvieran estrictamente relacionados a la resoluci\'on del sistema,
 dejando afuera, por ejemplo, el tiempo empleado para escribir las soluciones en archivos de salida. La
 idea de fondo que nos llev\'o a medir de esta manera fue la de intentar que las magnitudes de los tiempos
 empleados por los m\'etodos de triangulaci\'on de Gauss y LU no se vieran afectadas por tiempos mucho
 mayores que distorsionaran la distancia relativa entre ellas.
 
-Los ejemplos planteanteados fueron los descriptos a continuacion. Corrimos los tests para los cuatro metodos.
+Una vez finalizada la etapa de implementaci\'on y testeo de los algoritmos, procedimos a realizar una
+serie de experimentos que nos permitieran evaluar el comportamiento de los mismos. Adem\'as de
+analizar c\'omo se modifican los resultados a medida que se modifican el par\'ametro de discretizaci\'on
+h, definimos algoritmos para comparar el desempe\~no, en terminos de la estimaci\'on de temperaturas.
+Por comodidad, a la hora de dise\~nar los experimentos, definimos todos los parabrisas con forma cuadrada.
 
-%La posicion de las sanguijuelas asi como el radio debe ser aleatoria, pero con un minimo de sentido. En
-%el caso de la pocision los numeros random se deben multiplicar por el n, donde n es la dimension del parabrisas, y luego tomarlos modulo n. Para el radio
-%deberia multiplicarse por un diez por ciento del tamano del parabrisas o algo asi, para no perderlos.
+Siguiendo la consigna del TP, planteamos cuatro casos diferentes para analizar la varianza de la temperatura en el punto critico. Estos casos no fueron
+generados al azar, sino que para optimizar el tiempo de computo, creamos a mano cada instancia para realizar por caso un experimento fijo. Con esto queremos decir que, ademas de 
+analizar la varianza de la temperatura en funcion de la granularidad, planteamos para cada experimento una hipotesis aparte, que corroboraremos o 
+refutaremos luego de analizar los resultados.
 
+
+%Finalmente, corrimos los experimentos utilizando MatLab. Elegimos este programa principalmente
+%porque permite obtener de una manera simple los gr ́aficos que queriamos mostrar. A su vez, nuestras
+%decisiones de implementacion de “main.cpp” y “armaInFile.py” nos permitieron automatizar en gran
+%medida el proceso de experimentacion, por lo cual no nos demando excesivo tiempo implementar esta
+%etapa del desarrollo (si lo demando el tener que pensar que experimentos realizar y como mostrar
+%los resultados). Los experimentos de MatLab tienen como salida los graficos que presentamos en la
+%siguiente seccion.
