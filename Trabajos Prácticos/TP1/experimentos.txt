@@ -25,10 +25,9 @@ Grafico: comparacion entre los tiempos de 3 y 4, grafico lineal.
 8 9 0.1 500
 
 
-para medicion de tiempos en funcion del h= 10, 5, 2.5, 2, 1.5, 1, 0.75, 0.5, 0.25, 0.1
+2)para medicion de tiempos en funcion del h= 10, 5, 2.5, 2, 1.5, 1, 0.75, 0.5, 0.25, 0.1
 correr para 1,2,3 y 4 
 Grafico: comparacion entre los tiempos de 1 y 2, y otro para 3 y 4, grafico lineal.
-1)
 10 10 h 10
 5 1 0.1 100
 2 2 1.1 300
@@ -42,11 +41,10 @@ Grafico: comparacion entre los tiempos de 1 y 2, y otro para 3 y 4, grafico line
 8 9 0.1 500
 
 
-para la grafica de variacion de temperaturas respecto a la varicion del h = 2.5, 1, 0.5, 0.25
+3)para la grafica de variacion de temperaturas respecto a la varicion del h = 2.5, 1, 0.5, 0.25
 correr para 1 y 2 
 Graficos: Matrices de temperatura de salida segun el scrip de la catedra, para ambos metodos.
 graficacion de la instancia segun el scrip de la catedra. 
-1)
 5 5 2.5 10
 0 0 1.6 100
 5 0 1.1 200
@@ -59,20 +57,19 @@ graficacion de la instancia segun el scrip de la catedra.
 2.5 4.5 0.1 500
 5 5 1.1 200
 
-
+4--------------)
 medicion de performance respecto al incremento de sanguijuelas. 
 Version basica solo con aumento de sanguijuelas.
 correr para 1,2,3 y 4 
 Grafico: comparacion entre los tiempos de 1 y 2, y otro para 3 y 4, grafico lineal.
 
-1)
 6 6 1 5
 1 1 0.1 300
 3 2 0.1 300
 6 3 0.1 300
 2 4 0.1 300
 4 7 0.1 300
-2)
+
 6 6 1 10
 1 1 0.1 300
 3 2 0.1 300
@@ -84,7 +81,7 @@ Grafico: comparacion entre los tiempos de 1 y 2, y otro para 3 y 4, grafico line
 4 3 0.1 300
 5 4 0.1 300
 1 6 0.1 300
-3)
+
 6 6 1 20
 1 1 0.1 300
 3 2 0.1 300
@@ -112,14 +109,14 @@ Version alocada con superposicion de sanguijuelas.
 correr para 1,2,3 y 4 
 Grafico: comparacion entre los tiempos de 1 y 2, y otro para 3 y 4, grafico lineal.
 
-1)
+
 6 6 1 5
 1 1 0.1 300
 3 2 1.1 300
 6 3 0.6 300
 2 4 0.1 300
 4 7 1.1 300
-2)
+
 6 6 1 10
 1 1 0.1 300
 3 2 1.1 300
@@ -131,7 +128,7 @@ Grafico: comparacion entre los tiempos de 1 y 2, y otro para 3 y 4, grafico line
 4 3 0.1 300
 5 4 1.6 300
 1 6 2.1 300
-3)
+
 6 6 1 20
 1 1 0.1 300
 3 2 1.1 300
