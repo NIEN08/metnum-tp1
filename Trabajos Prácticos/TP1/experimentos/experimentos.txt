@@ -42,7 +42,8 @@ Grafico: comparacion entre los tiempos de 1 y 2, y otro para 3 y 4, grafico line
 
 
 3)para la grafica de variacion de temperaturas respecto a la varicion del h = 2.5, 1, 0.5, 0.25
-correr para 1 y 2 
+correr para 1 y 2
+guardar aqui temperatura en los puntos criticos!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!S 
 Graficos: Matrices de temperatura de salida segun el scrip de la catedra, para ambos metodos.
 graficacion de la instancia segun el scrip de la catedra. 
 5 5 2.5 10
