@@ -386,56 +386,23 @@ std::pair<BDouble *, enum Solutions> gaussian_elimination(Matrix workspace, BDou
     int diagonal = std::min(workspace.columns(), workspace.rows());
 
     for (int d = 0; d < diagonal; ++d) {
-        int i = d + 1;
+        // Tenemos algo distinto de cero en la base
+        for (int i = d + 1; i < std::min(workspace.rows(), d + workspace.lower_bandwidth()); ++i) {
+            if (workspace(i, d) != 0.0) {
+                // Tenemos algo distinto de cero en alguna fila más abajo
+                BDouble coefficient = workspace(i, d)/workspace(d, d);
 
-        if (workspace(d, d) == 0.0) {
-            // Hay un cero en la base
-            bool swap = false;
-
-            for (i = d + 1; i < std::min(d + workspace.lower_bandwidth(), workspace.rows()); ++i) {
-                if (workspace(i, d) != 0.0) {
-                    // Encontramos una fila más abajo que es distinta de 0
-                    swap = true;
-                    break;
-                }
-            }
-
-            if (swap) {
-                // Swappeamos las filas, sólo entre los elementos posibles.
-                for (int j = d - workspace.lower_bandwidth(); j < i + workspace.upper_bandwidth(); ++j) {
-                    BDouble tmp = workspace(d, j);
-                    workspace(d, j) = workspace(i, j);
-                    workspace(i, j) = tmp;
-                }
+                // Setear esto en 0 debería reducir el error posible (por ejemplo, restando números muy chicos)
+                workspace(i, d) = 0.0;
 
                 // Realizamos el mismo cambio en la solución del sistema
-                BDouble tmp = b[d];
-                b[d] = b[i];
-                b[i] = tmp;
-            } else {
-                ++d;
-            }
-        } else {
-            // Tenemos algo distinto de cero en la base
-            for (i = d + 1; i < d + workspace.lower_bandwidth(); ++i) {
-                if (workspace(i, d) != 0.0) {
-                    // Tenemos algo distinto de cero en alguna fila más abajo
-                    BDouble coefficient = workspace(i, d)/workspace(d, d);
+                b[i] -= coefficient * b[d];
 
-                    // Setear esto en 0 debería reducir el error posible (por ejemplo, restando números muy chicos)
-                    workspace(i, d) = 0.0;
-
-                    // Realizamos el mismo cambio en la solución del sistema
-                    b[i] -= coefficient * b[d];
-
-                    for (int j = d + 1; j < std::min(i + workspace.upper_bandwidth(), workspace.columns()); ++j) {
-                        // Realizamos la resta a toda la fila.
-                        workspace(i, j) -=  coefficient * workspace(d, j);
-                    }
+                for (int j = d + 1; j < std::min(i + workspace.upper_bandwidth(), workspace.columns()); ++j) {
+                    // Realizamos la resta a toda la fila.
+                    workspace(i, j) -=  coefficient * workspace(d, j);
                 }
             }
-
-            ++d;
         }
     }
 
