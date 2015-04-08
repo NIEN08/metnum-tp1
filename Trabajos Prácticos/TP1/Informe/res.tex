@@ -1,0 +1,32 @@
+\section{Experimentaci\'on y discuci\'on}
+
+Presentaremos en esta seccion la experimentacion juntas, separadas por experimentos. Primero presentaremos una breve descripcion de la instancia 
+experimental, seguido de lo que esperamos observar, es decir, nuestra hipotesis. A continuacion presentaremos los resultados obtenidos y las
+concluciones a las que llegamos. Decidimos darle este formato porque creimos mas declarativo mantener toda la informacion junta. 
+
+\subsection{Experimento 1: Ser o no ser?}
+
+Este experimento presenta un caso generico de parabrisas. Se corre para tres tama\~nos distintos de discretizaci\'on. La idea de este experimento
+es responder la siguiente pregunta: ¿Terminar hoy o modelar bien? Con esto nos referimos a si es preferible sacrificar tiempo de computo en 
+pos de modelar mejor, o si por el contrario es mejor alejarse un poco del modelo real, pero obteniendo resultados en un tiempo razonable. Por 
+supuesto, es obvio que esta decision depende en mayor medida del uso que se le quiere dar a los resultados y no es nuestra intencion conseguir 
+una respuesta generica a esta pregunta, sino analizar la relaci\'on entre estos conceptos logrando asi una mejor comprecion del problema.
+
+\subsection{Experimento 2: Buscando las sanguijuelas perdidas}
+
+Este experimento fue dise\~nado para modelar un caso que se comporte ``mal'' para un h grande. Es decir, modelamos este experimento para que 
+las sanguijuelas peque\~nas, que son aqui las de mayor temperatura, esten distribuidas de modo que no afecten el modelo para discretizaciones grandes. 
+Hacemos esto con la intencion de ver cuanto varia la estimaci\'on de temperaturas al variar el h.
+
+\subsection{Experimento 3: Sobrepoblaci\'on de mini-sanguijuelas}
+
+Este experimento es un caso extremo para probar el metodo que usa la formula de Sherman-Morrison. Todas las ssanguijuelas afectan exclusivamente un punto,
+en todas las discretizaciones planteadas. Esperamos observar la diferencia de performance entre el 3 y 4 metodo para los casos de sanguijuelas peque\~nas.
+
+\subsection{Experimento 4: Una sanguijuela invoca una sanguijuela}
+
+En este caso, a diferencia de los anteriores donde variamos solo el h, fijamos la discretizacion y el tama\~no. La variable en este experimento 
+es la cantidad de sanguijuelas. Planteamos este experimento porque nos parecio interesante ver como se modifica la performance de la eliminaci\'on 
+Gaussiana y la factorizaci\'on LU, a medida que fijamos mayor cantidad de constantes.
+
+\subsection{Experimento 5: Comparaci\'on de temperaturas en el punto critico general}
