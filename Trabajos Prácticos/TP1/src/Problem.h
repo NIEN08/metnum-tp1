@@ -22,6 +22,12 @@ public:
 
 class Problem {
 public:
+    // Invariante:
+    // h /= 0
+    // height /= 0
+    // width /= 0
+    // h | height
+    // h | width
     Problem(enum Method method,
             const BDouble &width,
             const BDouble &height,
@@ -118,9 +124,17 @@ public:
 private:
     void band_gaussian_elimination(const Matrix &system, BDouble *b) {
         // Resolver el problema
+        int cols = this->xCoordinates + 1;
+        int rows = this->yCoordinates + 1;
+        int dims = cols * rows;
         std::pair<BDouble *, enum Solutions> solution = gaussian_elimination(system, b);
 
         // Cargar los datos en la matriz
+        for (int i = 0; i < this->temperatures.rows(); ++i) {
+            for (int j = 0; j < this->temperatures.columns(); ++j) {
+                this->temperatures(i, j) = solution.first[j * this->temperatures.columns() + i];
+            }
+        }
 
         // Borrar el espacio extra
         delete[] solution.first;
@@ -128,13 +142,19 @@ private:
 
     void lu_factorization(const Matrix &system, BDouble *b) {
         std::pair<Matrix, Matrix> factors = LU_factorization(system);
-        std::pair<BDouble *, enum Solutions> j = gaussian_elimination(factors.first, b);
-        std::pair<BDouble *, enum Solutions> x = gaussian_elimination(factors.second, j.first);
-        // x tiene la solución definitiva al sistema.
+        std::pair<BDouble *, enum Solutions> temporal = gaussian_elimination(factors.first, b);
+        std::pair<BDouble *, enum Solutions> solution = gaussian_elimination(factors.second, temporal.first);
+
+        // Cargar los datos en la matriz
+        for (int i = 0; i <       this->temperatures.rows(); ++i) {
+            for (int j = 0; j < this->temperatures.columns(); ++j) {
+                this->temperatures(i, j) = solution.first[j * this->temperatures.columns() + i];
+            }
+        }
 
         // Liberamos la memoria que usamos.
-        delete[] j.first;
-        delete[] x.first;
+        delete[] solution.first;
+        delete[] temporal.first;
     }
     
     
@@ -308,12 +328,80 @@ private:
 		 
 	}*/
 
+    // Invariante:
+    // al menos 1 sanguijuela
     void simple_algorithm(const Matrix &system, BDouble *b) {
+        Matrix minTemperature;
+        BDouble minValue;
 
+        for (std::list<Leech>::iterator leech = leeches.begin(); leech != leeches.end(); ++leech) {
+            // Generamos una copia de la lista de sanguijuelas sin la actual
+            std::list<Leech> temporal(leeches);
+            temporal.erase(distance(leeches.begin(), leech));
+
+            // Armamos la matriz del sistema
+            std::pair<Matrix, BDouble *> tmpSystem = this->generate_system(temporal);
+
+            // Resolvemos
+            std::pair<BDouble *, enum Solutions> solution = gaussian_elimination(tmpSystem.first, tmpSystem.second);
+
+            // Liberamos memoria
+            delete[] tmpSystem.second;
+
+            // Actualizamos el mínimo
+            // TODO: cual es el medio?
+            if (solution.first[] > minValue || leech = leeches.begin()) {
+                minValue = solution.first[];
+                minTemperature = solutionMatrix;
+
+                // Cargar los datos en la matriz
+                for (int i = 0; i < this->temperatures.rows(); ++i) {
+                    for (int j = 0; j < this->temperatures.columns(); ++j) {
+                        minTemperature(i, j) = solution.first[j * this->temperatures.columns() + i];
+                    }
+                }
+            }
+
+            delete[] solution.first;
+        }
+
+        this->temperatures = minTemperature;
+        // Nos fijamos si estamos muertos
+        if (minTemperature < 235.0) {
+            // No morimos!
+        } else {
+            // Morimos
+        }
     }
 
+    // Invariante:
+    // al menos 1 sanguijuela
     void sherman_morrison(const Matrix &system, BDouble *b) {
-		
+
+        std::pair<Matrix, Matrix> factors = LU_factorization(system);
+        BDouble minTemperature = 0.0;
+        std::list<Leech>::iterator minPosition = leeches.begin();
+
+        for (std::list<Leech>::iterator leech = ++(leeches.begin()); leech != leeches.end(); ++leech) {
+            // Generamos una copia de la lista de sanguijuelas sin la actual
+            std::list<Leech> temporal(leeches);
+            temporal.erase(distance(leeches.begin(), leech));
+
+            // Armamos la matriz del sistema
+
+            // Actualizamos el mínimo
+            if (minTemperature > ...) {
+                minima = leech;
+            }
+        }
+
+        // Nos fijamos si estamos muertos
+        if (minTemperature < 235.0) {
+            // No morimos!
+        } else {
+            // Morimos
+        }
+
     }
 
     BDouble width;
