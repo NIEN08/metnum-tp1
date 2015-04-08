@@ -596,4 +596,62 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix &A, Matrix &L, Matr
     return  std::pair<BDouble *, enum Solutions>(x, SINGLE);
 }
 
+std::pair<BDouble *, enum Solutions> sherman_morrison(
+													Matrix &L, 
+													Matrix &U,
+                                                    BDouble* u,
+													BDouble* v, BDouble a, BDouble *b) {
+    int N = std::min(L.rows(), L.columns());
+
+    //Sherman-Morrison formula vectors
+    //Altered system: A2 = (A + uv')
+    
+    //From Sherman-Morrison
+    // A^-1 b = y <=> Ay = b
+    // A^-1 u = z <=> Az = u
+
+    //First we solve:
+    // L y2 = b and L z2 = u
+    BDouble* y2;
+    BDouble* z2;
+
+    std::pair<BDouble *, enum Solutions> solution;
+    solution = forward_substitution(L, b);
+    y2 = solution.first;
+    solution = forward_substitution(U, u);
+    z2 = solution.first;
+
+    //Then we solve:
+    // U y = y2 and U z = z2
+    BDouble* y;
+    BDouble* z;
+    solution = backward_substitution(L, y2);
+    y = solution.first;
+    solution = backward_substitution(U, z2);
+    z = solution.first;
+    delete[] y2;
+    delete[] z2;
+
+    //Finally x = y - z * [(v' y)/(1 + v' z)]
+    BDouble* x = new BDouble[N];
+
+    //First we calculate k = (v' y)/(1 + v' z) (scalar value)
+    BDouble vy = 0.0;
+    BDouble vz = 1.0;
+    for (int h = 0; h < N; h++) {
+        vy += v[h] * y[h];
+        vz += v[h] * z[h];
+    }
+
+    //Finally we calculate x = y + z * k
+    for (int h = 0; h < N; h++) {
+        x[h] = y[h] - (z[h] * (vy / vz));
+    }
+    delete[] y;
+    delete[] z;
+
+    return  std::pair<BDouble *, enum Solutions>(x, SINGLE);
+}
+
+
 #endif //_TP1_MATRIX_H_
