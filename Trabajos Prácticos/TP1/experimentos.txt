@@ -1,5 +1,7 @@
 para sherman-morrison
-1)
+1)modificar para que reciba h= 5,2,1,0.5
+correr para 3 y 4 
+Grafico: comparacion entre los tiempos de 3 y 4, grafico lineal.
 10 10 5 20
 0 5 0.1 500
 1 1 0.1 500
@@ -21,79 +23,29 @@ para sherman-morrison
 6 8 0.1 500
 4 9 0.1 500
 8 9 0.1 500
-2)
-10 10 2 20
-0 5 0.1 500
-1 1 0.1 500
-5 1 0.1 500
-8 1 0.1 500
-3 2 0.1 500
-7 2 0.1 500
-6 3 0.1 500
-4 2 0.1 500
-4 4 0.1 500
-7 4 0.1 500
-8 5 0.1 500
-2 6 0.1 500
-1 7 0.1 500
-3 7 0.1 500
-4 7 0.1 500
-7 7 0.1 500
-2 8 0.1 500
-6 8 0.1 500
-4 9 0.1 500
-8 9 0.1 500
-3)
-10 10 1 20
-0 5 0.1 500
-1 1 0.1 500
-5 1 0.1 500
-8 1 0.1 500
-3 2 0.1 500
-7 2 0.1 500
-6 3 0.1 500
-4 2 0.1 500
-4 4 0.1 500
-7 4 0.1 500
-8 5 0.1 500
-2 6 0.1 500
-1 7 0.1 500
-3 7 0.1 500
-4 7 0.1 500
-7 7 0.1 500
-2 8 0.1 500
-6 8 0.1 500
-4 9 0.1 500
-8 9 0.1 500
 
-para medicion de tiempos en funcion del h
+
+para medicion de tiempos en funcion del h= 10, 5, 2.5, 2, 1.5, 1, 0.75, 0.5, 0.25, 0.1
+correr para 1,2,3 y 4 
+Grafico: comparacion entre los tiempos de 1 y 2, y otro para 3 y 4, grafico lineal.
 1)
-10 10 2 6
+10 10 h 10
 5 1 0.1 100
 2 2 1.1 300
 7 4 1.5 400
 3 6.5 1 300
 6 8 0.1 100
 9 9 2.5 500
-2)
-10 10 1 6
-5 1 0.1 100
-2 2 1.1 300
-7 4 1.5 400
-3 6.5 1 300
-6 8 0.1 100
-9 9 2.5 500
-3)
-10 10 0.5 6
-5 1 0.1 100
-2 2 1.1 300
-7 4 1.5 400
-3 6.5 1 300
-6 8 0.1 100
-9 9 2.5 500
+2 8 0.1 500
+6 8 0.1 500
+4 9 0.1 500
+8 9 0.1 500
 
-para la grafica de variacion de temperaturas respecto a la varicion del h
 
+para la grafica de variacion de temperaturas respecto a la varicion del h = 2.5, 1, 0.5, 0.25
+correr para 1 y 2 
+Graficos: Matrices de temperatura de salida segun el scrip de la catedra, para ambos metodos.
+graficacion de la instancia segun el scrip de la catedra. 
 1)
 5 5 2.5 10
 0 0 1.6 100
@@ -106,33 +58,13 @@ para la grafica de variacion de temperaturas respecto a la varicion del h
 1 4.5 0.1 500
 2.5 4.5 0.1 500
 5 5 1.1 200
-2)
-5 5 1 10
-0 0 1.6 100
-5 0 1.1 200
-1.5 1.5 0.1 500
-3.5 1.5 0.1 500
-2.5 5 1.1 200
-2 3 0.6 300
-0.5 3.5 0.1 500
-1 4.5 0.1 500
-2.5 4.5 0.1 500
-5 5 1.1 200
-3)
-5 5 0.5 10
-0 0 1.6 100
-5 0 1.1 200
-1.5 1.5 0.1 500
-3.5 1.5 0.1 500
-2.5 5 1.1 200
-2 3 0.6 300
-0.5 3.5 0.1 500
-1 4.5 0.1 500
-2.5 4.5 0.1 500
-5 5 1.1 200
+
 
 medicion de performance respecto al incremento de sanguijuelas. 
 Version basica solo con aumento de sanguijuelas.
+correr para 1,2,3 y 4 
+Grafico: comparacion entre los tiempos de 1 y 2, y otro para 3 y 4, grafico lineal.
+
 1)
 6 6 1 5
 1 1 0.1 300
@@ -177,6 +109,9 @@ Version basica solo con aumento de sanguijuelas.
 
 medicion de performance respecto al incremento de sanguijuelas. 
 Version alocada con superposicion de sanguijuelas.
+correr para 1,2,3 y 4 
+Grafico: comparacion entre los tiempos de 1 y 2, y otro para 3 y 4, grafico lineal.
+
 1)
 6 6 1 5
 1 1 0.1 300
