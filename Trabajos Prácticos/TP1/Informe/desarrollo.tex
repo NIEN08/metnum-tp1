@@ -150,49 +150,33 @@ tales que $uv^t=B$.
 
 \input{s-m.tex}
 
-\subsubsection{Pseudocódigo}
+\subsubsection{Pseudoc\'odigo}
 
 \begin{codesnippet}
 \begin{verbatim}
+vector, solucion backwardsubstitution( Matriz m, vector b )
+fijo i en la ultima fila de la matriz m para resolver el sistema de abajo para arriba
+mientras
+  si en la diagonal hay un 0 entonces
+    hay infinitas soluciones
+  sino
+    empiezo a resolver el sistema de abajo para arriba tantas veces como el tama\~no de la banda superior
 
-<vector, solución> backward_substitution( Matriz m, vector b )
-    
-    fijo i en la última fila de la matriz m para resolver el sistema de abajo para arriba
-   
-mientras 
-          si en la diagonal hay un 0 entonces        
-            
-             hay infinitas soluciones
-        sino
-            
-            empiezo a resolver el sistema de abajo para arriba tantas veces como el tamaño de la 	     banda superior. 
-                       
-            cuando llego a la diagonal divido lo que tenia acumulado por el elemento de la 			diagonal.
-            
- si i es igual a 0 salgo del ciclo     
-    devuelvo el vector x y el tipo de solución
-
-\end{verbatim}
+    cuando llego a la diagonal divido lo que tenia acumulado por el elemento de la diagonal
+  si i es igual a 0 salgo del ciclo     
+devuelvo el vector x y el tipo de solucion\end{verbatim}
 \end{codesnippet}
 
-
 \begin{codesnippet}
 \begin{verbatim}
- 
-<vector, solución> forward_substitution( Matriz m, vector b )
-    
-    fijo i en la primera fila de la matriz m para resolver el sistema de arriba para abajo
-   
-          si en la diagonal hay un 0 entonces        
-            
-             hay infinitas soluciones
-        sino
-            
-            empiezo a resolver el sistema de arriba para abajo tantas veces como el tamaño de la 	     banda inferior. 
-                       
-            cuando llego a la diagonal divido lo que tenia acumulado por el elemento de la 			diagonal.
-
-    devuelvo el vector x y el tipo de solución
+vector, solucion forward_substitution( Matriz m, vector b )
+  fijo i en la primera fila de la matriz m para resolver el sistema de arriba para abajo
+  si en la diagonal hay un 0 entonces        
+    hay infinitas soluciones
+  sino
+    empiezo a resolver el sistema de arriba para abajo tantas veces como el tama\~no de la banda inferior
+    cuando llego a la diagonal divido lo que tenia acumulado por el elemento de la diagonal
+  devuelvo el vector x y el tipo de solucion
  
 \end{verbatim}
 \end{codesnippet}
@@ -201,23 +185,15 @@ mientras
 \begin{codesnippet}
 \begin{verbatim}
  
-<vector, solución> eliminación_gaussiana( Matriz A, vector b )
-	
-
-    diagonal es el mínimo entre las columnas de A y las filas de A
-
-    recorro tantas veces como dice el número diagonal 
- 
-	recorro tantas veces como el tamaño de la banda inferior, busco el coeficiente y empiezo a triangular para resolver el sistema
-	
-	me fijo que el coeficiente no sea 0
-		
-	el coeficiente es A[i,d]/[d,d] eso me sirve para que cuando triangulo me quede 0 en donde estoy parado 
-	y así me queda la matriz triangular superior.
-
-	Realizamos la resta a toda la fila.
-                            
-    hago backward_substitution de la Matriz A y con el vector b y devuelvo el resultado 
+vector, solucion eliminacion_gaussiana( Matriz A, vector b )
+diagonal es el minimo entre las columnas de A y las filas de A
+recorro tantas veces como dice el numero diagonal 
+recorro tantas veces como el tamano de la banda inferior, busco el coeficiente y empiezo a triangular para resolver el sistema
+me fijo que el coeficiente no sea 0
+el coeficiente es A[i,d]/[d,d] eso me sirve para que cuando triangulo me quede 0 en donde estoy parado 
+y asi me queda la matriz triangular superior.
+Realizamos la resta a toda la fila.
+hago backward_substitution de la Matriz A y con el vector b y devuelvo el resultado 
  
 \end{verbatim}
 \end{codesnippet}
@@ -226,34 +202,23 @@ mientras
 \begin{codesnippet}
 \begin{verbatim}
  
-<Matrix L, Matrix U> LU_factorization( Matriz A )
-
-	creo la matriz L y U que van a tener el mismo tamaño que la matriz A
-
-	seteo en 1 las diagonales de las matrices L y U
-
-	Me fijo que no haya un 0 en la posición (0, 0) de la matriz U porque sino no puedo factorizar
-
-	seteo la primer fila de la matriz U y la primer columna de la matriz L
-		
-	 los elementos de la banda de la matriz U van a ser los mismos que de la banda de la matriz A
-	
-		Acá resuelvo el sistema para la fila i de la matriz y lo hago tantas veces como el mínimo entre el tamaño de la banda inferior y superior.
-
-		Voy resolviendo el sistema restando la fila i y acumulando en U(i,i). Mientras voy guardando los coeficientes en la Matriz L
-
-		Divido lo que había en la diagonal de la matriz U por que lo que había en la diagonal de la matriz L. 
-		
-		Si el resultado es 0 entonces no podemos factorizar.
-
-		Completo las matrices U y L. 
-
-	seteo la última posición de la Matriz U con el elemento (N-1, N-1) de la matriz A.
-	
-	devuelvo la matriz L triangular inferior con los resultados y la matriz U triangulada y triangular superior.
+Matrix L, Matrix U LU_factorization( Matriz A )
+creo la matriz L y U que van a tener el mismo tama\~no que la matriz A
+seteo en 1 las diagonales de las matrices L y U
+Me fijo que no haya un 0 en la posicion (0, 0) de la matriz U porque sino no puedo factorizar
+seteo la primer fila de la matriz U y la primer columna de la matriz L
+los elementos de la banda de la matriz U van a ser los mismos que de la banda de la matriz A
+  Acá resuelvo el sistema para la fila i de la matriz y lo hago tantas veces como el minimo entre el tama\~no de la banda inferior y superior.
+  Voy resolviendo el sistema restando la fila i y acumulando en U(i,i). Mientras voy guardando los coeficientes en la Matriz L
+  Divido lo que había en la diagonal de la matriz U por que lo que había en la diagonal de la matriz L. 
+  Si el resultado es 0 entonces no podemos factorizar.
+  Completo las matrices U y L. 
+  seteo la ultima posicion de la Matriz U con el elemento (N-1, N-1) de la matriz A.
+devuelvo la matriz L triangular inferior con los resultados y la matriz U triangulada y triangular superior.
  
 \end{verbatim} 
 \end{codesnippet}
+
 
 
 \subsection{Sobre la experimentaci\'on}
