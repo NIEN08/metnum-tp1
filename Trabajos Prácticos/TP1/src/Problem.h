@@ -38,8 +38,8 @@ public:
     }
 
     Matrix run() {
-        int rows = std::round(height / h) + 1;
-        int columns = std::round(width / h) + 1;
+        int rows = round(height / h) + 1;
+        int columns = round(width / h) + 1;
         int dims = rows * columns;
 
         Matrix system(dims, dims, columns, columns);
@@ -81,24 +81,38 @@ private:
         delete[] solution.first;
     }
 
-    void lu_factorization(Matrix &system, BDouble *b, Matrix &temperatures) {
-        build_system(system, b, this->leeches);
-        std::cout << system;
-
-        std::pair<Matrix, Matrix> factors = LU_factorization(system);
-        std::pair<BDouble *, enum Solutions> temporal = gaussian_elimination(factors.first, b);
-        std::pair<BDouble *, enum Solutions> solution = gaussian_elimination(factors.second, temporal.first);
-
-        // Cargar los datos en la matriz
-        for (int i = 0; i < temperatures.rows(); ++i) {
-            for (int j = 0; j < temperatures.columns(); ++j) {
-                temperatures(i, j) = solution.first[j * temperatures.columns() + i];
+    void lu_factorization(Matrix &A, BDouble *b, Matrix &temperatures) {
+		std::cout << "executing build_system..." << std::endl;
+		build_system(A, b, this->leeches);
+		std::cout << "finalizing build_system..." << std::endl;
+		// std::cout << A;
+		
+		// Sea A la matriz del sistema de ecuaciones,
+		// factorizamos A = LU con L, U triangulares inferior/superior
+		std::cout << "executing LU_factorization..." << std::endl;
+        std::pair<Matrix, Matrix> factors = LU_factorization(A);
+		std::cout << "finalizing LU_factorization..." << std::endl;
+		Matrix& L = factors.first;
+		Matrix& U = factors.second;
+		
+		//Resolvemos el sistema Ly = b
+        std::pair<BDouble *, enum Solutions> partialSolution = forward_substitution(L, b);
+		BDouble* y = partialSolution.first;
+		
+		//Resolvemos el sistema Ux = y
+        std::pair<BDouble *, enum Solutions> finalSolution = backward_substitution(U, y);
+		BDouble* x	= finalSolution.first;
+		
+        //Cargamos la solucion en la matriz de temperaturas
+        for (int i = 0; i < temperatures.rows(); i++) {
+            for (int j = 0; j < temperatures.columns(); j++) {
+                temperatures(i, j) = x[ (i * temperatures.columns()) + j];
             }
         }
 
         // Liberamos la memoria que usamos.
-        delete[] solution.first;
-        delete[] temporal.first;
+        delete[] y;
+        delete[] x;
     }
 
     // Invariante:
@@ -159,25 +173,36 @@ private:
         std::map<std::pair<int, int>, BDouble> associations;
 
         // Cargamos posiciones afectadas por alguna sanguijuela
+		int c = 1;
         for (auto &leech : leeches) {
-            // Distribuimos las temperaturas de la sanguijuela
-            int topX = std::floor(leech.x + leech.radio);
-            int bottomX = std::ceil(leech.x - leech.radio);
-            int topY = std::floor(leech.y + leech.radio);
-            int bottomY = std::ceil(leech.y - leech.radio);
-
+            std::cout << "leech" << c << "(" << leech.x << " ," << leech.y << " ) : " << leech.temperature << std::endl;
+			c++;
+			// Distribuimos las temperaturas de la sanguijuela
+            int topX = std::floor((leech.x + leech.radio)/h);
+            int bottomX = std::ceil((leech.x - leech.radio)/h);
+            int topY = std::floor((leech.y + leech.radio)/h);
+            int bottomY = std::ceil((leech.y - leech.radio)/h);
+			
+			
+			
             // Ponemos las coordenadas en rango
             topX = std::min(std::max(topX, 0), columns - 1);
             bottomX = std::min(std::max(bottomX, 0), columns - 1);
 
             topY = std::min(std::max(topY, 0), rows - 1);
             bottomY = std::min(std::max(bottomY, 0), rows - 1);
-
+			
+			
+			std::cout << "topX " << topX << std::endl;
+			std::cout << "bottomX " << bottomX << std::endl;
+			std::cout << "topY " << topY << std::endl;
+			std::cout << "bottomY " << bottomY << std::endl;
+			
             // Seteamos las temperaturas en la matriz.
             // Cabe destacar, la temperatura de cada sanguijuela es igual para todos los puntos que cubre.
             for (int i = bottomX; i <= topX; ++i) {
                 for (int j = bottomY; j <= topY; ++j) {
-                    std::cout << i <<" "<<j<< " " << leech.temperature << std::endl;
+                    //std::cout << i <<" "<<j<< " " << leech.temperature << std::endl;
                     try {
                         if (associations.at(std::pair<int, int>(i, j)) < leech.temperature) {
                             associations[std::pair<int, int>(i, j)] = leech.temperature;
@@ -189,41 +214,53 @@ private:
             }
         }
 
-        // Armamos el sistema
-        for (int k = 0; k < limit; ++k) {
-            system(k, k) = 1.0;
-            int i = k % columns;
-            int j = k / columns;
+        /**
+         * Cada fila del sistema representa la ecuacion que rige la temperatura T(i,j)
+         * ijEq = (j * yCoordinates) + i
+         * */
+        for (int ijEq = 0; ijEq < limit; ijEq++) {
+            system(ijEq, ijEq) = 1.0;
+            int i = ijEq % columns;
+            int j = ijEq / columns;
 
             if (i == 0 || j == 0 || i == rows - 1 || j == columns - 1) {
-                b[k] = -100.0;
+				//Si esta en el borde el valor esta fijo en -100.0 y no hay que usar
+				//la ecuacion de laplace
+                b[ijEq] = -100.0;
+				
             } else {
                 try {
-                    // Sabemos que es una sanguijuela, por lo que seteamos los valores
-                    b[k] = associations.at(std::pair<int, int>(i, j));
-                } catch(...) {
-                    // Oops, no lo era. Tenemos que usar Laplace
-                    b[k] = 0.0;
+                    //Si la posicion se encuentra en el radio de una sanguijuela
+					//la temperatura que afecta la posicion es la de la sanguijuela
+					//y no hay que usar la ecuacion de laplace	
+                    b[ijEq] = associations.at(std::pair<int, int>(i, j));
+                
+				} catch(...) {
+                    //Finalmente si no es borde ni sanguijuela, hay que usar la
+					//ecuacion de laplace.
+					//Las posiciones de los bordes se ignoran porque figuran con -100.0
+					//y fija el valor.
+                    b[ijEq] = 	0.0;
 
                     // t[i-1][j] + t[i, j-1] - 4*t[i, j] + t[i+1, j] + t[i, j+1] = 0
                     if (i > 1) {
-                        int l = j * columns + i - 1;
-                        system(k, l) = -0.25;
+                        int ijVar = (j * columns) + i - 1;
+                        system(ijEq, ijVar) = -0.25;
                     }
 
                     if (i < rows - 1) {
-                        int l = j * columns + i + 1;
-                        system(k, l) = -0.25;
+                        int ijVar = (j * columns) + i + 1;
+                        system(ijEq, ijVar) = -0.25;
                     }
 
                     if (j > 1) {
-                        int l = (j - 1) * columns + i;
-                        system(k, l) = -0.25;
+                        int ijVar = ((j - 1) * columns) + i;
+                        system(ijEq, ijVar) = -0.25;
                     }
 
                     if (j < columns - 1) {
-                        int l = (j + 1) * columns + i;
-                        system(k, l) = -0.25;
+                        int ijVar = ((j + 1) * columns) + i;
+                        system(ijEq, ijVar) = -0.25;
                     }
                 }
             }

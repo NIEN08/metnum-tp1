@@ -94,12 +94,17 @@ public:
         if (i >= this->rows() || j >= this->columns()) {
             throw new std::out_of_range("Index access out of range");
         }
-
-        if (i > j + this->lower_bandwidth()) {
+		
+		//std::cout << "(" << i << "," << j << ")" << std::endl;
+		//std::cout << "lower_bandwith " << this->lower_bandwidth() << std::endl;
+		//std::cout << "upper_bandwith: " <<  this->upper_bandwidth() << std::endl;
+		
+		if (i > j + this->lower_bandwidth()) {
             return zero;
         } else if (j > i + this->upper_bandwidth()) {
             return zero;
         } else {
+			//std::cout << "matrix[" << i << "][" << j - i + this->lower_bandwidth() << "]" << std::endl;
             return matrix[i][j - i + this->lower_bandwidth()];
         }
     }
@@ -410,9 +415,24 @@ std::pair<Matrix, Matrix> LU_factorization(const Matrix &A) {
     int N = std::min(A.rows(), A.columns());
 
     // Matriz L triangular inferior, U triangular superior
-    Matrix L(A.rows(), A.columns(), A.upper_bandwidth(), 0);
-    Matrix U(A.rows(), A.columns(), 0, A.lower_bandwidth());
+    Matrix L(A.rows(), A.columns(), A.lower_bandwidth(), 0);
+    Matrix U(A.rows(), A.columns(), 0,  A.upper_bandwidth());
+	
 
+	//std::cout << "A" << std::endl;
+	//std::cout << A << std::endl;
+	//std::cout << "L" << std::endl;
+	//std::cout << "rows: " << L.rows() << std::endl;
+	//std::cout << "columns: " << L.columns() << std::endl;
+	//std::cout << "upper_band: " << L.upper_bandwidth() << std::endl;
+	//std::cout << "lower_band: " << L.lower_bandwidth() << std::endl;
+	//std::cout << L << L.lower_bandwidth() << std::endl;
+	//std::cout << "U" << std::endl;
+	//std::cout << "rows: " << U.rows() << std::endl;
+	//std::cout << "columns: " << U.columns() << std::endl;
+	//std::cout << "upper_band: " << U.upper_bandwidth() << std::endl;
+	//std::cout << "lower_band: " << U.lower_bandwidth() << std::endl;
+	//std::cout << U << std::endl;
     // Las inicializamos como la matriz identidad
     for (int i = 0; i < N; ++i) {
         L(i,i) = 1.0;
@@ -429,18 +449,24 @@ std::pair<Matrix, Matrix> LU_factorization(const Matrix &A) {
     }
 
     //Set first row of U and firt column of L
-    for (int i = 1; i < N; i++) {
+	int M = std::min(A.upper_bandwidth(),  A.lower_bandwidth());
+	//std::cout << "First cicle init..." << std::endl;
+    for (int i = 1; i <= M; i++) {
+		//std::cout << "i: " << i << std::endl;
         U(0, i) = A(0, i) / L(0, 0);
         L(i, 0) = A(i, 0) / U(0, 0);
     }
+	//std::cout << "First cicle end..." << std::endl;
 
     //Set rows/columns from 1 to n-1
+	//std::cout << "second cicle init..." << std::endl;
     for (int i = 1; i < N - 1; i++) {
-
+		//std::cout << "i: " << i << std::endl;
         U(i,i) = A(i,i);
         //Aprovechamos banda
         int bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
         for (int h = 1; h <= bound; h++) {
+			//std::cout << "h: " << h << std::endl;
             if ( i >=h ) {
                 U(i,i) -= L(i, i - h) * U(i - h,i);
             }
@@ -452,25 +478,60 @@ std::pair<Matrix, Matrix> LU_factorization(const Matrix &A) {
             throw new std::out_of_range("Factorization impossible");
         }
 
-
-        for (int j = i+1; j < N; j++) {
-            U(i,j) = A(i,j);
-            L(j,i) = A(j,i);
+		//Estamos abusando de que las matrices van a tener la misma banda
+		//inferior y superior... esto podria no ser asi.
+		int M = std::min(A.upper_bandwidth(),  A.lower_bandwidth());
+        for (int k = 1; k <= M; k++) {
+			int j = i + k;
+			//std::cout << "k: " << k << std::endl;
+			if (j < U.columns()) {
+				//std::cout << "A(" << i << "," << j << ") "<< std::endl;
+				U(i,j) = A(i,j);
+			} 
+			
+			if (j < L.rows()) {
+				//std::cout << "A(" << j << "," << i << ") "<< std::endl;
+				L(j,i) = A(j,i);	
+				
+			}				
+			
+			
 
             //Aprovechamos banda
             int bound = std::min(A.lower_bandwidth(), A.upper_bandwidth());
-            for (int h = 1; h <= bound; h++) {
+			//std::cout << "bound: " << bound << std::endl;
+            for (int h = 1; h <= bound-k; h++) {
+				//std::cout << "h: " << h << std::endl;
                 if ( i >= h) {
-                    U(i,j) -= L(i,i-h) * U(i-h,j); // iº ROW OF U
-                    L(j,i) -= L(j,i-h) * U(i-h,i); // jº COLUMN OF L
+					if (j < U.columns()) {
+						//std::cout << "U(" << i << "," << j << ") "<< std::endl;
+						//std::cout << "L(" << i << "," << i-h << ") "<< std::endl;
+						//std::cout << "U(" << i-h << "," << j << ") "<< std::endl;
+						U(i,j) -= L(i,i-h) * U(i-h,j); // iº ROW OF U
+					}
+					if (j < L.rows()) {
+						//std::cout << "L(" << j << "," << i << ") "<< std::endl;
+						//std::cout << "L(" << j << "," << i-h << ") "<< std::endl;
+						//std::cout << "U(" << i-h << "," << i << ") "<< std::endl;
+						L(j,i) -= L(j,i-h) * U(i-h,i); // jº COLUMN OF L
+					}
                 }
             }
-            U(i,j) /= L(i,i);
-            L(j,i) /= U(i,i);
+			//std::cout << "cicle end..."<< std::endl;
+			
+			if (j < U.columns()) {
+				//std::cout << "U(" << i << "," << j << ") "<< std::endl;
+				U(i,j) /= L(i,i);
+			}
+			if (j < L.rows()) {
+				//std::cout << "L(" << j << "," << i << ") "<< std::endl;
+				L(j,i) /= U(i,i);
+			}
 
         }
 
     }
+	//std::cout << "second cicle end..." << std::endl;
 
     //Set last position
     U(N-1,N-1) = A(N-1,N-1);
