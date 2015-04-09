@@ -204,16 +204,15 @@ mientras
 <vector, solución> eliminación_gaussiana( Matriz A, vector b )
 	
 
-    diagonal es el mínimo entre las columnas de A y las filas de A
+    diagonal es el minimo entre las columnas de A y las filas de A
 
     recorro tantas veces como dice el número diagonal 
  
-	recorro tantas veces como el tamaño de la banda inferior, busco el coeficiente y empiezo a triangular para resolver el sistema
+	recorro tantas veces como el tamaño de la banda inferior, busco el coeficiente y empiezo a 	 triangular para resolver el sistema
 	
 	me fijo que el coeficiente no sea 0
 		
-	el coeficiente es A[i,d]/[d,d] eso me sirve para que cuando triangulo me quede 0 en donde estoy parado 
-	y así me queda la matriz triangular superior.
+	el coeficiente es A[i,d]/[d,d] eso me sirve para que cuando triangulo me quede 0 en donde 	estoy parado y asi me queda la matriz triagular superior.
 
 	Realizamos la resta a toda la fila.
                             
@@ -238,19 +237,17 @@ mientras
 		
 	 los elementos de la banda de la matriz U van a ser los mismos que de la banda de la matriz A
 	
-		Acá resuelvo el sistema para la fila i de la matriz y lo hago tantas veces como el mínimo entre el tamaño de la banda inferior y superior.
+		aprovecho la banda. Acá resuelvo el sistema para la fila i de la matriz y lo hago tantas veces como el mínimo entre el tamaño de la banda inferior y superior.
 
 		Voy resolviendo el sistema restando la fila i y acumulando en U(i,i). Mientras voy guardando los coeficientes en la Matriz L
 
-		Divido lo que había en la diagonal de la matriz U por que lo que había en la diagonal de la matriz L. 
-		
-		Si el resultado es 0 entonces no podemos factorizar.
+		divido lo que habia en la diagonal de la matriz U por que lo que habia en la diagonal de la matriz L. Si el resultado es 0 entonces no podemos factorizar.
 
 		Completo las matrices U y L. 
 
 	seteo la última posición de la Matriz U con el elemento (N-1, N-1) de la matriz A.
 	
-	devuelvo la matriz L triangular inferior con los resultados y la matriz U triangulada y triangular superior.
+	devuelvo la matriz L triangular inferior con los resultados y la matriz U triangulada y 	triangular superior.
  
 \end{verbatim} 
 \end{codesnippet}
