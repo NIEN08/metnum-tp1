@@ -168,7 +168,7 @@ private:
             
             //TODO: Esto funca?
             int i = ijEq % xCoordinates;
-            int j = ijEq % yCoordinates;
+            int j = ijEq / xCoordinates;
             
 
             if(is_border(i,j)) {
@@ -186,6 +186,8 @@ private:
 				} else {
 					//Finalmente si no es borde ni sanguijuela, hay que usar la
 					//ecuacion de laplace.
+					//Las posiciones de los bordes se ignoran porque figuran con -100.0
+					//y fija el valor.
 					b[ijEq] = 0.0;
 					if (i > 1) {
 						int ijVar = (j * yCoordinates) + (i-1);
@@ -316,6 +318,31 @@ private:
     // Invariante:
     // al menos 1 sanguijuela
     void sherman_morrison(const Matrix &system, BDouble *b) {
+		/*
+        std::pair<Matrix, Matrix> factors = LU_factorization(system);
+        BDouble minTemperature = 0.0;
+        std::list<Leech>::iterator minPosition = leeches.begin();
+
+        for (std::list<Leech>::iterator leech = ++(leeches.begin()); leech != leeches.end(); ++leech) {
+            // Generamos una copia de la lista de sanguijuelas sin la actual
+            std::list<Leech> temporal(leeches);
+            temporal.erase(distance(leeches.begin(), leech));
+
+            // Armamos la matriz del sistema
+
+            // Actualizamos el mínimo
+            if (minTemperature > ...) {
+                minima = leech;
+            }
+        }
+
+        // Nos fijamos si estamos muertos
+        if (minTemperature < 235.0) {
+            // No morimos!
+        } else {
+            // Morimos
+        }*/
+
     }
 
     BDouble width;
