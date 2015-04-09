@@ -330,39 +330,25 @@ std::pair<BDouble *, enum Solutions> backward_substitution(const Matrix &m, BDou
 // m tiene que estar triangulada
 // el usuario libera la memoria
 std::pair<BDouble *, enum Solutions> forward_substitution(const Matrix &m, BDouble *b) {
-    // TODO: caso en el que no hay solución. No queda claro cómo detectarlo.
     BDouble *x = new BDouble[m.columns()];
     enum Solutions solution = SINGLE;
 
     int N = std::min(m.rows(), m.columns());
 
-    for (int i = 0; i < N; ++i) {
-        if (m(i, i) == 0.0) {
-            x[i] = 1.0;
+    for (int d = 0; d < N; ++d) {
+        if (m(d, d) == 0.0) {
+            x[d] = 1.0;
             solution = INFINITE;
         } else {
-            int bound = std::min(i, m.lower_bandwidth() + 1);
-            //std::cout << "bound: " << bound << std::endl;
-            x[i] = b[i];
-            //std::cout << "x" << i << "= [b" << i;
-            for (int h = 1; h <= bound; h++) {
-                //if (m(i, i+h) != 0.0) {
-                if(i >= h) {
-                    //std::cout << "- M(" << i << ", " << i-h << ") * x" << i-h;
-                    x[i] -= m(i, i-h) * x[i-h];
-                }
-                //x[i] -= m(i, i+h) * x[i+h];
-                //}
+            int bound = std::max(0, d - m.lower_bandwidth() - 1);
+            x[d] = b[d];
+
+            for (int j = bound; j < d; ++j) {
+                x[d] -= m(d, j) * x[j];
             }
 
-            x[i] /= m(i, i);
-            //std::cout << "] / M(" << i << ", " << i << ") " << std::endl;
+            x[d] /= m(d, d);
         }
-
-        // When i = 0, decreasing i will land it to MAX_SIZE, which is higher than 0, producing an error.
-        //if (i == 0) {
-        //    break;
-        //}
     }
 
     return std::pair<BDouble *, enum Solutions>(x, solution);

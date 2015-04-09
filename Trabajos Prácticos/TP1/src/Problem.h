@@ -72,7 +72,7 @@ private:
         // Cargar los datos en la matriz
         for (int i = 0; i < temperatures.rows(); ++i) {
             for (int j = 0; j < temperatures.columns(); ++j) {
-                temperatures(i, j) = solution.first[j * temperatures.columns() + i];
+                temperatures(i, j) = solution.first[(i * temperatures.columns()) + j];
             }
         }
 
@@ -81,16 +81,11 @@ private:
     }
 
     void lu_factorization(Matrix &A, BDouble *b, Matrix &temperatures) {
-		std::cout << "executing build_system..." << std::endl;
 		build_system(A, b, this->leeches);
-		std::cout << "finalizing build_system..." << std::endl;
-		// std::cout << A;
 		
 		// Sea A la matriz del sistema de ecuaciones,
 		// factorizamos A = LU con L, U triangulares inferior/superior
-		std::cout << "executing LU_factorization..." << std::endl;
         std::pair<Matrix, Matrix> factors = LU_factorization(A);
-		std::cout << "finalizing LU_factorization..." << std::endl;
 		Matrix& L = factors.first;
 		Matrix& U = factors.second;
 		
@@ -105,7 +100,7 @@ private:
         //Cargamos la solucion en la matriz de temperaturas
         for (int i = 0; i < temperatures.rows(); i++) {
             for (int j = 0; j < temperatures.columns(); j++) {
-                temperatures(i, j) = x[ (i * temperatures.columns()) + j];
+                temperatures(i, j) = x[(i * temperatures.columns()) + j];
             }
         }
 
@@ -172,10 +167,7 @@ private:
         std::map<std::pair<int, int>, BDouble> associations;
 
         // Cargamos posiciones afectadas por alguna sanguijuela
-		int c = 1;
         for (auto &leech : leeches) {
-            std::cout << "leech" << c << "(" << leech.x << " ," << leech.y << " ) : " << leech.temperature << std::endl;
-			c++;
 			// Distribuimos las temperaturas de la sanguijuela
             int topX = std::floor((leech.x + leech.radio)/h);
             int bottomX = std::ceil((leech.x - leech.radio)/h);
@@ -190,12 +182,6 @@ private:
 
             topY = std::min(std::max(topY, 0), rows - 1);
             bottomY = std::min(std::max(bottomY, 0), rows - 1);
-			
-			
-			std::cout << "topX " << topX << std::endl;
-			std::cout << "bottomX " << bottomX << std::endl;
-			std::cout << "topY " << topY << std::endl;
-			std::cout << "bottomY " << bottomY << std::endl;
 			
             // Seteamos las temperaturas en la matriz.
             // Cabe destacar, la temperatura de cada sanguijuela es igual para todos los puntos que cubre.

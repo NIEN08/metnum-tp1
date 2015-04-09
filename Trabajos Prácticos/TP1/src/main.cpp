@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 	std::cout << (1000000*(end.tv_sec-start.tv_sec)+(end.tv_usec-start.tv_usec))/1000000.0 << std::endl;
 
     // Imprimimos la salida del método
-    std::ofstream out_handle(argv[2], std::ostream::out);
+    std::ofstream out_handle(argv[2], std::ostream::out | std::ofstream::trunc);
 
     for (int i = 0; i < temperatures.rows(); ++i) {
         for (int j = 0; j < temperatures.columns(); ++j) {
