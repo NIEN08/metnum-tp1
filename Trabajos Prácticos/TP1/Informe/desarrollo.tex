@@ -103,8 +103,8 @@ siendo la ecuacion (3) la resultante de despejar la ecuacion de temperatura para
 Ordenandolo de esta manera, la matriz asociada $A$ es una matriz banda de ancho y altura n, donde n es la cantidad de columnas 
 de la matriz de temperaturas. Esto lo deducimos observando la figura 2 y la matriz A,
 ya que notamos que para averiguar el valor de la variable $v_{i}$ son necesarios$^7$ los valores de las variables $v_{i-n}$, $v_{i-1}$, 
-$v_{i+1}$, $v_{i+n}$.
-\footnotetext[7]{Siempre y cuando $v_{i}$ no pertenesca a un borde o este cubierta por una sanguijuela.}.
+$v_{i+1}$, $v_{i+n}$, donde n hace referencia a la cantidad de columnas.
+\footnotetext[7]{Siempre y cuando $v_{i}$ no pertenesca a un borde o este cubierta por una sanguijuela.}
 Notese que en las ecuaciones, o lo que es lo mismo, matriz asociada al sistema no se hicieron remplazos previos. Con esto nos referimos a no reemplazar
  en las ecuaciones de calor automaticamente los valores conocidos, como los del borde o los afectados por sanguijuelas. Un ejemplo de esto se daria 
  al usar las ecuaciones 4, 7 y 9 para reemplazar los valores en la ecuacion 8. Tomamos esta decision porque consideramos que esos reemplazos son parte
@@ -122,22 +122,30 @@ El lenguaje empleado para la implementaci\'on es C++. Si bien la elecci\'on del 
 cantidad de herramientas y librerias provistas por este lenguaje. 
 
 En primer instancia, creamos una clase llamada BDouble para representar decimales de
-precision doble (((?) por que mierda)). Luego creamos la clase Matrix, que representa a las matrices como un vector de vectores de BDouble. 
+precision doble para guardar el error estimado acumulado. Esto nos sirvio a la hora de debbugear el codigo.
+Luego creamos la clase Matrix, que representa a las matrices como un vector de vectores de BDouble. 
 Ademas guarda la dimension de la matriz, el ancho y alto de la banda. Para mejorar la complejidad espacial, solo guarda por fila aquellos
 coeficientes pertenecientes a la banda, o sea, aquellos que no valen necesariamente cero. Esta clase provee las funciones basicas para matriz, como 
-consultar su dimencion o sumar multiplos de filas entre si(?), pero ademas, contiene las funciones gaussian\_elimination, LU\_factorization, backward\_substitution y 
+consultar su dimencion o sumar multiplos de filas entre si, pero ademas, contiene las funciones gaussian\_elimination, LU\_factorization, backward\_substitution y 
 forward\_substitution. 
 
 Si bien nuestra primera idea fue crear una clase aparte para estos metodos, y por claridad abstraernos en esta de la 
-representacion interna de la matriz, al hacerlo nos topamos con un problema en los header's del codigo. (?) Al no poder descubrir el motivo
+representacion interna de la matriz, al hacerlo nos topamos con un problema en los header's del codigo. Al no poder descubrir el motivo
 de dicho problema, recurrimos a la catedra en busca de consejo. Aun asi, no encontramos el motivo. Es por esto que incluimos la implementacion de
 estos algoritmos en la clase Matrix. 
 
 Testeamos estos algoritmos con ejemplos peque\~nos escritos a mano, para verificar que se realizaban las cuentas correctamente. Notese que en 
 este momento del desarrollo la carga de datos no estaba implementada, por lo que resultaba imposible correr los test provistos por la catedra.
 
-Luego procedimos a crear la interfaz del problema en si, es decir la entrada y salida de datos, la organizacion del sistema, ect. Mientras 
-implementabamos backtraking simple para calcular cual sanguijuela eliminar, y un backtraking mejorado con la Formula de Sherman-Morrison. 
+Luego procedimos a crear la interfaz del problema en si, es decir la entrada y salida de datos, la generacion
+del sistema, ect. Establecimos como criterio usar el promedio de las temperaturas, de todos los puntos que esten
+incluidos en la circunsferencia de radio h con centro en el punto critico,
+para la estimacion de la temperatura del mismo. 
+
+Para finalizar la implementacion, codeamos un algoritmo de backtraking simple para calcular cual sanguijuela eliminar,
+y un backtraking mejorado con la Formula de Sherman-Morrison. 
+
+Y como se usa??? DAH!
 
 
 \subsection{Sobre la experimentaci\'on}
@@ -152,13 +160,16 @@ mayores que distorsionaran la distancia relativa entre ellas.
 
 Una vez finalizada la etapa de implementaci\'on y testeo de los algoritmos, procedimos a realizar una
 serie de experimentos que nos permitieran evaluar el comportamiento de los mismos. Adem\'as de
-analizar c\'omo se modifican los resultados a medida que se modifican el par\'ametro de discretizaci\'on
+analizar c\'omo se modifican los resultados a medida que se modifica el par\'ametro de discretizaci\'on
 h, definimos algoritmos para comparar el desempe\~no, en terminos de la estimaci\'on de temperaturas.
 Por comodidad, a la hora de dise\~nar los experimentos, definimos todos los parabrisas con forma cuadrada.
 
-Siguiendo la consigna del TP, planteamos cuatro casos diferentes para analizar la varianza de la temperatura en el punto critico. Estos casos no fueron
-generados al azar, sino que para optimizar el tiempo de computo, creamos a mano cada instancia para realizar por caso un experimento fijo. Con esto queremos decir que, ademas de 
-analizar la varianza de la temperatura en funcion de la granularidad, planteamos para cada experimento una hipotesis aparte, que corroboraremos o 
+Siguiendo la consigna del TP, planteamos cuatro casos diferentes para analizar como varia la temperatura 
+en el punto critico al variar la discretizacion. Estos casos no fueron
+generados al azar, sino que para optimizar el tiempo de computo, creamos a mano cada instancia para 
+realizar por caso un experimento fijo. Con esto queremos decir que, ademas de 
+analizar la variaci\'on de la temperatura en funcion de la granularidad, planteamos para cada experimento 
+una hipotesis aparte, que corroboraremos o 
 refutaremos luego de analizar los resultados.
 
 
