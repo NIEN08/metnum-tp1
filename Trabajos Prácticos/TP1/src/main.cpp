@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
 	A(1,2) = -3.0;
 	A(2,1) = -3.0;
 	A(2,2) = 7.0;
-	
+
 	BDouble b[3] = {2.0, 4.0, 8.0};
 	
 	std::pair<Matrix, Matrix> LU = LU_factorization(A);

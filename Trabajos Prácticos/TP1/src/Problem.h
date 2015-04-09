@@ -67,7 +67,6 @@ public:
 private:
     void band_gaussian_elimination(Matrix &system, BDouble *b, Matrix &temperatures) {
         build_system(system, b, this->leeches);
-        std::cout << system;
         std::pair<BDouble *, enum Solutions> solution = gaussian_elimination(system, b);
 
         // Cargar los datos en la matriz

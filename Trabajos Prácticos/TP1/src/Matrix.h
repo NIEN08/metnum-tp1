@@ -302,40 +302,26 @@ Matrix operator*(const Matrix &m, const Matrix &n) {
 // m tiene que estar triangulada
 // el usuario libera la memoria
 std::pair<BDouble *, enum Solutions> backward_substitution(const Matrix &m, BDouble *b) {
-    // TODO: caso en el que no hay solución. No queda claro cómo detectarlo.
     BDouble *x = new BDouble[m.columns()];
     enum Solutions solution = SINGLE;
 
     int N = std::min(m.rows(), m.columns());
-    int i = N - 1;
 
-    while (true) {
-        if (m(i, i) == 0.0) {
-            x[i] = 1.0;
+    for (int d = N-1; d >= 0; d--){
+        if (m(d, d) == 0.0) {
+            x[d] = 1.0;
             solution = INFINITE;
         } else {
-            int bound = std::min(m.columns(), m.upper_bandwidth());
-            x[i] = b[i];
+            int bound = std::min(m.columns(), d + m.upper_bandwidth() + 1);
+            x[d] = b[d];
 
-            //std::cout << "x" << i << "= [b" << i;
-            for (int h = 1; h <= bound; h++) {
-                if(i + h < N) {
-                    //std::cout << "- M(" << i << ", " << i+h << ") * x" << i+h;
-                    x[i] -= m(i, i+h) * x[i+h];
-                }
+            for (int j = d + 1; j < bound; ++j) {
+                x[d] -= m(d, j) * x[j];
             }
 
-            x[i] /= m(i, i);
-            //std::cout << "] / M(" << i << ", " << i << ") " << std::endl;
+            x[d] /= m(d, d);
 
         }
-
-        // When i = 0, decreasing i will land it to MAX_SIZE, which is higher than 0, producing an error.
-        if (i == 0) {
-            break;
-        }
-
-        --i;
     }
 
     return std::pair<BDouble *, enum Solutions>(x, solution);
@@ -355,7 +341,7 @@ std::pair<BDouble *, enum Solutions> forward_substitution(const Matrix &m, BDoub
             x[i] = 1.0;
             solution = INFINITE;
         } else {
-            int bound = std::min(i, m.lower_bandwidth());
+            int bound = std::min(i, m.lower_bandwidth() + 1);
             //std::cout << "bound: " << bound << std::endl;
             x[i] = b[i];
             //std::cout << "x" << i << "= [b" << i;
@@ -387,22 +373,20 @@ std::pair<BDouble *, enum Solutions> gaussian_elimination(Matrix workspace, BDou
 
     for (int d = 0; d < diagonal; ++d) {
         // Tenemos algo distinto de cero en la base
-        for (int i = d + 1; i < std::min(workspace.rows(), d + workspace.lower_bandwidth()); ++i) {
-            if (workspace(i, d) != 0.0) {
-                // Tenemos algo distinto de cero en alguna fila más abajo
-                BDouble coefficient = workspace(i, d)/workspace(d, d);
+        for (int i = d + 1; i < std::min(workspace.rows(), d + workspace.lower_bandwidth() + 1); ++i) {
+            // Tenemos algo distinto de cero en alguna fila más abajo
+            BDouble coefficient = workspace(i, d)/workspace(d, d);
 
-                // Setear esto en 0 debería reducir el error posible (por ejemplo, restando números muy chicos)
-                workspace(i, d) = 0.0;
+            // Realizamos el mismo cambio en la solución del sistema
+            b[i] -= coefficient * b[d];
 
-                // Realizamos el mismo cambio en la solución del sistema
-                b[i] -= coefficient * b[d];
-
-                for (int j = d + 1; j < std::min(i + workspace.upper_bandwidth(), workspace.columns()); ++j) {
-                    // Realizamos la resta a toda la fila.
-                    workspace(i, j) -=  coefficient * workspace(d, j);
-                }
+            for (int j = d + 1; j < std::min(d + workspace.upper_bandwidth() + 1, workspace.columns()); ++j) {
+                // Realizamos la resta a toda la fila.
+                workspace(i, j) -= coefficient * workspace(d, j);
             }
+
+            // Setear esto en 0 debería reducir el error posible (por ejemplo, restando números muy chicos)
+            workspace(i, d) = 0.0;
         }
     }
 
