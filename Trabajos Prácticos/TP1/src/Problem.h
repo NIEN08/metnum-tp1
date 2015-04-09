@@ -37,44 +37,6 @@ public:
               xCoordinates(std::round(height / h)),
               yCoordinates(std::round(width / h)),
               temperatures(Matrix(xCoordinates + 1, yCoordinates + 1)) {
-
-        for (std::list<Leech>::iterator b = leeches.begin(); b != leeches.end(); ++b) {
-            // Distribuimos las temperaturas de la sanguijuela
-            int topX = std::floor(b->x + b->radio);
-            int bottomX = std::ceil(b->x - b->radio);
-            int topY = std::floor(b->y + b->radio);
-            int bottomY = std::ceil(b->y - b->radio);
-
-            // Ponemos las coordenadas en rango
-            topX = std::min(std::max(topX, 0), xCoordinates);
-            bottomX = std::min(std::max(bottomX, 0), xCoordinates);
-
-            topY = std::min(std::max(topY, 0), yCoordinates);
-            bottomY = std::min(std::max(bottomY, 0), yCoordinates);
-
-            // Seteamos las temperaturas en la matriz.
-            // Cabe destacar, la temperatura de cada sanguijuela es igual para todos los puntos que cubre.
-            for (int i = bottomX; i <= topX; ++i) {
-                for (int j = bottomY; j <= topY; ++j) {
-                    // Sólo queda la temperatura más alta
-                    if (this->temperatures(i, j) < b->temperature) {
-                        this->temperatures(i, j) = b->temperature;
-                    }
-                }
-            }
-        }
-
-        // Ponemos los bordes en -100.0C
-        for(int i = 0; i <= xCoordinates; ++i){
-            if (i == 0 || i == xCoordinates) {
-                for (int j = 0; j <= yCoordinates; ++j) {
-                    temperatures(i, j) = -100.0;
-                }
-            } else {
-                temperatures(i, 0) = -100.0;
-                temperatures(i, yCoordinates) = -100.0;
-            }
-        }
     }
 
     Matrix run() {
@@ -86,22 +48,6 @@ public:
         // La solución que buscamos
         BDouble *b = new BDouble[dims];
 
-        // Creamos la matriz inicial del sistema
-        // TODO: chequear que esto anda
-        for (int d = 0; d < dims; ++d) {
-            for (int j = std::min(0, d - 4); d < std::min(d + 4, this->temperatures.columns()); ++j) {
-                system(d, j) = 1.0;
-            }
-
-            system(d, d) = 0.0;
-
-            int j = d % this->temperatures.columns();
-            int k = j % this->temperatures.rows();
-
-            b[d] = this->temperatures(k, j) * 4.0;
-        }
-
-        // Hacemos el "pase de variables al otro lado" para conseguir el b que buscamos.
 
         // Variamos nuestra solución según el método
         switch (method) {
@@ -118,6 +64,8 @@ public:
                 this->sherman_morrison(system, b);
                 break;
         }
+
+        delete[] b;
 
         return this->temperatures;
     }

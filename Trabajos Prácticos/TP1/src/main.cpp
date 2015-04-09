@@ -21,11 +21,11 @@ int main(int argc, char *argv[]) {
 
     // Abrir el archivo de entrada
     std::ifstream handle(argv[1], std::ios::in);
+
     BDouble width, height, h;
     unsigned amount;
 
     handle >> width >> height >> h >> amount;
-    std::cout << width << height << h << amount;
 
     // Levantamos las posiciones de las sanguijuelas
     std::list<Leech> leeches = std::list<Leech>();
