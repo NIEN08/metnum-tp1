@@ -239,12 +239,7 @@ private:
 std::ostream &operator<<(std::ostream &os, const Matrix &m) {
     for (int i = 0; i < m.rows(); ++i) {
         for (int j = 0; j < m.columns(); ++j) {
-            if (i <= j + m.lower_bandwidth() && j <= i + m.upper_bandwidth()) {
-                os << "\033[1;31m" << m(i, j) << "\033[0m" << '\t';
-            } else {
-                os << m(i, j) << '\t';
-            }
-
+            os << m(i, j) << ' ';
         }
 
         os << std::endl;
