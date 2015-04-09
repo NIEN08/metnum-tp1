@@ -1,37 +1,90 @@
 \section{Experimentaci\'on y discuci\'on}
 
-Presentaremos en esta seccion la experimentaci\'on juntas, separadas por experimentos. Primero presentaremos una breve descripci\'on de la instancia 
-experimental, seguido de lo que esperamos observar, es decir, nuestra hipotesis. A continuaci\'on presentaremos los resultados obtenidos y las
-concluciones a las que llegamos. Decidimos darle este formato porque creimos mas declarativo mantener toda la informaci\'on junta. 
+Presentaremos en esta secci\'on la experimentaci\'on y discuci\'on juntas, separadas por experimentos. Primero 
+daremos una breve descripci\'on de la instancia 
+experimental, seguido de lo que esperamos observar, es decir, nuestra hipotesis. A continuaci\'on mostraremos los 
+resultados obtenidos y nuestro analisis respecto a porque obtuvimos dichos resultados. 
+Decidimos darle este formato porque creimos mas declarativo mantener toda la
+informaci\'on junta. 
 
-\subsection{Experimento 1: \textquestiondown Ser o no ser?}
+\subsection{Experimento 1: Medici\'on de performance respecto a la variaci\'on de la discretizaci\'on}
 
 \subsubsection{Caso A: \textquestiondown Ser o no ser?}
 
-Este experimento presenta un caso generico de parabrisas. Se corre para tres tama\~nos distintos de discretizaci\'on. La idea de este experimento
-es responder la siguiente pregunta: \textquestiondown Terminar hoy o modelar bien? Con esto nos referimos a si es preferible sacrificar tiempo de computo en 
-pos de modelar mejor, o si por el contrario es mejor alejarse un poco del modelo real, pero obteniendo resultados en un tiempo razonable. Por 
-supuesto, es obvio que esta decisi\'on depende en mayor medida del uso que se le quiere dar a los resultados y no es nuestra intenci\'on conseguir 
-una respuesta generica a esta pregunta, sino analizar la relaci\'on entre estos conceptos logrando asi una mejor compreci\'on del problema.
+Este experimento presenta un caso generico de parabrisas, donde por generico nos referimos a que seleccionamos la ubicacion,
+radio y temperatura de manera aleatoria entre un grupo de valores predeterminados.
+Se corre para distintos tama\~no de discretizaci\'on.
+La idea de este experimento
+es responder la siguiente pregunta: \textquestiondown Terminar hoy o modelar bien? Con esto nos referimos a si es 
+preferible sacrificar tiempo de computo en 
+pos de modelar mejor, o si por el contrario es mejor alejarse un poco del modelo real, pero obteniendo resultados 
+en un tiempo razonable. Por 
+supuesto, es obvio que esta decisi\'on depende en mayor medida del uso que se le quiere dar a los resultados y no 
+es nuestra intenci\'on conseguir 
+una respuesta generica a esta pregunta, sino analizar la relaci\'on entre estos conceptos logrando asi una mejor 
+comprenci\'on del problema. 
 
-\subsubsection{Caso B: Una sanguijuela invoca una sanguijuela}
+Nuestra hipotesis es que para h muy chicos, menores al 5\% de la longitud original, el tiempo de computo aumentara
+demaciado, sin obtener ninguna mejora significativa en la modelizacion. Claro que para esta hipotesis estamos 
+asumiendo no hallarnos en un caso extremo como, por ejemplo, tener gran cantidad de sanguijuelas microscopicas
+con temperaturas similares a la del sol o plut\'on.
 
-En este caso, a diferencia de los anteriores donde variamos solo el h, fijamos la discretizaci\'on y el tama\~no. La variable en este experimento 
-es la cantidad de sanguijuelas. Planteamos este experimento porque nos parecio interesante ver como se modifica la performance de la eliminaci\'on 
-Gaussiana y la factorizaci\'on LU, a medida que fijamos mayor cantidad de constantes.
+\subsubsection{Caso B: Una sanguijuela invoca otra sanguijuela}
 
-\subsection{Experimento 2: Comparaci\'on de temperaturas en el punto critico general}
+En este caso, a diferencia de los demas donde variamos solo el h, fijamos la discretizaci\'on y el tama\~no.
+La variable en este experimento 
+es la cantidad de sanguijuelas. Planteamos este experimento porque nos parecio interesante ver como se modifica 
+la performance de la eliminaci\'on 
+Gaussiana y la factorizaci\'on LU, a medida que fijamos mayor cantidad de constantes. Esto es porque 
+suponemos que, al tener menos coeficientes la mariz, backward y forward deberian ejecutar mas rapido, 
+lo que implica que la ejecucion con mayor cantidad de sanguijuelas deberia ser mas la mas rapida.
+Esa es nuestra hipotesis en este experimento.
+%%version alocada?
+
+\subsection{Experimento 2: Comparaci\'on de temperaturas en el punto critico}
+
+\subsubsection{Caso A: \textexclamdown Mientras varie la granularidad, sirve!}
+
+Para realizar este experimento, el de comparaci\'on de puntos criticos con tres instancias, usaremos como instancia todos los demas experimentos que varien la granularidad.
+Esto hace honor a la famosa frase ``el tiempo es oro'' y como no disponemos mucho de ninguno, 
+reutilizaremos las corridas de otros experimentos. En general, esperamos que al achicar el h la 
+temperatura del punto critico varie, pero no esperamos que aunmente o disminuya siempre. Al 
+aunmentar la granularidad por un lado vamos a incluir en el modelo nuevas sanguijuelas, lo que
+potencialmente haria que la temperatura del punto critico, y de los demas puntos, aumente. Sin embargo,
+cuando agregamos puntos tambien estamos aunmentando la ``disipacion'' del calor, con lo que 
+nos referimos a que los sucesivos calculos de promedio bajan la temperatura a medida que te alejas de 
+una sanguijuela. Es por eso que esperamos que las variaciones sean tanto positivas como negativas. Y
+remarcamos que una hipotesis concreta de la variacion de la temperatura, debe provenir del analisis de 
+una instancia concreta, por lo que no se puede crear una hipotesis generica.
 
 \subsubsection{Caso B: Buscando las sanguijuelas perdidas}
 
-Este experimento fue dise\~nado para modelar un caso que se comporte ``mal'' para un h grande. Es decir, modelamos este experimento para que 
-las sanguijuelas peque\~nas, que son aqui las de mayor temperatura, esten distribuidas de modo que no afecten el modelo para discretizaciones grandes. 
-Hacemos esto con la intenci\'on de ver cuanto varia la estimaci\'on de temperaturas al variar el h.
+Este experimento fue dise\~nado para modelar un caso que se comporte ``mal'' para un 
+h grande. Es decir, modelamos este experimento para que 
+las sanguijuelas peque\~nas, que son aqui las de mayor temperatura, esten
+distribuidas de modo que no afecten el
+modelo para discretizaciones grandes. 
+Realizamos este experimento como un caso particular de los decriptos en el A, para mostrar una 
+hipotesis concreta. En este caso, como al aunmentar el h van a surgir nuevas sanguijuelas, lo
+que esperamos es que la temperatura del punto critico, y en general, aunmente. Esto es porque creemos
+que la aparicion de nuevas sanguijuelas es mas significativo que el aunmento de disipacion, cuando este
+aunmento es relativamente peque\~no, es decir, del orden del 50-25\%.
 
 
-\subsection{Experimento 3: Sobrepoblaci\'on de mini-sanguijuelas}
+\subsection{Experimento 3: Comparaci\'on de performances para backtraking al aplicar Sherman-Morrison}
 
-Este experimento es un caso extremo para probar el metodo que usa la formula de Sherman-Morrison. Todas las sanguijuelas afectan exclusivamente un punto,
-en todas las discretizaciones planteadas. Esperamos observar la diferencia de performance entre el 3 y 4 metodo para los casos de sanguijuelas peque\~nas.
+\subsubsection{Caso A: Sobrepoblaci\'on de mini-sanguijuelas}
 
+Este experimento es un caso extremo para probar el metodo que usa la 
+formula de Sherman-Morrison. Todas las 
+sanguijuelas si afectan un punto es exclusivamente uno,
+en todas las discretizaciones planteadas. La hipotesis es que el metodo 4, que
+aplica la Formula de Sherman-Morrison tiene mejor performance temporal.
+
+Como deceamos observar la diferencia de performance entre el 3 y 4 metodo
+para los casos de sanguijuelas peque\~nas, decidimos no introducir sanguijuelas que afecten mas de un punto.
+Esto es porque las tecnicas de backtraking son, en general, de muy mala performance temporal y disponemos
+de un tiempo acotado para finalizar la experimentaci\'on. Por esto, nos restringimos a los casos 
+particulares que nos competen, dejando para como proyecto a futuro la experimentaci\'on en casos
+generados de manera completamente aleatoria. Esto incluye los experimentos previos.
 
