@@ -2,6 +2,7 @@
 #define _TP1_PROBLEM_H_ 1
 
 #include <list>
+#include <algorithm>
 #include <map>
 #include <cmath>
 #include "Matrix.h"
@@ -67,7 +68,6 @@ public:
 private:
     void band_gaussian_elimination(Matrix &system, BDouble *b, Matrix &temperatures) {
         build_system(system, b, this->leeches);
-        std::cout << system;
         std::pair<BDouble *, enum Solutions> solution = gaussian_elimination(system, b);
 
         // Cargar los datos en la matriz
@@ -110,44 +110,68 @@ private:
         delete[] x;
     }
 
-    // Invariante:
-    // al menos 1 sanguijuela
-    void simple_algorithm(const Matrix &system, BDouble *b, Matrix &temperatures) {
-        /*Matrix minTemperature(xCoordinates + 1, yCoordinates + 1, 1, 1);
+    void simple_algorithm(Matrix &system, BDouble *b, Matrix &temperatures) {
+
+        Matrix minTemperature(system.rows(), system.columns(), 1, 1);
         BDouble minValue = 0.0;
 
         for (std::list<Leech>::iterator leech = leeches.begin(); leech != leeches.end(); ++leech) {
             // Generamos una copia de la lista de sanguijuelas sin la actual
             std::list<Leech> temporal(leeches);
-            temporal.erase(distance(leeches.begin(), leech));
+            temporal.erase(std::distance(leeches.begin(), leech));
+            BDouble *b2 = std::copy(b); // TODO:
+            Matrix system2(system);
 
             // Armamos la matriz del sistema
-            std::pair<Matrix, BDouble *> tmpSystem = this->generate_system(temporal);
+            this->build_system(system, b, temporal);
 
             // Resolvemos
-            std::pair<BDouble *, enum Solutions> solution = gaussian_elimination(tmpSystem.first, tmpSystem.second);
+            std::pair<BDouble *, enum Solutions> solution = gaussian_elimination(system2, b2);
 
-            // Liberamos memoria
-            delete[] tmpSystem.second;
+            // Valor del medio
+            BDouble n = 0.0;
+            BDouble p = 0.0;
 
-            // Actualizamos el mínimo
-            // TODO: cual es el medio?
-            if (solution.first[] > minValue || leech = leeches.begin()) {
-                minValue = solution.first[];
+            BDouble centerY = this->height/2.0;
+            BDouble centerX = this->width/2.0;
+            BDouble topJ = (centerX + this->h)/this->h;
+            BDouble bottomJ = (centerX - this->h)/this->h;
+            BDouble topI = (centerY + this->h)/this->h;
+            BDouble bottomI = (centerY - this->h)/this->h;
+
+            for (int i = std::ceil(bottomI); BDouble(double(i)) <= topI; ++i) {
+                BDouble iA = BDouble(double(i));
+
+                for (int j = std::ceil(bottomJ); BDouble(double(j)) <= topJ; ++j) {
+                    BDouble iJ = BDouble(double(j));
+                    BDouble coef = std::pow(iA * this->h - centerY, 2) + std::pow(iJ * this->h - centerX, 2);
+
+                    if (coef <= h*h) {
+                        n += 1.0;
+                        p += solution.first[i * temperatures.columns() + j];
+                    }
+                }
+            }
+
+            p /= n;
+
+            if (p > minValue || leech == leeches.begin()) {
+                minValue = p;
 
                 // Cargar los datos en la matriz
-                for (int i = 0; i < this->temperatures.rows(); ++i) {
-                    for (int j = 0; j < this->temperatures.columns(); ++j) {
-                        minTemperature(i, j) = solution.first[j * this->temperatures.columns() + i];
+                for (int i = 0; i < temperatures.rows(); ++i) {
+                    for (int j = 0; j < temperatures.columns(); ++j) {
+                        minTemperature(i, j) = solution.first[i * temperatures.columns() + j];
                     }
                 }
             }
 
             delete[] solution.first;
+            delete[] b2;
         }
 
         // Vamos a devolver la matriz de temperatura que tengamos
-        this->temperatures = minTemperature;*/
+        temperatures = minTemperature;
     }
 
     // Invariante:
@@ -169,39 +193,35 @@ private:
 
         // Cargamos posiciones afectadas por alguna sanguijuela
         for (auto &leech : leeches) {
-            // Distribuimos las temperaturas de la sanguijuela
-            int topX = std::floor((leech.x + leech.radio)/h);
-            int bottomX = std::ceil((leech.x - leech.radio)/h);
-            int topY = std::floor((leech.y + leech.radio)/h);
-            int bottomY = std::ceil((leech.y - leech.radio)/h);
+            // Ponemos el rango que vamos a generar
+            BDouble topJ = std::min(leech.x + leech.radio, this->width - this->h)/h;
+            BDouble bottomJ = std::max(leech.x - leech.radio, this->h)/h;
 
-            // Ponemos las coordenadas en rango
-            topX = std::min(std::max(topX, 0), columns - 1);
-            bottomX = std::min(std::max(bottomX, 0), columns - 1);
-
-            topY = std::min(std::max(topY, 0), rows - 1);
-            bottomY = std::min(std::max(bottomY, 0), rows - 1);
+            BDouble topI = std::min(leech.y + leech.radio, this->height - this->h)/h;
+            BDouble bottomI = std::max(leech.y - leech.radio, this->h)/h;
 
             // Seteamos las temperaturas en la matriz.
             // Cabe destacar, la temperatura de cada sanguijuela es igual para todos los puntos que cubre.
-            for (int i = bottomX; i <= topX; ++i) {
-                for (int j = bottomY; j <= topY; ++j) {
-                    //std::cout << i <<" "<<j<< " " << leech.temperature << std::endl;
-                    try {
-                        if (associations.at(std::pair<int, int>(i, j)) < leech.temperature) {
+            for (int i = std::ceil(bottomI); BDouble(double(i)) <= topI; ++i) {
+                BDouble iA = BDouble(double(i));
+
+                for (int j = std::ceil(bottomJ); BDouble(double(j)) <= topJ; ++j) {
+                    BDouble iJ = BDouble(double(j));
+                    BDouble coef = std::pow(iA*this->h - leech.y, 2) + std::pow(iJ*this->h - leech.x, 2);
+
+                    if (coef <= std::pow(leech.radio, 2)) {
+                        try {
+                            if (associations.at(std::pair<int, int>(i, j)) < leech.temperature) {
+                                associations[std::pair<int, int>(i, j)] = leech.temperature;
+                            }
+                        } catch(...) {
                             associations[std::pair<int, int>(i, j)] = leech.temperature;
                         }
-                    } catch(...) {
-                        associations[std::pair<int, int>(i, j)] = leech.temperature;
                     }
                 }
             }
         }
 
-        /**
-         * Cada fila del sistema representa la ecuacion que rige la temperatura T(i,j)
-         * ijEq = (j * yCoordinates) + i
-         * */
         for (int ijEq = 0; ijEq < limit; ijEq++) {
             system(ijEq, ijEq) = 1.0;
             int i = ijEq / columns;
@@ -227,7 +247,6 @@ private:
                     b[ijEq] = 	0.0;
 
                     // t[i-1][j] + t[i, j-1] - 4*t[i, j] + t[i+1, j] + t[i, j+1] = 0
-
                     system(ijEq, (i * columns) + j - 1) = -0.25;
                     system(ijEq, (i * columns) + j + 1) = -0.25;
                     system(ijEq, ((i - 1) * columns) + j) = -0.25;

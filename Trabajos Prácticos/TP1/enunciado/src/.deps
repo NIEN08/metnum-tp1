@@ -8,15 +8,44 @@
         "main.o": "output-97360bf8724f2ca53e0d26184ef0bb44"
     }, 
     "g++ -o ./tp ./main.o": {
-        "main.o": "input-0536b6689a541748199192a8aef8eb45", 
-        "tp": "output-49095c5f737059812bc2c6bd92b374bf"
+        "main.o": "input-4149066638a60b6b82201e83e102da46", 
+        "scripts/fabricate.py": "input-857a64dfe36d0db9ba944b040256ba9f", 
+        "tests/test1.expected": "input-dd1326b1d3b15192a836441620c64fe5", 
+        "tests/test1.in": "input-01d77735784c119122291175b674ed4f", 
+        "tests/test2.in": "input-9a38bbb0d2bdda7d4544c26f679f3c2a", 
+        "tests/test2.out": "input-c8086c17f89bae374df01385da4621d1", 
+        "tests/test4.out": "input-a2cab446d8e253c93f72837b8742f572", 
+        "tests/test5.in": "input-b517fc920ae823385f4894bbae9b7b4d", 
+        "tests/test5.out": "input-9408774e4553c15a1eee90373c4474cd", 
+        "tests/test6.in": "input-e47fbfd9efef3c4ef591220af4c27957", 
+        "tests/test7.out": "input-37e3c062bf5def8cd1a936d6100e7fad", 
+        "tools/graphsol.py": "input-013db231a72c8f190af1c57dfba39545", 
+        "tools/judge.py": "input-e3893693d0b69c8099cb8078fcaf474b", 
+        "tp": "output-570328efec0cc20916cddcf4f5014572"
     }, 
     "g++ -std=c++11 -c ./main.cpp -o ./main.o": {
-        "BDouble.h": "input-15e43be8632c1ad996427e40a314c863", 
-        "Matrix.h": "input-7dc282b725f9fcf7d37f70341bc0951b", 
-        "Problem.h": "input-d5896c8df2469f9cdad030c5e866bf96", 
-        "main.cpp": "input-83532ae83d117be837076ac7ce1d454c", 
-        "main.o": "output-0536b6689a541748199192a8aef8eb45", 
-        "metnum.py": "input-868637930b920e7faeeadd66bda84d13"
+        "BDouble.h": "input-6af7333d5bebab77061e19c2eea08721", 
+        "Matrix.h": "input-fd95c5bc65e10c156a5110bf2a905e6d", 
+        "Problem.h": "input-e842f6561f3ddfe68b20570c2a2c25d9", 
+        "README": "input-6f05ef2d3dd5ebe3f31ab7388180d9dd", 
+        "main.cpp": "input-e7a725ba2c529b11af39cf0df7d13bcc", 
+        "main.o": "output-4149066638a60b6b82201e83e102da46", 
+        "metnum.py": "input-868637930b920e7faeeadd66bda84d13", 
+        "scripts/settings.py": "input-f629e3cf8360e2b43bd8d1aaf353ea51", 
+        "scripts/tptests.py": "input-2ac52ba42c488f391a612b32e5911663", 
+        "scripts/utils.py": "input-659251bb973347f51bb135e6cbd11ee0", 
+        "tests/test1.out": "input-24b80119d34c5b433d21b1958740a889", 
+        "tests/test2.expected": "input-a94f6869274f6ca3d1532107ee4e0ff3", 
+        "tests/test3.expected": "input-385cdde388eed97f8c462e56f4996939", 
+        "tests/test3.in": "input-aaed1051a7bc074e0aef139243b96c42", 
+        "tests/test3.out": "input-409c45ccca5f1891f71854901587df84", 
+        "tests/test4.expected": "input-b5bf6b19e6961e21d72c19e5f8a495e3", 
+        "tests/test4.in": "input-3879335f286cf2244c3bd8c8703ee735", 
+        "tests/test5.expected": "input-e9024ab193ba0c266e39009f0252433e", 
+        "tests/test6.expected": "input-9ea39eabcbbd36932c1c9096d65b83d0", 
+        "tests/test6.out": "input-6ca1edd9fe4a528d4ca95f4ea239015a", 
+        "tests/test7.expected": "input-a55a1058f1f17682cb6718331b12ac1e", 
+        "tests/test7.in": "input-6c3652abac25e4d93d0cde814db2a053", 
+        "tools/graphinst.m": "input-c89b9b284c8f4e7317b05f54c0425739"
     }
 }

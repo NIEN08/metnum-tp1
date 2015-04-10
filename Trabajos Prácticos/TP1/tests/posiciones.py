@@ -7,7 +7,7 @@
 # http://code.google.com/edu/languages/google-python-class/
 
 def main():
-  f = open('test1.in', "rU")
+  f = open('test2.in', "rU")
   lists = []
   n = 0
   nl = f.readline()
@@ -24,7 +24,7 @@ def main():
   print lists
 
   print 'Expected'
-  d = open('test1.expected','rU')
+  d = open('test2.expected','rU')
   n = 0
   final = []
   for line in d:
@@ -35,7 +35,7 @@ def main():
   d.close()
 
   print 'Out'
-  d = open('test1.out','rU')
+  d = open('test2.out','rU')
   n = 0
   for line in d:
     l = line.split()

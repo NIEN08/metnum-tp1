@@ -82,11 +82,11 @@ public:
     }
 
     bool operator<(const BDouble &rhs) const {
-        return rhs.x - this->x < std::numeric_limits<double>::epsilon();
+        return rhs.x - this->x > std::numeric_limits<double>::epsilon();
     }
 
     bool operator>(const BDouble &rhs) const {
-        return rhs.x - this->x > std::numeric_limits<double>::epsilon();
+        return rhs.x - this->x < std::numeric_limits<double>::epsilon();
     }
 
     bool operator!=(const BDouble &m) const {
@@ -98,6 +98,10 @@ public:
     }
 
     bool operator<(const double &rhs) const {
+        return rhs - this->x > std::numeric_limits<double>::epsilon();
+    }
+
+    bool operator>(const double &rhs) const {
         return rhs - this->x < std::numeric_limits<double>::epsilon();
     }
 
