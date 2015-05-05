@@ -19,6 +19,8 @@ enum Solutions {
 /*
 * Matriz Banda.
 */
+
+//Merge nacho
 class Matrix {
     friend std::ostream &operator<<(std::ostream &, const Matrix &);
 public:
