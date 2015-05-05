@@ -67,14 +67,3 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 }
-
-
-/*
-int main(int argc, char *argv[]) {
-	Matrix A(10, 10, 5, 5);
-	
-	A ()
-	
-	std::cout << A << std::endl;
-	
-}*/
