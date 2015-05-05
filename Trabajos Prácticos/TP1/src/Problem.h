@@ -43,6 +43,10 @@ public:
         int columns = round(width / h) + 1;
         int dims = rows * columns;
 		
+		std::cout << "rows: " << rows << std::endl;
+		std::cout << "columns: " << columns << std::endl;
+		std::cout << "dims: " << dims << std::endl;
+		
 		Matrix system(dims, dims, columns, columns);
 		BDouble *b = new BDouble[dims];
         Matrix temperatures(rows, columns);
@@ -107,11 +111,18 @@ private:
     
         //Cargamos la solucion en la matriz de temperaturas
         load_temperature_matrix(finalSolution.first, temperatures);
+		
+		BDouble cp = critic_point_temperature(A, finalSolution.first);	
 
         // Liberamos la memoria que usamos.
         delete[] finalSolution.first;
     }
 
+	/**
+	* Resuelve el problema por eliminacion gaussiana. En caso de que la temperatura del
+	* punto critico sea mayor o igual a 235.0 grados de temperatura, resuelve el sistema
+	* por cada sanguijuela, removiendo una de estas y se queda con la menor temperatura.
+	**/
     void simple_algorithm(Matrix &system, BDouble *b, Matrix &temperatures) {
 		build_system(system, b, this->leeches);	
 		
@@ -120,47 +131,43 @@ private:
 		BDouble* minX = solution.first;
 		BDouble minCp = critic_point_temperature(system, minX);
 					
-		int leech_index = 0 ;
-		for (std::list<Leech>::iterator itLeech = leeches.begin(); itLeech != leeches.end(); ++itLeech) {
-			Leech leech = *itLeech;
-		
-			//Armamos una lista sin la sanguijuela
-			std::list<Leech> leechesCopy = std::list<Leech>(leeches);
-			std::list<Leech>::iterator itCopy = leechesCopy.begin();
-			advance(itCopy, leech_index); 
-			leechesCopy.erase(itCopy);
+		if (minCp >= 235.0) {
+			int leech_index = 0 ;
+			for (std::list<Leech>::iterator itLeech = leeches.begin(); itLeech != leeches.end(); ++itLeech) {
+				Leech leech = *itLeech;
 			
-			/*
-			int i = round(leech.y / h);
-			int j = round(leech.x / h);
-			
-			std::cout << leech.y << std::endl;
-			std::cout << leech.x << std::endl;
-			std::cout << leech.y / h << std::endl;
-			std::cout << leech.x / h << std::endl;
-			std::cout << i << std::endl;
-			std::cout << j << std::endl;
-			std::map<std::pair<int, int>, BDouble> affected_positions = generate_affected_positions(leeches);	
-			std::cout << affected_positions.at(std::pair<int, int>(i, j)) << std::endl;*/
-			
-			
-			//Inicializamos el sistema sin la sanguijuela	
-			BDouble* b2 = new BDouble[system.columns()];
-			clean_system(system);
-			build_system(system, b2, leechesCopy);
-			
-			//Resolvemos el sistema
-			solution = gaussian_elimination(system, b2);
-			BDouble cp = critic_point_temperature(system, solution.first);			
-			
-			// Nos quedamos con la solucion si es mejor que la anterior 
-			if(cp < minCp) {
-				minX = solution.first;
-				minCp = cp;
-			} else {
-				delete[] solution.first;
-			}			
-			leech_index++;
+				//Armamos una lista sin la sanguijuela
+				std::list<Leech> leechesCopy = std::list<Leech>(leeches);
+				std::list<Leech>::iterator itCopy = leechesCopy.begin();
+				advance(itCopy, leech_index); 
+				leechesCopy.erase(itCopy);
+				
+				std::cout << "====== REMOVED LEECH ======" << std::endl;
+				std::cout << leech.x << " " << leech.y << " " << leech.radio << " " << leech.temperature << std::endl;			
+				
+				//Inicializamos el sistema sin la sanguijuela	
+				BDouble* b2 = new BDouble[system.columns()];
+				clean_system(system);
+				//system = Matrix(system.columns(), system.columns(), system.upper_bandwidth(), system.upper_bandwidth());
+				build_system(system, b2, leechesCopy);
+							
+				//Resolvemos el sistema
+				solution = gaussian_elimination(system, b2);
+				
+				BDouble cp = critic_point_temperature(system, solution.first);		
+					
+				//Liberamos memoria
+				delete[] b2;
+				
+				// Nos quedamos con la solucion si es mejor que la anterior 
+				if(cp < minCp) {
+					minX = solution.first;
+					minCp = cp;
+				} else {
+					delete[] solution.first;
+				}			
+				leech_index++;
+			}
 		}
 		std::cout << "MIN CPT: " << minCp << std::endl;		
 		load_temperature_matrix(minX, temperatures);	
@@ -188,7 +195,6 @@ private:
 		
 		std::pair<BDouble *, enum Solutions> solution;		
 		if (affected_position) {
-			std::cout << "affected position!!" << std::endl;
 			//Otra sanguijuela afecta la posicion => No podemos aprovechar sherman-morrison.
 			//Utilizamos unicamente la factorizacion LU.
 			BDouble newTemperature = affected_positions.at(std::pair<int, int>(i, j));
@@ -196,27 +202,28 @@ private:
 			// Inicializamos la solucion del sistema
 			BDouble* b2 = new BDouble[system.columns()];
 			std::copy(b, b + system.columns(), b2);
-			std::cout << "(i * system.upper_bandwidth()) + j == " << (i * system.upper_bandwidth()) + j << std::endl;
-			std::cout << "old temperature: " << b2[(i * system.upper_bandwidth()) + j]  << std::endl;
-			std::cout << "new temperature: " << newTemperature  << std::endl;
+			//std::cout << "(i * system.upper_bandwidth()) + j == " << (i * system.upper_bandwidth()) + j << std::endl;
+			//std::cout << "old temperature: " << b2[(i * system.upper_bandwidth()) + j]  << std::endl;
+			//std::cout << "new temperature: " << newTemperature  << std::endl;
 			b2[(i * system.columns()) + j] = newTemperature;
 					
 			// Resolvemos utilizando LU
 			solution = lu_resolution(L, U, b2);
 				
 		} else {
-			std::cout << "unaffected position!!" << std::endl;
 			//Podemos aprovechar sherman-morrison!!
 			std::pair<BDouble *, BDouble *> uv = generate_sherman_morrison_uv(system, i, j);
 			BDouble* u = uv.first;
 			BDouble* v = uv.second;
+			BDouble* b2 = generate_sherman_morrison_b(system, b, i, j);
 					
 			//Resolvemos utilizando sherman-morrison
-			solution = sherman_morrison(L, U, u, v, b);
+			solution = sherman_morrison(L, U, u, v, b2);
 					
 			//Liberamos memoria
 			delete[] u;
 			delete[] v;
+			delete[] b2;
 					
 		}
 		return solution;
@@ -224,9 +231,17 @@ private:
 	}
 	
 	
-	
-    // Invariante:
-    // al menos 1 sanguijuela
+	/**
+	* En caso de que la cantidad de sanguijuelas singulares (afectan una sola ecuacion del sistema discretizado)
+	* sea menor o igual a 1 resuelve el problema usando simple_algorithm. 
+	* En caso contrario obtiene la factorizacion LU del sistema y separa el tratamiento de sanguijuelas normales
+	* de las sanguijuelas singulares.
+	* - Si la sanguijuela no es singular resuelve rehaciendo el sistema sin la sanguijuela como en simple_algorithm.
+	* - Si la sanguijuela es singular a su vez separa en dos casos:
+	* 	- Si la posicion se encuentra afectada por otra sanguijuela, simplemente modifica el valor del vector 
+	*	correspondiente por el de mayor temperatura y resuelve utilizando la factorizacion LU.
+	*	- Si la posicion no se encuentra afectada por otra sanguijuela, resuelve utilizando 
+	**/
     void sherman_morrison_solution(Matrix &system, BDouble *b, Matrix &temperatures) {
 		std::list<Leech> singularLeeches;
 		build_system(system, b, this->leeches);
@@ -248,42 +263,51 @@ private:
 		std::pair<BDouble *, enum Solutions> solution = lu_resolution(L, U, b);
 		BDouble* minX = solution.first;
 		BDouble minCp = critic_point_temperature(system, minX);
-					
-		int leech_index = 0 ;
-		for (std::list<Leech>::iterator itLeech = leeches.begin(); itLeech != leeches.end(); ++itLeech) {
-			Leech leech = *itLeech;
-		
-			//Armamos una lista sin la sanguijuela
-			std::list<Leech> leechesCopy = std::list<Leech>(leeches);
-			std::list<Leech>::iterator itCopy = leechesCopy.begin();
-			advance(itCopy, leech_index); 
-			leechesCopy.erase(itCopy);
 			
-			if(is_singular_leech(leech) ){
-				//Tratamos a las sanguijuelas singulares aparte
-				solution = singular_leech_resolution(system, L, U, b, leechesCopy, leech);
+		if (minCp >= 235.0) {
+			int leech_index = 0 ;
+			for (std::list<Leech>::iterator itLeech = leeches.begin(); itLeech != leeches.end(); ++itLeech) {
+				Leech leech = *itLeech;
+			
+				//Armamos una lista sin la sanguijuela
+				std::list<Leech> leechesCopy = std::list<Leech>(leeches);
+				std::list<Leech>::iterator itCopy = leechesCopy.begin();
+				advance(itCopy, leech_index); 
+				leechesCopy.erase(itCopy);
 				
-			} else {				
-				//Inicializamos el sistema sin la sanguijuela	
-				BDouble* b2 = new BDouble[system.columns()];
-				clean_system(system);
-				build_system(system, b2, leechesCopy);
-			
-				//Resolvemos el sistema
-				solution = gaussian_elimination(system, b2);
+				std::cout << "====== REMOVED LEECH ======" << std::endl;
+				std::cout << leech.x << " " << leech.y << " " << leech.radio << " " << leech.temperature << std::endl;			
+				
+				if(is_singular_leech(leech) ){
+					//Tratamos a las sanguijuelas singulares aparte
+					solution = singular_leech_resolution(system, L, U, b, leechesCopy, leech);
+					
+				} else {				
+					//Inicializamos el sistema sin la sanguijuela	
+					BDouble* b2 = new BDouble[system.columns()];
+					clean_system(system);
+					build_system(system, b2, leechesCopy);
+				
+					//Resolvemos el sistema
+					solution = gaussian_elimination(system, b2);
+					
+					//Liberamos memoria
+					delete[] b2;
+					
+				}
+				
+				BDouble cp = critic_point_temperature(system, solution.first);			
+				// Nos quedamos con la solucion si es mejor que la anterior 
+				if(cp < minCp) {
+					minX = solution.first;
+					minCp = cp;
+				} else {
+					delete[] solution.first;
+				}			
+				leech_index++;
 			}
-			
-			BDouble cp = critic_point_temperature(system, solution.first);			
-			// Nos quedamos con la solucion si es mejor que la anterior 
-			if(cp < minCp) {
-				minX = solution.first;
-				minCp = cp;
-			} else {
-				delete[] solution.first;
-			}			
-			leech_index++;
 		}
-		
+		std::cout << "MIN CPT: " << minCp << std::endl;	
 		load_temperature_matrix(minX, temperatures);		
 	}
 	
@@ -317,10 +341,25 @@ private:
 	}
 	
 	
+	BDouble * generate_sherman_morrison_b (const Matrix& system, BDouble* b, int leech_y, int leech_x) {
+		int columns = system.upper_bandwidth();
+		BDouble* b2 = new BDouble[system.columns()];
+		std::copy(b, b + system.columns(), b2);
+		//std::cout << "b2[" << (leech_y * columns) + leech_x << "] = " << b2[(leech_y * columns) + leech_x] << std::endl;
+		b2[(leech_y * columns) + leech_x] = 0.0;	
+		return b2;
+	}
+	
+	
 	std::pair<BDouble *, BDouble *> generate_sherman_morrison_uv (const Matrix& system, int leech_y, int leech_x) {
 		int columns = system.upper_bandwidth();
         int rows = system.rows() / columns;
         int limit = columns * rows;
+		
+		//std::cout << "columns: " << columns << std::endl;
+		//std::cout << "rows: " << rows << std::endl;
+		//std::cout << "limit: " << limit << std::endl;
+		
 		//Construimos el vector columna con un vector canonico	
 		//especificando la fila que corresponde a la ecuacion
 		//donde hay una sanguijuela
@@ -330,6 +369,7 @@ private:
             int j = ijEq % columns;
 			if(i == leech_y && j == leech_x) {
 				u[ijEq] = 1.0;
+				//std::cout << "u[" << ijEq << "] = " << 1.0 << std::endl; 
 			} else {
 				u[ijEq] = 0.0;
 			}
@@ -340,14 +380,18 @@ private:
 		//que corresponden a las diferencias finitas 		
 		BDouble* v = new BDouble[system.rows()];
 		for (int ijEq = 0; ijEq < limit; ijEq++) {
-			u[ijEq] = 0.0;
+			v[ijEq] = 0.0;
 		}
 		int i = leech_y;
         int j = leech_x;
-		u[(i * columns) + j - 1] = -0.25;
-        u[(i * columns) + j + 1] = -0.25;
-        u[((i - 1) * columns) + j] = -0.25;
-        u[((i + 1) * columns) + j] = -0.25;
+		v[(i * columns) + j - 1] = -0.25;
+        v[(i * columns) + j + 1] = -0.25;
+        v[((i - 1) * columns) + j] = -0.25;
+        v[((i + 1) * columns) + j] = -0.25;
+		//std::cout << "v[" << (i * columns) + j - 1 << "] = " << v[(i * columns) + j - 1] << std::endl; 
+		//std::cout << "v[" << (i * columns) + j + 1 << "] = " << v[(i * columns) + j + 1] << std::endl; 
+		//std::cout << "v[" << ((i - 1) * columns) + j<< "] = " << v[((i - 1) * columns) + j] << std::endl; 
+		//std::cout << "v[" << ((i + 1) * columns) + j << "] = " << v[((i + 1) * columns) + j] << std::endl; 
 		
 		return	std::pair<BDouble *, BDouble *>(u, v);
 		
@@ -378,7 +422,7 @@ private:
 					system(ijEq, ijEq-h) = 0.0;
 				}				
 				if(ijEq + h < limit) {
-					system(ijEq, ijEq-h) = 0.0;
+					system(ijEq, ijEq+h) = 0.0;
 				}
 			}
         }	
@@ -407,18 +451,18 @@ private:
                     if (coef <= std::pow(leech.radio, 2)) {
                         try {
                             if (associations.at(std::pair<int, int>(i, j)) < leech.temperature) {
-								std::cout << "(" << i << "," << j << ")" << " " << leech.temperature << std::endl;
+								//std::cout << "(" << i << "," << j << ")" << " " << leech.temperature << std::endl;
                                 associations[std::pair<int, int>(i, j)] = leech.temperature;
                             }
                         } catch(...) {
-							std::cout << "(" << i << "," << j << ")" << " " << leech.temperature << std::endl;
+							//std::cout << "(" << i << "," << j << ")" << " " << leech.temperature << std::endl;
                             associations[std::pair<int, int>(i, j)] = leech.temperature;
                         }
                     }
                 }
             }
         }
-		return associations;
+		return associations;	
 	}
 
     /**
@@ -458,6 +502,7 @@ private:
                     b[ijEq] = 	0.0;
 
                     // t[i-1][j] + t[i, j-1] - 4*t[i, j] + t[i+1, j] + t[i, j+1] = 0
+					// - t[i-1][j] - t[i, j-1] - t[i+1, j] - t[i, j+1] = 0 con t[i, j] = 0
                     system(ijEq, (i * columns) + j - 1) = -0.25;
                     system(ijEq, (i * columns) + j + 1) = -0.25;
                     system(ijEq, ((i - 1) * columns) + j) = -0.25;

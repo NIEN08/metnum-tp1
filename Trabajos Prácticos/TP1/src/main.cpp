@@ -5,6 +5,7 @@
 #include "Matrix.h"
 #include "Problem.h"
 
+
 int main(int argc, char *argv[]) {
 	enum Method solvingMethod = BAND_GAUSSIAN_ELIMINATION;
 
@@ -66,3 +67,14 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 }
+
+
+/*
+int main(int argc, char *argv[]) {
+	Matrix A(10, 10, 5, 5);
+	
+	A ()
+	
+	std::cout << A << std::endl;
+	
+}*/

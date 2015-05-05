@@ -38,6 +38,8 @@ public:
 
     Matrix(int N, int M, int lband = MAGIC_NUMBER, int uband = MAGIC_NUMBER)
             : N(N), M(M), uband(uband), lband(lband) {
+		
+				
         if (this->rows() == 0 || this->columns() == 0) {
             throw new std::out_of_range("Invalid matrix dimension");
         }
@@ -593,7 +595,7 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(
         Matrix &L,
         Matrix &U,
         BDouble* u,
-        BDouble* v, BDouble a, BDouble *b) {
+        BDouble* v, BDouble *b) {
     int N = std::min(L.rows(), L.columns());
 
     //Sherman-Morrison formula vectors
@@ -611,14 +613,14 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(
     std::pair<BDouble *, enum Solutions> solution;
     solution = forward_substitution(L, b);
     y2 = solution.first;
-    solution = forward_substitution(U, u);
+    solution = forward_substitution(L, u);
     z2 = solution.first;
 
     //Then we solve:
     // U y = y2 and U z = z2
     BDouble* y;
     BDouble* z;
-    solution = backward_substitution(L, y2);
+    solution = backward_substitution(U, y2);
     y = solution.first;
     solution = backward_substitution(U, z2);
     z = solution.first;
@@ -635,10 +637,11 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(
         vy += v[h] * y[h];
         vz += v[h] * z[h];
     }
-
-    //Finally we calculate x = y + z * k
+	BDouble k = (vy / vz);
+	
+    //Finally we calculate x = y - z * k
     for (int h = 0; h < N; h++) {
-        x[h] = y[h] - (z[h] * (vy / vz));
+        x[h] = y[h] - (z[h] * k);
     }
     delete[] y;
     delete[] z;
