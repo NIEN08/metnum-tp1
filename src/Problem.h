@@ -210,6 +210,7 @@ private:
 					
 			// Resolvemos utilizando LU
 			solution = lu_resolution(L, U, b2);
+			delete[] b2;	
 				
 		} else {
 			//Podemos aprovechar sherman-morrison!!
