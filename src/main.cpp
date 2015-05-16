@@ -5,8 +5,6 @@
 #include "Matrix.h"
 #include "Problem.h"
 
-
-//Merge nacho
 int main(int argc, char *argv[]) {
 	enum Method solvingMethod = BAND_GAUSSIAN_ELIMINATION;
 
@@ -24,8 +22,7 @@ int main(int argc, char *argv[]) {
 
 	// Abrir el archivo de entrada
 	std::ifstream handle(argv[1], std::ios::in);
-
-	BDouble width, height, h;
+	double width, height, h;
 	unsigned amount;
 
 	handle >> width >> height >> h >> amount;
@@ -33,7 +30,7 @@ int main(int argc, char *argv[]) {
 	// Levantamos las posiciones de las sanguijuelas
 	std::list<Leech> leeches = std::list<Leech>();
 
-	for (int i = 0; i < amount; i++) {
+	for (unsigned i = 0; i < amount; i++) {
 		Leech l = Leech();
 		handle >> l.x >> l.y >> l.radio >> l.temperature;
 		leeches.push_back(l);

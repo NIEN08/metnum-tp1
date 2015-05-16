@@ -5,7 +5,6 @@
 #include <cassert>
 #include <utility>
 #include <iostream>
-#include "BDouble.h"
 
 enum Solutions {
     INFINITE,
@@ -20,6 +19,8 @@ enum Solutions {
 * Matriz Banda.
 */
 
+const double zero = 0.0;
+
 //Merge nacho
 class Matrix {
     friend std::ostream &operator<<(std::ostream &, const Matrix &);
@@ -27,10 +28,10 @@ public:
     Matrix(const Matrix &m)
             : N(m.rows()), M(m.columns()), uband(m.upper_bandwidth()), lband(m.lower_bandwidth()) {
         int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
-        this->matrix = new BDouble*[this->rows()];
+        this->matrix = new double*[this->rows()];
 
         for (int i = 0; i < this->rows(); ++i) {
-            this->matrix[i] = new BDouble[bound];
+            this->matrix[i] = new double[bound];
 
             for (int j = 0; j < bound; ++j) {
                 this->matrix[i][j] = m.matrix[i][j];
@@ -55,10 +56,10 @@ public:
         }
 
         int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
-        this->matrix = new BDouble*[this->rows()];
+        this->matrix = new double*[this->rows()];
 
         for (int i = 0; i < this->rows(); ++i) {
-            this->matrix[i] = new BDouble[bound];
+            this->matrix[i] = new double[bound];
 
             for (int j = 0; j < bound; ++j) {
                 this->matrix[i][j] = 0.0;
@@ -82,7 +83,7 @@ public:
         return this->lband;
     }
 
-    BDouble &operator()(const int &i, const int &j) {
+    double &operator()(const int &i, const int &j) {
         if (i >= this->rows() || j >= this->columns()) {
             throw new std::out_of_range("Index access out of range");
         }
@@ -94,7 +95,7 @@ public:
         }
     }
 
-    const BDouble &operator()(const int &i, const int &j) const {
+    const double &operator()(const int &i, const int &j) const {
         if (i >= this->rows() || j >= this->columns()) {
             throw new std::out_of_range("Index access out of range");
         }
@@ -130,10 +131,10 @@ public:
 
             // Crear matriz nueva
             int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
-            this->matrix = new BDouble*[m.rows()];
+            this->matrix = new double*[m.rows()];
 
             for (int i = 0; i < this->rows(); ++i) {
-                this->matrix[i] = new BDouble[bound];
+                this->matrix[i] = new double[bound];
 
                 for (int j = 0; j < bound; ++j) {
                     // Copiar los valores de la matriz
@@ -185,10 +186,10 @@ public:
                 int new_bound = new_lband + new_uband + 1;
 
                 // Creamos una nueva matriz que guarda directamente la suma
-                BDouble **output = new BDouble*[this->rows()];
+                double **output = new double*[this->rows()];
 
                 for (int i = 0; i < this->rows(); ++i) {
-                    output[i] = new BDouble[new_bound];
+                    output[i] = new double[new_bound];
 
                     for (int j = 0; j < new_bound; ++j) {
                         output[i][j] = this->matrix[i][j + i - this->lower_bandwidth()] + m.matrix[i][j + i - m.lower_bandwidth()];
@@ -217,7 +218,7 @@ public:
         return *this;
     }
 
-    Matrix &operator*=(const BDouble &c) {
+    Matrix &operator*=(const double &c) {
         int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
 
         for (int i = 0; i < this->rows(); ++i) {
@@ -242,7 +243,7 @@ private:
     int M;
     int uband;
     int lband;
-    BDouble **matrix;
+    double **matrix;
 };
 
 std::ostream &operator<<(std::ostream &os, const Matrix &m) {
@@ -265,7 +266,7 @@ Matrix operator+(const Matrix &m, const Matrix &n) {
     return output;
 }
 
-Matrix operator*(const Matrix &m, const BDouble &c) {
+Matrix operator*(const Matrix &m, const double &c) {
     Matrix output(m);
     output *= c;
     return output;
@@ -305,14 +306,14 @@ Matrix operator*(const Matrix &m, const Matrix &n) {
 
 // m tiene que estar triangulada
 // el usuario libera la memoria
-std::pair<BDouble *, enum Solutions> backward_substitution(const Matrix &m, BDouble *b) {
-    BDouble *x = new BDouble[m.columns()];
+std::pair<double *, enum Solutions> backward_substitution(const Matrix &m, double *b, double precision = 0.0000001) {
+    double *x = new double[m.columns()];
     enum Solutions solution = SINGLE;
 
     int N = std::min(m.rows(), m.columns());
 
     for (int d = N-1; d >= 0; d--){
-        if (m(d, d) == 0.0) {
+        if (m(d, d) < precision) {
             x[d] = 1.0;
             solution = INFINITE;
         } else {
@@ -328,19 +329,19 @@ std::pair<BDouble *, enum Solutions> backward_substitution(const Matrix &m, BDou
         }
     }
 
-    return std::pair<BDouble *, enum Solutions>(x, solution);
+    return std::pair<double *, enum Solutions>(x, solution);
 }
 
 // m tiene que estar triangulada
 // el usuario libera la memoria
-std::pair<BDouble *, enum Solutions> forward_substitution(const Matrix &m, BDouble *b) {
-    BDouble *x = new BDouble[m.columns()];
+std::pair<double *, enum Solutions> forward_substitution(const Matrix &m, double *b, double precision = 0.0000001) {
+    double *x = new double[m.columns()];
     enum Solutions solution = SINGLE;
 
     int N = std::min(m.rows(), m.columns());
 
     for (int d = 0; d < N; ++d) {
-        if (m(d, d) == 0.0) {
+        if (m(d, d) < precision) {
             x[d] = 1.0;
             solution = INFINITE;
         } else {
@@ -355,17 +356,17 @@ std::pair<BDouble *, enum Solutions> forward_substitution(const Matrix &m, BDoub
         }
     }
 
-    return std::pair<BDouble *, enum Solutions>(x, solution);
+    return std::pair<double *, enum Solutions>(x, solution);
 }
 
-std::pair<BDouble *, enum Solutions> gaussian_elimination(Matrix workspace, BDouble *b) {
+std::pair<double *, enum Solutions> gaussian_elimination(Matrix workspace, double *b) {
     int diagonal = std::min(workspace.columns(), workspace.rows());
 
     for (int d = 0; d < diagonal; ++d) {
         // Tenemos algo distinto de cero en la base
         for (int i = d + 1; i < std::min(workspace.rows(), d + workspace.lower_bandwidth() + 1); ++i) {
             // Tenemos algo distinto de cero en alguna fila más abajo
-            BDouble coefficient = workspace(i, d)/workspace(d, d);
+            double coefficient = workspace(i, d)/workspace(d, d);
 
             // Realizamos el mismo cambio en la solución del sistema
             b[i] -= coefficient * b[d];
@@ -384,7 +385,7 @@ std::pair<BDouble *, enum Solutions> gaussian_elimination(Matrix workspace, BDou
 }
 
 
-std::pair<Matrix, Matrix> LU_factorization(const Matrix &A) {
+std::pair<Matrix, Matrix> LU_factorization(const Matrix &A, double precision = 0.0000001) {
     // El tamaño de la diagonal
     int N = std::min(A.rows(), A.columns());
 
@@ -417,7 +418,7 @@ std::pair<Matrix, Matrix> LU_factorization(const Matrix &A) {
     U(0,0) = A(0,0);
     L(0,0) = 1.0;
 
-    if (U(0,0) == 0.0) {
+    if (U(0,0) < precision) {
         // No podemos factorizar
         throw new std::out_of_range("Factorization impossible");
     }
@@ -447,7 +448,7 @@ std::pair<Matrix, Matrix> LU_factorization(const Matrix &A) {
         }
         U(i,i) /= L(i,i);
 
-        if ( U (i,i) == 0.0) {
+        if (U (i,i) < precision) {
             // No podemos factorizar
             throw new std::out_of_range("Factorization impossible");
         }
@@ -527,14 +528,14 @@ std::pair<Matrix, Matrix> LU_factorization(const Matrix &A) {
 * - j columna del elemento a modificar.
 * - a nuevo valor de la posicion (i, j)
 **/
-std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix &A, Matrix &L, Matrix &U,
-                                                      int i, int j, BDouble a, BDouble *b) {
+std::pair<double *, enum Solutions> sherman_morrison(Matrix &A, Matrix &L, Matrix &U,
+                                                      int i, int j, double a, double *b) {
     int N = std::min(A.rows(), A.columns());
 
     //Sherman-Morrison formula vectors
     //Altered system: A2 = (A + uv')
-    BDouble* u = new BDouble[N];
-    BDouble* v = new BDouble[N];
+    double* u = new double[N];
+    double* v = new double[N];
 
     for (int k = 0; k < N; k++) {
         u[k] = 0.0;
@@ -552,10 +553,10 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix &A, Matrix &L, Matr
 
     //First we solve:
     // L y2 = b and L z2 = u
-    BDouble* y2;
-    BDouble* z2;
+    double* y2;
+    double* z2;
 
-    std::pair<BDouble *, enum Solutions> solution;
+    std::pair<double *, enum Solutions> solution;
     solution = forward_substitution(L, b);
     y2 = solution.first;
     solution = forward_substitution(U, u);
@@ -563,8 +564,8 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix &A, Matrix &L, Matr
 
     //Then we solve:
     // U y = y2 and U z = z2
-    BDouble* y;
-    BDouble* z;
+    double* y;
+    double* z;
     solution = backward_substitution(L, y2);
     y = solution.first;
     solution = backward_substitution(U, z2);
@@ -573,11 +574,11 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix &A, Matrix &L, Matr
     delete[] z2;
 
     //Finally x = y - z * [(v' y)/(1 + v' z)]
-    BDouble* x = new BDouble[N];
+    double* x = new double[N];
 
     //First we calculate k = (v' y)/(1 + v' z) (scalar value)
-    BDouble vy = 0.0;
-    BDouble vz = 1.0;
+    double vy = 0.0;
+    double vz = 1.0;
     for (int h = 0; h < N; h++) {
         vy += v[h] * y[h];
         vz += v[h] * z[h];
@@ -590,14 +591,14 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(Matrix &A, Matrix &L, Matr
     delete[] y;
     delete[] z;
 
-    return  std::pair<BDouble *, enum Solutions>(x, SINGLE);
+    return  std::pair<double *, enum Solutions>(x, SINGLE);
 }
 
-std::pair<BDouble *, enum Solutions> sherman_morrison(
+std::pair<double *, enum Solutions> sherman_morrison(
         Matrix &L,
         Matrix &U,
-        BDouble* u,
-        BDouble* v, BDouble *b) {
+        double* u,
+        double* v, double *b) {
     int N = std::min(L.rows(), L.columns());
 
     //Sherman-Morrison formula vectors
@@ -609,10 +610,10 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(
 
     //First we solve:
     // L y2 = b and L z2 = u
-    BDouble* y2;
-    BDouble* z2;
+    double* y2;
+    double* z2;
 
-    std::pair<BDouble *, enum Solutions> solution;
+    std::pair<double *, enum Solutions> solution;
     solution = forward_substitution(L, b);
     y2 = solution.first;
     solution = forward_substitution(L, u);
@@ -620,8 +621,8 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(
 
     //Then we solve:
     // U y = y2 and U z = z2
-    BDouble* y;
-    BDouble* z;
+    double* y;
+    double* z;
     solution = backward_substitution(U, y2);
     y = solution.first;
     solution = backward_substitution(U, z2);
@@ -630,16 +631,16 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(
     delete[] z2;
 
     //Finally x = y - z * [(v' y)/(1 + v' z)]
-    BDouble* x = new BDouble[N];
+    double* x = new double[N];
 
     //First we calculate k = (v' y)/(1 + v' z) (scalar value)
-    BDouble vy = 0.0;
-    BDouble vz = 1.0;
+    double vy = 0.0;
+    double vz = 1.0;
     for (int h = 0; h < N; h++) {
         vy += v[h] * y[h];
         vz += v[h] * z[h];
     }
-	BDouble k = (vy / vz);
+	double k = (vy / vz);
 	
     //Finally we calculate x = y - z * k
     for (int h = 0; h < N; h++) {
@@ -648,7 +649,7 @@ std::pair<BDouble *, enum Solutions> sherman_morrison(
     delete[] y;
     delete[] z;
 
-    return  std::pair<BDouble *, enum Solutions>(x, SINGLE);
+    return  std::pair<double *, enum Solutions>(x, SINGLE);
 }
 
 
