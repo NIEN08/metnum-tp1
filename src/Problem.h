@@ -398,17 +398,30 @@ private:
 		return	std::pair<BDouble *, BDouble *>(u, v);
 		
 	}
-	
-	BDouble critic_point_temperature (Matrix& system, BDouble* solution) {
-		int cpX = std::ceil((this->width / 2.0) / h); 
-		int cpY = std::ceil((this->height / 2.0) /h );
-		int ijEq = (cpY * system.upper_bandwidth()) + cpX;
-		std::cout << "===== CRITIC POINT =====" << std::endl;
-		std::cout << "cpX: " << cpX << std::endl;
-		std::cout << "cpY: " << cpY << std::endl;
-		std::cout << "ijEq: " << ijEq << std::endl;
-		std::cout << "solution[ijEq]: " << solution[ijEq] << std::endl;
-		return solution[ijEq];
+
+	double critic_point_temperature(const Matrix &system, BDouble *solution) {
+		double centerJ = this->width / 2.0;
+		double centerI = this->height / 2.0;
+
+		double topJ = std::min(centerJ/double(this->h) + 1.0, double(this->width)/double(this->h) - 1.0);
+		double bottomJ = std::max(centerJ/double(this->h) - 1, 1.0);
+
+		double topI = std::min(centerI/double(this->h) + 1.0, double(this->height)/double(this->h) - 1.0);
+		double bottomI = std::max(centerI/double(this->h) - 1.0, 1.0);
+
+		double output = 0.0;
+		double k = 0;
+
+		for (int i = std::ceil(bottomI); i <= std::floor(topI); ++i) {
+			for (int j = std::ceil(bottomJ); j <= std::floor(topJ); ++j) {
+				output += solution[i*system.columns() + j];
+				++k;
+			}
+		}
+
+		output /= k;
+
+		return output;
 	}
 	
 	void clean_system (Matrix& system) {
