@@ -20,7 +20,6 @@ enum Solutions {
 * Matriz Banda.
 */
 
-//Merge nacho
 class Matrix {
     friend std::ostream &operator<<(std::ostream &, const Matrix &);
 public:
@@ -99,134 +98,13 @@ public:
             throw new std::out_of_range("Index access out of range");
         }
 
-        //std::cout << "(" << i << "," << j << ")" << std::endl;
-        //std::cout << "lower_bandwith " << this->lower_bandwidth() << std::endl;
-        //std::cout << "upper_bandwith: " <<  this->upper_bandwidth() << std::endl;
-
         if (i > j + this->lower_bandwidth()) {
             return zero;
         } else if (j > i + this->upper_bandwidth()) {
             return zero;
         } else {
-            //std::cout << "matrix[" << i << "][" << j - i + this->lower_bandwidth() << "]" << std::endl;
             return matrix[i][j - i + this->lower_bandwidth()];
         }
-    }
-
-    Matrix &operator=(const Matrix &m) {
-        if (*this != m) {
-            // Limpiar memoria.
-            for (int i = 0; i < this->rows(); ++i) {
-                delete[] this->matrix[i];
-            }
-
-            delete[] this->matrix;
-
-            // Poner información de la representación interna
-            this->N = m.rows();
-            this->M = m.columns();
-            this->lband = m.lower_bandwidth();
-            this->uband = m.upper_bandwidth();
-
-            // Crear matriz nueva
-            int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
-            this->matrix = new BDouble*[m.rows()];
-
-            for (int i = 0; i < this->rows(); ++i) {
-                this->matrix[i] = new BDouble[bound];
-
-                for (int j = 0; j < bound; ++j) {
-                    // Copiar los valores de la matriz
-                    this->matrix[i][j] = m.matrix[i][j];
-                }
-            }
-        }
-
-        return *this;
-    }
-
-    bool operator==(const Matrix &m) const {
-        if (this->rows() != m.rows() || this->columns() != m.columns()) {
-            return false;
-        } else {
-            for (int i = 0; i < this->rows(); i++) {
-                for (int j = 0; j < this->columns(); j++) {
-                    if ((*this)(i, j) != m(i, j)) {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-    }
-
-    bool operator!=(const Matrix &m) const {
-        return !(*this == m);
-    }
-
-    Matrix &operator+=(const Matrix &m) {
-        if (this->rows() == m.rows() && this->columns() == m.columns()) {
-            // Si podemos sumar
-
-            if (this->lower_bandwidth() == m.lower_bandwidth() && this->upper_bandwidth() == m.upper_bandwidth()) {
-                // Si tenemos dos matrices banda con los mismos anchos de banda, simplemente sumamos la matriz miembro a miembro.
-                int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
-
-                for (int i = 0; i < this->rows(); ++i) {
-                    for (int j = 0; j < bound; ++j) {
-                        this->matrix[i][j] += m.matrix[i][j];
-                    }
-                }
-            } else {
-                // Si no, nos fijamos cuales son los nuevos anchos de banda
-                int new_lband = std::max(this->lower_bandwidth(), m.lower_bandwidth());
-                int new_uband = std::max(this->upper_bandwidth(), m.lower_bandwidth());
-                int new_bound = new_lband + new_uband + 1;
-
-                // Creamos una nueva matriz que guarda directamente la suma
-                BDouble **output = new BDouble*[this->rows()];
-
-                for (int i = 0; i < this->rows(); ++i) {
-                    output[i] = new BDouble[new_bound];
-
-                    for (int j = 0; j < new_bound; ++j) {
-                        output[i][j] = this->matrix[i][j + i - this->lower_bandwidth()] + m.matrix[i][j + i - m.lower_bandwidth()];
-                    }
-                }
-
-                // Nos aseguramos que los cambios sean efectivos
-                this->lband = new_lband;
-                this->uband = new_uband;
-
-                // Borramos la matriz vieja
-                for (int i = 0; i < this->rows(); ++i) {
-                    delete[] this->matrix[i];
-                }
-
-                delete[] this->matrix;
-
-                // Terminamos de fijar los cambios
-                this->matrix = output;
-            }
-        } else {
-            // No podemos sumar
-            throw new std::out_of_range("Different dimensions for matrix sum");
-        }
-
-        return *this;
-    }
-
-    Matrix &operator*=(const BDouble &c) {
-        int bound = this->lower_bandwidth() + this->upper_bandwidth() + 1;
-
-        for (int i = 0; i < this->rows(); ++i) {
-            for (int j = 0; j < bound; ++j) {
-                this->matrix[i][j] *= c;
-            }
-        }
-
-        return *this;
     }
 
     ~Matrix() {
@@ -257,46 +135,6 @@ std::ostream &operator<<(std::ostream &os, const Matrix &m) {
     os << std::endl;
 
     return os;
-}
-
-Matrix operator+(const Matrix &m, const Matrix &n) {
-    Matrix output(m);
-    output += n;
-    return output;
-}
-
-Matrix operator*(const Matrix &m, const BDouble &c) {
-    Matrix output(m);
-    output *= c;
-    return output;
-}
-
-// TODO: hay que revisar absolutamente TODOS los FOR que vayan por la diagonal:
-// TODO: restar puede llevar a irse a la mierda con el indice por ir a valores "negativos"
-// TODO: sumar puede terminar por irse a valores positivos chicos.
-// TODO: esto no funciona.
-Matrix operator*(const Matrix &m, const Matrix &n) {
-    if (m.columns() == n.rows()) {
-        int max_lower_upper = std::max(m.lower_bandwidth(), n.upper_bandwidth());
-        int max_upper_lower = std::max(m.upper_bandwidth(), n.lower_bandwidth());
-
-        Matrix output(m.rows(), n.columns(), max_lower_upper, max_upper_lower);
-
-        int diagonal = std::min(output.columns(), output.rows());
-
-        for (int d = 0; d < diagonal; ++d) {
-            for (int j = d - output.lower_bandwidth(); j < std::min(d + output.upper_bandwidth(), output.columns()); ++j) {
-
-                for (int k = 0; k < output.columns();  ++k) {
-                    output(d, j) += m(d, k) * n(k, j);
-                }
-            }
-        }
-
-        return output;
-    } else {
-        throw new std::out_of_range("Matrix product between incompatible matrices.");
-    }
 }
 
 /***********************************************************************************************************************
