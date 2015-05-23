@@ -105,9 +105,7 @@ private:
         // Sea A la matriz del sistema de ecuaciones,
         // factorizamos A = LU con L, U triangulares inferior/superior
         std::pair<Matrix, Matrix> factors = LU_factorization(A);
-        Matrix& L = factors.first;
-        Matrix& U = factors.second;
-		std::pair<BDouble *, enum Solutions> finalSolution = lu_resolution(L, U, b);
+		std::pair<BDouble *, enum Solutions> finalSolution = lu_resolution(factors.first, factors.second, b);
     
         //Cargamos la solucion en la matriz de temperaturas
         load_temperature_matrix(finalSolution.first, temperatures);
@@ -257,9 +255,9 @@ private:
 		build_system(system, b, this->leeches);
 		
 		if (singular_leeches_count() < 2) {
-			//Si la cantidad de sanguijuelas singulares es menor es 0 o 1
-			//no tiene sentido obtener la factorizacion LU de la matriz.
-			//Basta con utilizar la version simple del metodo
+			// Si la cantidad de sanguijuelas singulares es menor es 0 o 1
+			// no tiene sentido obtener la factorizacion LU de la matriz.
+			// Basta con utilizar la version simple del metodo
 			simple_algorithm(system, b, temperatures);
 			return;	
 		}
