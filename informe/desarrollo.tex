@@ -6,27 +6,30 @@ notamos un patron en el comportamiento del sistema. Por lo tanto recrearemos a c
 evoluci\'on en la comprenci\'on de este problema particular.
 
 Asumamos que recibimos un archivo de entrada con los siguientes parametros:\\
+
 3 3 1 1\\
 0.5 2.5 1 500
 
-entonces el problema modelado es de la pinta$^6$:\footnotetext[6]{Aclaramos, para los portadores de una imaginaci\'on poco delirante, 
-que la circusferencia negra representa una sanguijuela mutante y el cuadrado celeste, al parabrisas.}
+entonces el problema modelado es de la pinta$^6$:\footnotetext[6]{Aclaramos, para los portadores de una imaginación poco delirante, 
+que la circunferencia negra representa una sanguijuela mutante y el cuadrado celeste, al parabrisas.}
 
-\begin{figure}[H]
+\begin{figure}[]
     \includegraphics[width=0.3\textwidth]{ejP01}
-    \caption{Imagen ilustrativa del parabrisas.}
-\end{figure}
-Luego lo representaremos como muestra el grafico a continuacion, donde cada intersecion de las lineas representa una variable del modelo, de la cual
-debemos averiguar su temperatura.
-\begin{figure}[H]
-    \includegraphics[width=0.3\textwidth]{ejP02}
-    \caption{Representaci\'on visual del modelo discretizado.}
+    \caption{Imagen ilustrativa del parabrisas}
 \end{figure}
 
-Notese que, si bien C, D y H pertenecen al radio de una sanguijuela, al formar parte del borde estan acondicionados por el sistema de refrigeracion,
+Luego lo representaremos como muestra el gráfico a continuación, donde cada intersecion de las lineas representa una variable del modelo, de la cual
+debemos averiguar su temperatura.
+
+\begin{figure}[]
+    \includegraphics[width=0.3\textwidth]{ejP02}
+    \caption{Representación visual del modelo discretizado}
+\end{figure}
+
+Notese que, si bien C, D y H pertenecen al radio de una sanguijuela, al formar parte del borde estan acondicionados por el sistema de refrigeración,
 por lo cual su temperatura es $-100$ en lugar de $500$.
 
-Planteando la ecuacion de temperatura para cada variable y despejando, obtenemos el siguiente sistema de ecuaciones $Ax=B$:
+Planteando la ecuación de temperatura para cada variable y despejando, obtenemos el siguiente sistema de ecuaciones $Ax=B$:
 \begin{equation}
  a\ =\ -100
 \end{equation}
@@ -151,111 +154,6 @@ tales que $uv^t=B$.
 \input{s-m.tex}
 
 \subsubsection{Pseudoc\'odigo}
-
-\begin{codesnippet}
-\begin{verbatim}
-vector, solucion backwardsubstitution( Matriz m, vector b )
-fijo i en la \'ultima fila de la matriz m para resolver el sistema de abajo para arriba
-mientras
-  si en la diagonal hay un 0 entonces
-    hay infinitas soluciones
-  sino
-    empiezo a resolver el sistema de abajo para arriba 
-    tantas veces como el tama\~no de la banda superior
-
-    cuando llego a la diagonal divido lo que tenia acumulado 
-    por el elemento de la diagonal
-    
-  si i es igual a 0 salgo del ciclo     
-devuelvo el vector x y el tipo de soluci\'on\end{verbatim}
-\end{codesnippet}
-
-\begin{codesnippet}
-\begin{verbatim}
-vector, solucion forward_substitution( Matriz m, vector b )
-  fijo i en la primera fila de la matriz m para resolver el sistema de arriba para abajo
-  si en la diagonal hay un 0 entonces        
-    hay infinitas soluciones
-  sino
-    empiezo a resolver el sistema de arriba para abajo 
-    tantas veces como el tama\~no de la banda inferior
-    
-    cuando llego a la diagonal divido lo que tenia acumulado 
-    por el elemento de la diagonal
-    
-  devuelvo el vector x y el tipo de soluci\'on
- 
-\end{verbatim}
-\end{codesnippet}
-
-
-\begin{codesnippet}
-\begin{verbatim}
- 
-<vector, soluci\'on> eliminacion_gaussiana( Matriz A, vector b )
-
-	diagonal es el m\'inimo entre las columnas de A y las filas de A
-
-	recorro tantas veces como dice el n\'umero diagonal 
-
-		recorro tantas veces como el tamano de la banda inferior, 
-
-			busco el coeficiente y empiezo a triangular para resolver el sistema
-
-			me fijo que el coeficiente no sea 0
-
-			el coeficiente es A[i,d]/[d,d] 
-			eso me sirve para que cuando triangulo me quede 0 en donde estoy parado 
-			y asi me queda la matriz triangular superior.
-
-	Realizamos la resta a toda la fila.
-
-hago backward_substitution de la Matriz A y con el vector b y devuelvo el resultado 
- 
-\end{verbatim}
-\end{codesnippet}
-
-
-\begin{codesnippet}
-\begin{verbatim}
- 
-Matrix L, Matrix U LU_factorization( Matriz A )
-
-creo la matriz L y U que van a tener el mismo tama\~no que la matriz A
-
-seteo en 1 las diagonales de las matrices L y U
-
-Me fijo que no haya un 0 en la posicion (0, 0) de la matriz U 
-porque sino no puedo factorizar
-
-seteo la primer fila de la matriz U y la primer columna de la matriz L
-
-los elementos de la banda de la matriz U van a ser los mismos 
-que de la banda de la matriz A
-
-  Ac\'a resuelvo el sistema para la fila i de la matriz y lo hago tantas veces 
-  como el m\'inimo entre el tama\~no de la banda inferior y superior.
-  
-  Voy resolviendo el sistema restando la fila i y acumulando en U(i,i). 
-  Mientras voy guardando los coeficientes en la Matriz L
-  
-  Divido lo que hab\'ia en la diagonal de la matriz U 
-  por que lo que hab\'ia en la diagonal de la matriz L. 
-  
-  Si el resultado es 0 entonces no podemos factorizar.
-  
-  Completo las matrices U y L. 
-  
-  seteo la ultima posici\'on de la Matriz U 
-  con el elemento (N-1, N-1) de la matriz A.
-  
-devuelvo la matriz L triangular inferior con los resultados 
-y la matriz U triangulada y triangular superior.
- 
-\end{verbatim} 
-\end{codesnippet}
-
-
 
 \subsection{Sobre la experimentaci\'on}
 
