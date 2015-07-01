@@ -2,12 +2,13 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import re
 
 if __name__ == '__main__':
 	if (len(sys.argv) != 3):
 		print 'Usange python graphsol.py input_file sol_file'
 		sys.exit()
-		
+
 	spos = []
 	# Read input file.
 	with open(sys.argv[1],'r') as f:
@@ -20,11 +21,12 @@ if __name__ == '__main__':
 		ts = np.zeros(k)
 		for i in xrange(k):
 			aux = map(float,f.readline().split())
-			spos[i,:] = aux[0:2]
-			rs[i] = aux[2]
-			ts[i] = aux[3]
+			if aux != []:
+				spos[i,:] = aux[0:2]
+				rs[i] = aux[2]
+				ts[i] = aux[3]
 
-	# Create empty matrix. 
+	# Create empty matrix.
 	tij = np.zeros(shape=((n+1),(m+1)))
 
 	# Read solution.
