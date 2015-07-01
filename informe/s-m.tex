@@ -1,4 +1,4 @@
-Sherman-Morrison nos proponen la siguiente Formula:
+Sherman-Morrison nos proponen la siguiente fórmula:
 
 $x = (A + uv^{t})^{-1} b = A^{-1}b -  \dfrac{v^{t}A^{-1}b}{1+v^{t}A^{-1}u} A^{-1}u$
 
@@ -7,20 +7,20 @@ Pero sabemos que:
 $A^{-1}b = y \iff Ay = b 
 A^{-1}u = z \iff Az = u $
 
-Suponiendo que ya resolvimos el sistema A antes de la modificacion, tenemos su descomposicion, $ LU=A $. Por lo que basta resolver: $\\\
+Suponiendo que ya resolvimos el sistema A antes de la modificación, tenemos su descomposición, $ LU=A $. Por lo que basta resolver: $\\\
 Ly_{2} = y $ y $ Lz_{2}=z$
 
 Luego, $ Uy=y_{2} $ y $ Uz=z_{2}$
-Una vez calculados $ y $ y $ z $ estamos en condiciones de resolver la expresion. Notemos que
+Una vez calculados $ y $ y $ z $ estamos en condiciones de resolver la expresión. Notemos que
 
 $ \dfrac{v^{t}A^{-1}b}{1+v^{t}A^{-1}u} $ es un escalar.
 
 Finalmente $ x = y +  \dfrac{v^{t}y}{1+v^{t}z} z$
 
 
-En cuanto a $ uv^{t} $ recordemos que vamos a usar sherman-morrison para sistemas que cambiar una sola fila i, por lo que nos basta con
-conseguir que $ uv^{t} $ sea una matriz que modifique apropiadamente dicha fila. Por lo tanto tomamos a $u$ como el i-esimo vector de la base canonica,
-y a $v$ como la modificacacion que nesesitamos para tranformar la fila i.
+En cuanto a $ uv^{t} $ recordemos que vamos a usar Sherman-Morrison para sistemas que cambian una sola fila i, por lo que nos basta con
+conseguir que $ uv^{t} $ sea una matriz que modifique apropiadamente dicha fila. Por lo tanto tomamos a $u$ como el i-ésimo vector de la base canónica,
+y a $v$ como la modificación que necesitamos para transformar la fila i.
 
 
 
