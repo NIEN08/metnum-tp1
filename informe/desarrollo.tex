@@ -8,7 +8,7 @@ evolución en la comprensión de este problema particular.
 Asumamos que recibimos un archivo de entrada con los siguientes parámetros:\\
 
 3 \ \ \ \   3  \ \ \ \ 1 \ \ \ \ 1\\
-0.5  \ \ \ \ 2.5 \ \ \ \ 1  \ \ \ \ 500
+2.5  \ \ \ \ 2.5 \ \ \ \ 1  \ \ \ \ 500
 
 entonces el problema modelado es de la pinta$^6$:\footnotetext[6]{Aclaramos
 que la circunferencia negra representa una sanguijuela mutante y el cuadrado celeste, al parabrisas.}
@@ -115,41 +115,31 @@ Notar que en las ecuaciones, o lo que es lo mismo, matriz asociada al sistema no
  en las ecuaciones de calor automáticamente los valores conocidos, como los del borde o los afectados por sanguijuelas. Un ejemplo de esto se daría 
  al usar las ecuaciones (4), (7) y (9) para reemplazar los valores en la ecuación (8). Tomamos esta decisión porque consideramos que esos reemplazos son parte
  de la resolución total del sistema, por lo que deberían verse reflejados en la medición de tiempos. Sin embargo, si hiciéramos los reemplazos 
- en la generación de la matriz asociada al sistema, no podríamos medirlos con confiabilidad pues tendríamos la lectura de datos como outlier.
+ en la generación de la matriz asociada al sistema, no podríamos medirlos con confiabilidad pues tendríamos la lectura de datos como outlier. También debemos tener en cuenta el caso de que, por algún motivo, se deba cambiar el valor de la temperatura de los bordes. Dise\~nado de este modo, tenemos mayor escalabilidad^8. \footnotetext[8]{Buscando siempre seguir las buenas practicas de programación}
 
 Dejaremos el ejemplo hasta aquí, pues la resolución del sistema no aporta información útil. Sin embargo, una vez que hallamos esta estructura 
 procedimos a realizar la carga de datos de modo que la matriz asociada a nuestro sistema fuese una matriz banda-n. Ahora explicaremos el desarrollo del código.
-%\footnotetext[8]{Por dato del enunciado, en ese momento sabiamos que debiamos obtener una matriz banda a partir del sistema, si bien no sabiamos como
-%organizar los datos para obtenerla.}
+%\footnotetext[8]{Por dato del enunciado, en ese momento sabiamos que debimos obtener una matriz banda a partir del sistema, si bien no sabiamos como organizar los datos para obtenerla.}
 
-El lenguaje empleado para la implementación es C++. Si bien la elección del lenguaje podría considerarse arbitraria, se debió principalmente a la 
-cantidad de herramientas y librerías provistas por este lenguaje. 
+El lenguaje empleado para la implementación es C++. Si bien la elección del lenguaje podría considerarse arbitraria, se debió principalmente a la gran
+cantidad de herramientas y librerías provistas por este lenguaje, a diferencia de la otra opción dada por la cátedra. 
 
-En primer instancia, creamos una clase llamada BDouble para representar decimales de
-precisión doble para guardar el error estimado acumulado. Esto nos sirvió a la hora de debbugear el código.
-Luego creamos la clase Matrix, que representa a las matrices como un vector de vectores de BDouble. 
-Además guarda la dimensión de la matriz, el ancho y alto de la banda. Para mejorar la complejidad espacial, solo guarda por fila aquellos
-coeficientes pertenecientes a la banda, o sea, aquellos que no valen necesariamente cero. Esta clase provee las funciones básicas para matriz, como 
-consultar su dimensión o sumar múltiplos de filas entre si, pero además, contiene las funciones gaussian\_elimination, LU\_factorization, backward\_substitution y 
-forward\_substitution. 
 
-Si bien nuestra primera idea fue crear una clase aparte para estos métodos, y por claridad abstraernos en esta de la 
-representación interna de la matriz, al hacerlo nos topamos con un problema en los header's del código. Al no poder descubrir el motivo
-de dicho problema, recurrimos a la cátedra en busca de consejo. Aun así, no encontramos el motivo. Es por esto que incluimos la implementación de
-estos algoritmos en la clase Matrix. 
-
-Luego procedimos a crear la interfaz del problema en si, es decir la entrada y salida de datos, la generación
+Luego de implementada Eliminación Gaussiana y Factorizaci\'on LU, procedimos a crear la interfaz del problema en si, es decir la entrada y salida de datos, la generación
 del sistema, etc. Establecimos como criterio usar el promedio de las temperaturas, de todos los puntos que estén
-incluidos en la circunferencia de radio h con centro en el punto crítico,
-para la estimación de la temperatura del mismo. 
+en el interior en la circunferencia de radio h con centro en el punto crítico,
+para la estimación de la temperatura del mismo. En particular, si el punto critico es un punto de la discretizaci\'on, entonces es el único punto en el interior de la circunferencia.
 
 Para finalizar la implementación, programamos el Algoritmo Simple para calcular cual sanguijuela eliminar,
 y algoritmo mejorado con la fórmula de Sherman-Morrison. 
 
+
+%%%%%Yo no me hago cargo de lo que dice entre los %%%
 La fórmula de Sherman-Morrison nos permite conseguir un sistema equivalente al de $(A+B)^{-1}x=b$ si podemos encontrar dos vectores $u$ y $v$
 tales que $uv^t=B$.
 
 \input{s-m.tex}
+%%%%%%Leila.
 
 \subsubsection{Pseudocódigo}
 
@@ -169,13 +159,8 @@ analizar como se modifican los resultados a medida que se modifica el parámetro
 h, definimos algoritmos para comparar el desempeño, en términos de la estimación de temperaturas.
 Por comodidad, a la hora de diseñar los experimentos, definimos todos los parabrisas con forma cuadrada.
 
-Siguiendo la consigna del TP, planteamos cuatro casos diferentes para analizar como varia la temperatura 
-en el punto critico al variar la discretización. Estos casos no fueron
-generados al azar, sino que para optimizar el tiempo de cómputo, creamos a mano cada instancia para 
-realizar un experimento fijo. Con esto queremos decir que, además de 
-analizar la variación de la temperatura en función de la granularidad, planteamos para cada experimento 
-una hipótesis aparte, que corroboraremos o 
-refutaremos luego de analizar los resultados.
+Siguiendo la consigna del TP, planteamos tres casos diferentes para analizar como varia la temperatura 
+en el punto critico al variar la discretización. Estos casos fueron generados de manera pseudo aleatoria. Es decir, si bien las posiciones de las sanguijuelas se establecieron usando una distribución uniforme y la temperatura usando una distribución normal~\cite{proba}, restringimos los rangos de ambos parámetros para lograr la instancia deseada.
 
 
 %Finalmente, corrimos los experimentos utilizando MatLab. Elegimos este programa principalmente
