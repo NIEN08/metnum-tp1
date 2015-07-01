@@ -1,4 +1,4 @@
-\section{Experimentaci\'on y discuci\'on}
+\section{Experimentación y discusión}
 
 Presentaremos en esta sección la experimentación y discusión juntas, para cada experimento. Primero 
 daremos una breve descripción de la instancia 
@@ -6,21 +6,32 @@ experimental, seguido de lo que esperamos observar, es decir, nuestra hipótesis
 resultados obtenidos y nuestro análisis respecto a por qué obtuvimos dichos resultados. 
 
 \subsection{Experimento 1: variación de la temperatura en función de la granularidad}
+%%aca que esta corriendo? lu o eg? Hay que adjuntar ese dato
+Para este experimento, nos planteamos como objetivo mostrar que la matriz final de temperaturas es dependiente de la granularidad elegida para la instancia. Desde el punto de vista algorítmico, notemos que la granularidad impacta en las sanguijuelas que terminan determinando la temperatura inicial en los puntos: si una sanguijuela es lo suficientemente chica y está ubicada de forma tal que su radio no llega a impactar en el punto de la discretización más cercano, no será considerada como parte de la matriz. El experimento que ideamos consiste en crear una instancia donde todas las sanguijuelas estén muy cercanas al punto crítico, con radios lo suficientemente pequeños como para que el efecto que mencionamos antes logre aparecer. En concreto, tomamos una instancia de $10x10$ metros, con $20$ sanguijuelas; para cada una de estas, tomamos los datos distribuidos de la siguiente forma: tanto los $x$ como los $y$, uniformemente $X_i \sim \mathcal{U}(3, 7)$, $Y_i \sim \mathcal{U}(3, 7)$, mientras que los radios los tomamos distribuidos normalmente $R_i \sim |\mathcal{N}(0.2, 0.15)|$, y las temperaturas con una distribución exponencial $T_i \sim \mathcal{E}(1/100)$.
 
-En este experimento queremos comprobar como varia la temperatura del punto critico a medida que variamos la granularidad. Para esto, consideramos tres instancias de prueba.
+El sentido de tomar los datos de distribuciones de probabilidad y no creándolos nosotros fue para evitar sesgar los experimentos. Observemos que tomar la posición distribuida de la forma en que lo hicimos nos garantiza tener sanguijuelas que estén relativamente cercanas al punto crítico, que era el objetivo del experimento. Tomamos a la temperatura distribuida de forma exponencial para asegurarnos que los datos tendieran a ser más bien chicos (asumimos que sería muy difícil que ataquen demasiadas sanguijuelas con temperaturas muy altas).
 
-La primera instancia contiene muchas %%%(siendo muchas algun criterio que no se cual)
-sanguijuelas de diámetro peque\~no cerca del punto critico, de temperatura elevada. %%%%%%%%%5(hay que poner todos los rangos, de que se considera pequenio elevadi y blah)
-Nuestra hipótesis es que en esta caso, a medida que se aumente la granularidad, vamos a obtener mayor temperatura en el punto critico. Esto es porque como las sanguijuelas son muy peque\~nas, si tomamos una discretizaci\'on muy grande, estas pasarían desapercibidas.
+Luego, corrimos el experimento con $h$ tomando valores desde $0.1$ hasta a $2$, en incrementos de $0.02$. La elección de los valores de $h$ fue difícil, ya que encontramos que con valores más pequeños la matriz de la discretización se volvía más demasiado grande, complicando la experimentación. A través de prueba y error dimos con ese rango de valores, que determinamos lo suficientemente amplio como para mostrar las tendencias que buscamos en los experimentos sin complicarnos substancialmente el proceso.
 
+Intuitivamente esperábamos que la temperatura en el punto crítico fuera aumentando a medida que achicásemos el $h$: suponíamos que aumentar la granularidad forzosamente iba a resultar en que la mayor temperatura de las sanguijuelas cercanas al centro tomase relevancia en el punto crítico y iba a hacer que la temperatura del mismo subiese, mientras que tener una menor granularidad debía hacer que cada vez más sanguijuelas se perdieran en la discretización y forzaría a que las sanguijuelas mejor posicionadas para los nuevos valores de $h$ dominen la temperatura en el punto crítico. De las instancias que corrimos, creemos que este resultado es el más representativo:
 
 \begin{figure}[h]
-    \includegraphics[width=0.3\textwidth]{/experimentos/experimento1-1.jpg}
-    \caption{grafiquito}
+    \centering
+    \includegraphics[resolution=300, width=484px, height=284px]{experimento 1-1}
+    \caption{Variación de la temperatura en función de la granularidad para la primera instancia}
+    \label{fig:exp11}
 \end{figure}
 
-Podemos observar en el grafico que la temperatura del punto critico se estabiliza a medida que aumenta la granularidad. Sin embargo, a diferencia de lo que esperabamos, la temperatura con mayor granularidad no es la mayor de las obtenidas. Creemos que esto se debe a que 
-cuando aumentamos la granularidad tambien aumentamos el efecto de disipacion, lo que hace que
-las temperaturas de todas las sanguijuelas entren en consideracion. Por el contrario, al tener una granularidad muy grande, la mayor parte de esas sanguijelas se perdian en la discretizacion. 
+Podemos observar en el gráfico \ref{fig:exp11} que la temperatura del punto critico se estabiliza a medida que aumenta la granularidad, y tiende a ser más bien caótico a medida que aumentamos el valor de h, es decir, disminuimos la granularidad. A diferencia de lo que esperábamos, la temperatura con mayor granularidad no es la mayor de las obtenidas, encontramos que la granularidad de la discretización es más bien un parámetro de regulación para la precisión de la solución: cuanta mayor granularidad, más difícil es que las sanguijuelas que aparezcan cambien sustancialmente la temperatura del punto crítico, ya que un $h$ más pequeño implica que los radios de las sanguijuelas que quedan por descubrir son lo suficientemente chicos como para afectar pocos puntos, y la ecuación de calor parece "balancear" las temperaturas hacia los valores más frecuentes.
 
-Ademas, observamos una gran cantidad de osilaciones no esperadas. Analizando el grafico y nuestra instancia, deducimos que se debe a que, al variar la granularidad, las sanguijuelas pueden o no aparecer, ya que son de rango muy peque\~no. Es decir, si tomamos un h, para el cual un punto de la discretizacion queda sobre la sanguijuela, esta aparecera en el modelo, pero siendo h muy grande, todas las de alrededor no lo haran. Dado el diametro peque\~no, puede ocurrir que si aumentamos muy poco el valor de h, esta misma sanguijuela no aparece en la discretizacion. Tambien debemos considerar que las sanguijuelas se encuentran en los alrededores inmediatos del punto critico. Ahora parece evidente que el que sea o no considerada una sanguijuela, impacta enormemente en la temperatura del punto critico, si bien en principio no lo creimos asi.
+Además, encontramos que cuanto menos granularidad tomábamos, más tendía a oscilar la temperatura en el punto crítico. Observamos que esto está relacionado con el mismo efecto que decíamos antes: cuanto más grande el $h$, menos puntos en la discretización teníamos, aumentando el efecto del borde del parabrisas y acrecentando el mismo para las sanguijuelas que sí entrasen dentro de la matriz. En los casos más extremos, como vemos en la derecha inclusive llegamos a tener temperaturas de $-100$ ºC, coincidiendo con la idea de que simplemente se han desvanecido todas las sanguijuelas.
+
+Una vez mostrado el impacto de la granularidad en funcion de la temperatura, queremos analizar el comportamiento de nuestro algoritmo para casos particulares. En la primer instancia, consideramos en que las sanguijuelas sean peque\`nas y proximas al punto critico. Ahora vamos a experimentar con un caso sustancialmente diferente. 
+
+En la segunda instancia vamos a crear sanguijuelas de un radio grande, en comparacion a la primer instancia, alejadas del punto critico.
+
+\begin{figure}[h]
+    \includegraphics[width=0.8\textwidth]{experimento 1-2}
+    \caption{Variación de la temperatura en función de la granularidad para la segunda instancia}
+    \label{fig:exp12}
+\end{figure}
