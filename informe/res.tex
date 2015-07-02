@@ -59,7 +59,7 @@ Para la segunda instancia pensamos en crear sanguijuelas de un radio grande, en 
     \label{fig:exp12}
 \end{figure}
 
-Observemos que efectivamente, la amplitud de temperatura es baja, menor a $5$ºC, confirmando nuestra hipótesis sobre la variación de la temperatura a lo largo del aumento de granularidad. Una vez más encontramos que el algoritmo converge a una solución a partir de cierto $h$ y se mantiene estable, aunque la diferencia en este caso es que el $h$ viene antes que en la instancia 1. Una vez más, proveemos una visualización de la clase generada para la instancia 2:
+Observemos, en \ref{fig:exp12}, que efectivamente, la amplitud de temperatura es baja, menor a $5$ºC, confirmando nuestra hipótesis sobre la variación de la temperatura a lo largo del aumento de granularidad. Una vez más encontramos que el algoritmo converge a una solución a partir de cierto $h$ y se mantiene estable, aunque la diferencia en este caso es que el $h$ viene antes que en la instancia 1. Una vez más, proveemos una visualización de la clase generada para la instancia 2:
 
 \begin{figure}[h]
     \centering
@@ -68,7 +68,8 @@ Observemos que efectivamente, la amplitud de temperatura es baja, menor a $5$ºC
     \label{fig:exp12-vis}
 \end{figure}
 
-Como tercera instancia, nos planteamos ver qué sucede con las sanguijuelas más pequeñas al estar alejadas del centro. Para esto, generamos instancias con las distribuciones mencionadas anteriormente, pero observemos que en este caso tomamos la temperatura como una variable exponencial de esperanza $300$, es decir, tomamos valores de temperatura mucho más altos. 
+
+Como tercera instancia, nos planteamos ver qué sucede con las sanguijuelas más pequeñas al estar alejadas del centro. Para esto, generamos instancias con las distribuciones mencionadas anteriormente, pero observemos que en este caso tomamos la temperatura como una variable exponencial de esperanza $300$, es decir, tomamos valores de temperatura mucho más altos. Nuestro análisis de los casos anteriores nos induce a pensar que las sanguijuelas suficientemente peque\~nas no tendrán tanta relevancia en la temperatura del punto critico. Esto es porque, al afectar pocos puntos de la discretizaci\'on, la ecuación de calor compensa esos valores al alejarse de la posición de las sanguijuelas. 
 
 \begin{figure}[h]
     \centering
@@ -77,11 +78,39 @@ Como tercera instancia, nos planteamos ver qué sucede con las sanguijuelas más
     \label{fig:exp13}
 \end{figure}
 
-
+En el gráfico podemos observar que la temperatura solo varia, para una granularidad muy baja, en el orden de los $20$ºC. Sin embargo, a diferencia de los casos anteriores, encontramos que la temperatura se estabiliza a valores cada vez mas bajos al aumentar la granularidad. Para explicar este comportamiento vamos a analizar el mapa de calor de la instancia 3.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.685\textwidth]{Ejemplo Instancia 2}
+    \includegraphics[width=0.685\textwidth]{Ejemplo Instancia 3}
     \caption{Mapa de calor para la instancia 3}
     \label{fig:exp13-vis}
+\end{figure}
+
+Podemos observar que, a medida que aumenta la granularidad, la disipación de temperatura aumenta. En particular, nos concentramos en las sanguijuelas de mayor temperatura. Vemos que, en el mapa de mayor granularidad, parece que los altos valores de temperatura se limitan al área cubierta por las mismas, mientras que la temperatura desciende drásticamente al salir del radio. Se puede, sin embargo, observar áreas de calor entre dos sanguijuelas relativamente cercanas, donde la función de disipación debe disipar calor en dos direcciones contrarias. Observado esto, solo podemos concluir que las sanguijuelas de mayor temperatura están demasiado alejadas entre si, por lo que las altas temperaturas se pierden automáticamente en la ecuación.
+
+%%aca hay que agregar que pasaria si experimentaramos con lu
+
+\subsection{Experimento 2: análisis del tiempo de computo en función de la granularidad}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.685\textwidth]{experimento 2-1}
+    \caption{Comparación entre EG y LU}
+    \label{fig:exp21}
+\end{figure}
+
+\subsection{Experimento 3: comparación entre algoritmos para eliminación de sanguijuelas}%entre algoritmos para salvarnos la vida quedaba mas gracioso
+
+En este experimento nos enfocamos en analizar las diferencias entre los algoritmos de eliminación de sanguijuelas, a los que llamaremos eliminación simple y eliminación con Sherman-Morrison.
+
+Basados en los tests de correctitud, podemos afirmar que ambos algoritmos tienen el mismo comportamiento cualitativo. Es decir, ambos devuelven la misma solución. Por esto, el enfoque de este experimento es el análisis temporal de los experimentos. 
+
+Antes de establecer hipótesis alguna, vamos a hacer un breve análisis del comportamiento esperado de cada algoritmo. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.685\textwidth]{experimento 3-1}
+    \caption{Comparación entre SM y el método simple}
+    \label{fig:exp31}
 \end{figure}
