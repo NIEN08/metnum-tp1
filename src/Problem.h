@@ -155,14 +155,15 @@ private:
             curLeeches.erase(curLeechesIterator);
 
             //Inicializamos el sistema sin la sanguijuela
-            Matrix curSystem(system.rows(), system.columns(), system.lower_bandwidth(), system.upper_bandwidth());
-            BDouble *curB = new BDouble[curSystem.columns()];
-            build_system(curSystem, curB, curLeeches);
+            //Matrix curSystem(system.rows(), system.columns(), system.lower_bandwidth(), system.upper_bandwidth());
+            BDouble *curB = new BDouble[system.columns()];
+			clean_system(system);
+            build_system(system, curB, curLeeches);
 
             //Resolvemos el sistema
-            std::pair<BDouble *, enum Solutions> curSolution = gaussian_elimination(curSystem, curB);
+            std::pair<BDouble *, enum Solutions> curSolution = gaussian_elimination(system, curB);
 
-            BDouble curT = critic_point_temperature(curSystem, curSolution.first);
+            BDouble curT = critic_point_temperature(system, curSolution.first);
 
             std::cerr << "Removing leech (" << itLeech->x << ", " << itLeech->y << ", " << itLeech->radio << ", " <<
             itLeech->temperature << ") gives a critic point temperature of " << curT << std::endl;
@@ -309,25 +310,23 @@ private:
             std::advance(curLeechesIterator, std::distance(leeches.begin(), itLeech));
             curLeeches.erase(curLeechesIterator);
 
-            Matrix curSystem(system.rows(), system.columns(), system.lower_bandwidth(), system.upper_bandwidth());
-
             if (is_singular_leech(*itLeech)) {
                 //Tratamos a las sanguijuelas singulares aparte
-                solution = singular_leech_resolution(curSystem, L, U, b, curLeeches, *itLeech);
+                solution = singular_leech_resolution(system, L, U, b, curLeeches, *itLeech);
             } else {
                 //Inicializamos el sistema sin la sanguijuela
-                BDouble *curB = new BDouble[curSystem.columns()];
-                clean_system(curSystem);
-                build_system(curSystem, curB, curLeeches);
+                BDouble *curB = new BDouble[system.columns()];
+                clean_system(system);
+                build_system(system, curB, curLeeches);
 
                 // Resolvemos el sistema por eliminación gaussiana
-                solution = gaussian_elimination(curSystem, curB);
+                solution = gaussian_elimination(system, curB);
 
                 //Liberamos memoria
                 delete[] curB;
             }
 
-            BDouble curT = critic_point_temperature(curSystem, solution.first);
+            BDouble curT = critic_point_temperature(system, solution.first);
 
             std::cerr << "Removing leech (" << itLeech->x << ", " << itLeech->y << ", " << itLeech->radio << ", " <<
             itLeech->temperature << ") gives a critic point temperature of " << curT << std::endl;
