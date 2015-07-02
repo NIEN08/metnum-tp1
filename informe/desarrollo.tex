@@ -143,6 +143,64 @@ tales que $uv^t=B$.
 
 \subsubsection{Pseudocódigo}
 
+
+\noindent\fbox{
+\begin{minipage}{1\textwidth}
+\begin{algorithmic}[1]
+\State{backwardsustitution(matriz m, vector b)}
+\State{sea res el vector con longitud igual a la cantidad columnas de m}
+\State{sea n el mínimo entre la cantidad de columnas y de filas de m}
+\For {$i \gets 0$; $ i < n$; $i--$}
+    \If{si $i==0$}
+        \State{asigno al coeficiente i el valor 1 en res$_i$}
+    \Else
+        \State{calculo el valor del coeficiente i, y lo guardo en res$_i$}
+    \EndIf
+\EndFor
+\State{devuelvo res}
+\end{algorithmic}
+\end{minipage}
+}
+\\ \\
+El pseudocodigo de fordwardsustitution es analogo por lo que no se adjunta.
+\\ \\ 
+\noindent\fbox{
+\begin{minipage}{1\textwidth}
+\begin{algorithmic}[1]
+\State{eliminacion\_gaussiana(matriz m, vector b)}
+\State{sea res el vector con longitud igual a la cantidad columnas de m}
+\State{sea d el mínimo entre la cantidad de columnas y de filas de m}
+\For {$i \gets 0$; $ i < d$; $i--$}
+    \While{haya alguna fila $f_j$ inferior a la fila i, con el coeficiente $f_{j_i} \neq 0$ }
+        \State{resto $f_i$ a $f_j$ con el coeficiente apropiado para que $f_{j_i} == 0$}
+        \State{guardo el resultado en m, reemplazando a la fila $f_j$}
+    \EndWhile
+\EndFor
+\State{devuelvo backward\_substitution(m,b)}
+\end{algorithmic}
+\end{minipage}
+}
+
+\\ \\
+
+\noindent\fbox{
+\begin{minipage}{1\textwidth}
+\begin{algorithmic}[1]
+\State{LU\_factorization(matriz A)}
+\State{sean L, U dos matrices de las mismas dimenciones que A, con 1's en la diagonal}
+\State{sea d el mínimo entre la cantidad de columnas y de filas de m}
+\For {$i \gets 0$; $ i < d$; $i--$}
+    \While{haya alguna fila $f_j$ inferior a la fila i, con el coeficiente $f_{j_i} \neq 0$ }
+        \State{resto $f_i$ a $f_j$ con el coeficiente apropiado para que $f_{j_i} == 0$}
+        \State{guardo el resultado en U reemplazando a la fila $f_j$}
+        \State{guardo el coeficiente en L, en la fila j columna i}
+    \EndWhile
+\EndFor
+\State{devuelvo L y U}
+\end{algorithmic}
+\end{minipage}
+} 
+
 \subsection{Sobre la experimentación}
 
 Para medir los tiempos de resolución, utilizamos la función gettimeof day, que permite medir con
