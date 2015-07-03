@@ -1,35 +1,30 @@
 \section{Desarrollo}
 
 \subsection{Sobre la implementación}
-En principio, y con la intención de entender el problema en profundidad, planteamos un ejemplo que resolvimos manualmente. A partir de este ejemplo
-notamos un patrón en el comportamiento del sistema. Por lo tanto recrearemos a continuación dicho ejemplo, para dar una noción clara de nuestra 
-evolución en la comprensión de este problema particular.
 
-Asumamos que recibimos un archivo de entrada con los siguientes parámetros:\\
+En principio, y con la intención de entender el problema en profundidad, planteamos un ejemplo que resolvimos manualmente. A partir de este ejemplo notamos un patrón en el comportamiento del sistema. Por lo tanto recrearemos a continuación dicho ejemplo, para dar una noción clara de nuestra evolución en la comprensión de este problema particular. Asumamos que recibimos un archivo de entrada con los siguientes parámetros:\\
 
 3 \ \ \ \   3  \ \ \ \ 1 \ \ \ \ 1\\
 2.5  \ \ \ \ 2.5 \ \ \ \ 1  \ \ \ \ 500
 
-entonces el problema modelado es de la pinta$^6$:\footnotetext[6]{Aclaramos
-que la circunferencia negra representa una sanguijuela mutante y el cuadrado celeste, al parabrisas.}
+entonces el problema modelado es de la pinta$^6$:\footnotetext[6]{Aclaramos que la circunferencia negra representa una sanguijuela mutante y el cuadrado celeste, al parabrisas.}
 
-\begin{figure}[]
+\begin{figure}[t]
+    \centering
     \includegraphics[width=0.3\textwidth]{ejP01}
     \caption{Imagen ilustrativa del parabrisas}
 \end{figure}
 
-Luego lo representaremos como muestra el gráfico a continuación, donde cada intersección de las lineas representa una variable del modelo, de la cual
-debemos averiguar su temperatura.
+Luego lo representaremos como muestra el gráfico a continuación, donde cada intersección de las lineas representa una variable del modelo, de la cual debemos averiguar su temperatura.
 
-\begin{figure}[]
+\begin{figure}[t]
+    \centering
     \includegraphics[width=0.3\textwidth]{ejP02}
     \caption{Representación visual del modelo discretizado}
 \end{figure}
 
-Notar que, si bien C, D y H pertenecen al radio de una sanguijuela, al formar parte del borde están condicionados por el sistema de refrigeración,
-por lo cual su temperatura es $-100$ en lugar de $500$.
+Notar que, si bien C, D y H pertenecen al radio de una sanguijuela, al formar parte del borde están condicionados por el sistema de refrigeración, por lo cual su temperatura es $-100$ en lugar de $500$. Planteando la ecuación de temperatura para cada variable y despejando, obtenemos el siguiente sistema de ecuaciones $Ax=B$:
 
-Planteando la ecuación de temperatura para cada variable y despejando, obtenemos el siguiente sistema de ecuaciones $Ax=B$:
 \begin{equation}
  a\ =\ -100
 \end{equation}
@@ -79,7 +74,7 @@ Planteando la ecuación de temperatura para cada variable y despejando, obtenemo
  p\ =\ -100
 \end{equation}
 
- del cual la matriz asociada $A$ es la siguiente:
+del cual la matriz asociada $A$ es la siguiente:
  
 %Matriz del sistema
 \begin{center}
@@ -106,40 +101,45 @@ Planteando la ecuación de temperatura para cada variable y despejando, obtenemo
 \end{center}
 
 siendo la ecuación (3) la resultante de despejar la ecuación de temperatura para la variable $a$, (4) para la variable $b$ y así sucesivamente.
-Ordenándolo de esta manera, la matriz asociada $A$ es una matriz banda de ancho y altura n, donde n es la cantidad de columnas 
-de la matriz de temperaturas. Esto lo deducimos observando la figura 2 y la matriz A,
-ya que notamos que para averiguar el valor de la variable $v_{i}$ son necesarios$^7$ los valores de las variables $v_{i-n}$, $v_{i-1}$, 
-$v_{i+1}$, $v_{i+n}$, donde n hace referencia a la cantidad de columnas.
-\footnotetext[7]{Siempre y cuando $v_{i}$ no pertenezca a un borde o este cubierta por una sanguijuela.}
-Notar que en las ecuaciones, o lo que es lo mismo, matriz asociada al sistema no se hicieron remplazos previos. Con esto nos referimos a no reemplazar
- en las ecuaciones de calor automáticamente los valores conocidos, como los del borde o los afectados por sanguijuelas. Un ejemplo de esto se daría 
- al usar las ecuaciones (4), (7) y (9) para reemplazar los valores en la ecuación (8). Tomamos esta decisión porque consideramos que esos reemplazos son parte
- de la resolución total del sistema, por lo que deberían verse reflejados en la medición de tiempos. Sin embargo, si hiciéramos los reemplazos 
- en la generación de la matriz asociada al sistema, no podríamos medirlos con confiabilidad pues tendríamos la lectura de datos como outlier. También debemos tener en cuenta el caso de que, por algún motivo, se deba cambiar el valor de la temperatura de los bordes. Dise\~nado de este modo, tenemos mayor escalabilidad^8. \footnotetext[8]{Buscando siempre seguir las buenas practicas de programación}
 
-Dejaremos el ejemplo hasta aquí, pues la resolución del sistema no aporta información útil. Sin embargo, una vez que hallamos esta estructura 
-procedimos a realizar la carga de datos de modo que la matriz asociada a nuestro sistema fuese una matriz banda-n. Ahora explicaremos el desarrollo del código.
+Ordenándolo de esta manera, la matriz asociada $A$ es una matriz banda de ancho y altura n, donde n es la cantidad de columnas  de la matriz de temperaturas. Esto lo deducimos observando la figura 2 y la matriz A, ya que notamos que para averiguar el valor de la variable $v_{i}$ son necesarios$^7$ los valores de las variables $v_{i-n}$, $v_{i-1}$, $v_{i+1}$, $v_{i+n}$, donde n hace referencia a la cantidad de columnas. \footnotetext[7]{Siempre y cuando $v_{i}$ no pertenezca a un borde o este cubierta por una sanguijuela.}
+
+Notar que en las ecuaciones, o lo que es lo mismo, matriz asociada al sistema no se hicieron remplazos previos. Con esto nos referimos a no reemplazar en las ecuaciones de calor automáticamente los valores conocidos, como los del borde o los afectados por sanguijuelas. Un ejemplo de esto se daría al usar las ecuaciones (4), (7) y (9) para reemplazar los valores en la ecuación (8). Tomamos esta decisión porque consideramos que esos reemplazos son parte de la resolución total del sistema, por lo que deberían verse reflejados en la medición de tiempos. Sin embargo, si hiciéramos los reemplazos en la generación de la matriz asociada al sistema, no podríamos medirlos con confiabilidad pues tendríamos la lectura de datos como outlier. También debemos tener en cuenta el caso de que, por algún motivo, se deba cambiar el valor de la temperatura de los bordes. Dise\~nado de este modo, tenemos mayor escalabilidad$^8$. \footnotetext[8]{Buscando siempre seguir las buenas practicas de programación.}
+
+Dejaremos el ejemplo hasta aquí, pues la resolución del sistema no aporta información útil. Sin embargo, una vez que hallamos esta estructura procedimos a realizar la carga de datos de modo que la matriz asociada a nuestro sistema fuese una matriz banda-n. Ahora explicaremos el desarrollo del código.
 %\footnotetext[8]{Por dato del enunciado, en ese momento sabiamos que debimos obtener una matriz banda a partir del sistema, si bien no sabiamos como organizar los datos para obtenerla.}
 
-El lenguaje empleado para la implementación es C++. Si bien la elección del lenguaje podría considerarse arbitraria, se debió principalmente a la gran
-cantidad de herramientas y librerías provistas por este lenguaje, a diferencia de la otra opción dada por la cátedra. 
+El lenguaje empleado para la implementación es C++. Si bien la elección del lenguaje podría considerarse arbitraria, se debió principalmente a la gran cantidad de herramientas y librerías provistas por este lenguaje, a diferencia de la otra opción dada por la cátedra. 
+
+Luego de implementada Eliminación Gaussiana y Factorizaci\'on LU, procedimos a crear la interfaz del problema en si, es decir la entrada y salida de datos, la generación del sistema, etc. Establecimos como criterio usar el promedio de las temperaturas, de todos los puntos que estén en el interior en la circunferencia de radio h con centro en el punto crítico, para la estimación de la temperatura del mismo. En particular, si el punto critico es un punto de la discretizaci\'on, entonces es el único punto en el interior de la circunferencia.
+
+%%%%%%%%%% TODO: Terminar. Hay que escribir exactamente cómo se hacen los cálculos y justificar.
+
+Para finalizar la implementación, programamos el Algoritmo Simple para calcular cual sanguijuela eliminar, y algoritmo mejorado con la fórmula de Sherman-Morrison. Básicamente la idea de Sherman Morrison es lograr 
+
+La fórmula de Sherman-Morrison nos permite conseguir un sistema equivalente al de $(A+B)^{-1}x=b$ si podemos encontrar dos vectores $u$ y $v$ tales que $uv^t=B$.
+
+Sherman-Morrison nos proponen la siguiente fórmula:
+
+$x = (A + uv^{t})^{-1} b = A^{-1}b -  \dfrac{v^{t}A^{-1}b}{1+v^{t}A^{-1}u} A^{-1}u$
+
+Pero sabemos que:$A^{-1}b = y \iff Ay = b 
+A^{-1}u = z \iff Az = u $
+
+Suponiendo que ya resolvimos el sistema A antes de la modificación, tenemos su descomposición, $ LU=A $. Por lo que basta resolver: $\\\
+Ly_{2} = y $ y $ Lz_{2}=z$
+
+Luego, $ Uy=y_{2} $ y $ Uz=z_{2}$
+Una vez calculados $ y $ y $ z $ estamos en condiciones de resolver la expresión. Notemos que
+
+$ \dfrac{v^{t}A^{-1}b}{1+v^{t}A^{-1}u} $ es un escalar.
+
+Finalmente $ x = y +  \dfrac{v^{t}y}{1+v^{t}z} z$
 
 
-Luego de implementada Eliminación Gaussiana y Factorizaci\'on LU, procedimos a crear la interfaz del problema en si, es decir la entrada y salida de datos, la generación
-del sistema, etc. Establecimos como criterio usar el promedio de las temperaturas, de todos los puntos que estén
-en el interior en la circunferencia de radio h con centro en el punto crítico,
-para la estimación de la temperatura del mismo. En particular, si el punto critico es un punto de la discretizaci\'on, entonces es el único punto en el interior de la circunferencia.
-
-Para finalizar la implementación, programamos el Algoritmo Simple para calcular cual sanguijuela eliminar,
-y algoritmo mejorado con la fórmula de Sherman-Morrison. 
-
-
-%%%%%Yo no me hago cargo de lo que dice entre los %%%
-La fórmula de Sherman-Morrison nos permite conseguir un sistema equivalente al de $(A+B)^{-1}x=b$ si podemos encontrar dos vectores $u$ y $v$
-tales que $uv^t=B$.
-
-\input{s-m.tex}
-%%%%%%Leila.
+En cuanto a $ uv^{t} $ recordemos que vamos a usar Sherman-Morrison para sistemas que cambian una sola fila i, por lo que nos basta con
+conseguir que $ uv^{t} $ sea una matriz que modifique apropiadamente dicha fila. Por lo tanto tomamos a $u$ como el i-ésimo vector de la base canónica,
+y a $v$ como la modificación que necesitamos para transformar la fila i.
 
 \subsubsection{Pseudocódigo}
 
@@ -179,9 +179,7 @@ El pseudocodigo de fordwardsustitution es analogo por lo que no se adjunta.
 \State{devuelvo backward\_substitution(m,b)}
 \end{algorithmic}
 \end{minipage}
-}
-
-\\ \\
+}\\\\
 
 \noindent\fbox{
 \begin{minipage}{1\textwidth}
@@ -219,12 +217,3 @@ Por comodidad, a la hora de diseñar los experimentos, definimos todos los parab
 
 Siguiendo la consigna del TP, planteamos tres casos diferentes para analizar como varia la temperatura 
 en el punto critico al variar la discretización. Estos casos fueron generados de manera pseudo aleatoria. Es decir, si bien las posiciones de las sanguijuelas se establecieron usando una distribución uniforme y la temperatura usando una distribución normal~\cite{proba}, restringimos los rangos de ambos parámetros para lograr la instancia deseada.
-
-
-%Finalmente, corrimos los experimentos utilizando MatLab. Elegimos este programa principalmente
-%porque permite obtener de una manera simple los gr ́aficos que queriamos mostrar. A su vez, nuestras
-%decisiones de implementacion de “main.cpp” y “armaInFile.py” nos permitieron automatizar en gran
-%medida el proceso de experimentacion, por lo cual no nos demando excesivo tiempo implementar esta
-%etapa del desarrollo (si lo demando el tener que pensar que experimentos realizar y como mostrar
-%los resultados). Los experimentos de MatLab tienen como salida los graficos que presentamos en la
-%siguiente seccion.

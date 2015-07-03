@@ -9,6 +9,8 @@
 \usepackage{wrapfig}
 \usepackage{cite}
 \usepackage{grffile}
+\usepackage{pdfpages}
+
 \graphicspath{{../experimentos}{.}}
 \usepackage{algpseudocode}
 
@@ -20,9 +22,13 @@
  top=30mm,
  bottom=30mm,
  }
+
+
  
 \begin{document}
 
+\renewcommand{\refname}{Bibliografía}
+\renewcommand{\contentsname}{Indice}
 \fecha{03 / 06 / 2015}
 \materia{Métodos Numéricos}
 \titulo{Recuperatorio del Trabajo Práctico 1}
@@ -46,6 +52,18 @@
 \input{desarrollo.tex}
 \input{res.tex}
 \input{conclusiones.tex}
+
+\section{Apéndices}
+
+\subsection{Apéndice A: Enunciado}
+\includepdf[pages={1, 2, 3, 4}]{consigna.pdf}
+
+\subsection{Apéndice B: Código relevante}
+
+\includepdf[pages={1, 2, 3, 4, 5, 6, 7}]{codigo1.pdf}
+\includepdf[pages={1, 2, 3, 4, 5, 6}]{codigo2.pdf}
+
+
 
 \bibliographystyle{unsrt}
 \bibliography{citas}
