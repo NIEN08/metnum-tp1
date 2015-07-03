@@ -1,7 +1,5 @@
 \section{Desarrollo}
 
-\subsection{Sobre la implementación}
-
 En principio, y con la intención de entender el problema en profundidad, planteamos un ejemplo que resolvimos manualmente. A partir de este ejemplo notamos un patrón en el comportamiento del sistema. Por lo tanto recrearemos a continuación dicho ejemplo, para dar una noción clara de nuestra evolución en la comprensión de este problema particular. Asumamos que recibimos un archivo de entrada con los siguientes parámetros:\\
 
 3 \ \ \ \   3  \ \ \ \ 1 \ \ \ \ 1\\
@@ -104,129 +102,314 @@ siendo la ecuación (3) la resultante de despejar la ecuación de temperatura pa
 
 Ordenándolo de esta manera, la matriz asociada $A$ es una matriz banda de ancho y altura n, donde n es la cantidad de columnas  de la matriz de temperaturas. Esto lo deducimos observando la figura 2 y la matriz A, ya que notamos que para averiguar el valor de la variable $v_{i}$ son necesarios$^7$ los valores de las variables $v_{i-n}$, $v_{i-1}$, $v_{i+1}$, $v_{i+n}$, donde n hace referencia a la cantidad de columnas. \footnotetext[7]{Siempre y cuando $v_{i}$ no pertenezca a un borde o este cubierta por una sanguijuela.}
 
-Notar que en las ecuaciones, o lo que es lo mismo, matriz asociada al sistema no se hicieron remplazos previos. Con esto nos referimos a no reemplazar en las ecuaciones de calor automáticamente los valores conocidos, como los del borde o los afectados por sanguijuelas. Un ejemplo de esto se daría al usar las ecuaciones (4), (7) y (9) para reemplazar los valores en la ecuación (8). Tomamos esta decisión porque consideramos que esos reemplazos son parte de la resolución total del sistema, por lo que deberían verse reflejados en la medición de tiempos. Sin embargo, si hiciéramos los reemplazos en la generación de la matriz asociada al sistema, no podríamos medirlos con confiabilidad pues tendríamos la lectura de datos como outlier. También debemos tener en cuenta el caso de que, por algún motivo, se deba cambiar el valor de la temperatura de los bordes. Dise\~nado de este modo, tenemos mayor escalabilidad$^8$. \footnotetext[8]{Buscando siempre seguir las buenas practicas de programación.}
+Notar que en la matriz asociada al sistema no se hicieron remplazos previos. Con esto nos referimos a no reemplazar en las ecuaciones de calor automáticamente los valores conocidos, como los del borde o los afectados por sanguijuelas. Un ejemplo de esto se daría al usar las ecuaciones (4), (7) y (9) para reemplazar los valores en la ecuación (8). Tomamos esta decisión porque consideramos que esos reemplazos son parte de la resolución del sistema, por lo que deberían verse reflejados en la medición de tiempos. Sin embargo, si hiciéramos los reemplazos en la generación de la matriz asociada al sistema, no podríamos medirlos con seguridad, pues tendríamos la lectura de datos incluida dentro de la medición, aumentando la volatilidad de los resultados. 
 
-Dejaremos el ejemplo hasta aquí, pues la resolución del sistema no aporta información útil. Sin embargo, una vez que hallamos esta estructura procedimos a realizar la carga de datos de modo que la matriz asociada a nuestro sistema fuese una matriz banda-n. Ahora explicaremos el desarrollo del código.
-%\footnotetext[8]{Por dato del enunciado, en ese momento sabiamos que debimos obtener una matriz banda a partir del sistema, si bien no sabiamos como organizar los datos para obtenerla.}
+%% WTF??
+También debemos tener en cuenta el caso de que, por algún motivo, se deba cambiar el valor de la temperatura de los bordes. Dise\~nado de este modo, tenemos mayor escalabilidad$^8$. \footnotetext[8]{Buscando siempre seguir las buenas practicas de programación.}
 
-El lenguaje empleado para la implementación es C++. Si bien la elección del lenguaje podría considerarse arbitraria, se debió principalmente a la gran cantidad de herramientas y librerías provistas por este lenguaje, a diferencia de la otra opción dada por la cátedra. 
-
-Luego de implementada Eliminación Gaussiana y Factorizaci\'on LU, procedimos a crear la interfaz del problema en si, es decir la entrada y salida de datos, la generación del sistema, etc. Establecimos como criterio usar el promedio de las temperaturas, de todos los puntos que estén en el interior en la circunferencia de radio h con centro en el punto crítico, para la estimación de la temperatura del mismo. En particular, si el punto critico es un punto de la discretizaci\'on, entonces es el único punto en el interior de la circunferencia.
-
-%%%%%%%%%% TODO: Terminar. Hay que escribir exactamente cómo se hacen los cálculos y justificar.
-
-Para finalizar la implementación, programamos el Algoritmo Simple para calcular cual sanguijuela eliminar, y algoritmo mejorado con la fórmula de Sherman-Morrison. 
-
-La fórmula de Sherman-Morrison nos permite conseguir un sistema equivalente al de $(A+B)^{-1}x=b$ si podemos encontrar dos vectores $u$ y $v$ tales que $uv^t=B$.
-
-  Supongamos que queremos resolver el sistema $  (A + uv^{t})x = b $ con solucion unica. \\\ 
-   
- $\iff x = (A + uv^{t})^{-1} b$   \\\
- $\iff_{SM} $ $ x = A^{-1}b -  \dfrac{A^{-1}u v^{t}A^{-1}b}{1+v^{t}A^{-1}u}$ \\\
-$\iff $ $ x = A^{-1}b -  \dfrac{v^{t}A^{-1}b}{1+v^{t}A^{-1}u} A^{-1}u $\\\
-Pero sabemos que: \\\
-$A^{-1}b = y \iff Ay = b$ \\\
-$A^{-1}u = z \iff Az = u$ \\\
-
-Suponiendo que ya resolvimos el sistema A antes de la modificacion, tenemos su descomposicion, $ LU=A $. Por lo que basta resolver: \\\
-$Ly_{2}= b $ y $ Lz_{2} = u$ \\\
-Luego, $ Uy=y_{2} $ y $ Uz=z_{2}$ \\\
-Una vez calculados $ y $ y $ z $ estamos en condiciones de resolver la expresion. Notemos que $ \dfrac{v^{t}A^{-1}b}{1+v^{t}A^{-1}u} $ es un escalar. \\\
-
-Finalmente $ x = y - \dfrac{v^{t}y}{1+v^{t}z} z$ \\\
-
-En cuanto a $ uv^{t} $ recordemos que vamos a usar sherman-morrison para sistemas que cambian una ecuacion del sistema. Cuando una posicion discretizada i,j se vea afectada por una sanguijuela singular (solo afecte una posicion del sistema discreto) y esa posicion no caiga en el radio discretizado de ninguna otra sanguijuela vamos a volver a pedir que la temperatura de esa posicion discretizada se rija por la ecuaci\'on de Laplace. Por lo que la modificaci\'on ser\'a:  \\\
-
-$ A + Eq $ donde $Eq = uv^{t} $ la matriz donde todas las filas ser\'an ceros excepto la fila de la ecuacion correspondiente a la temperatura $(i, j)$. Esta fila tendr\'a el valor $-1/4$ para las columnas correspondientes a las posiciones $(i,j-1),(i-1,j), (i,j+1), (i+1,j) $.\\\
-
-Constru\'imos los vectores $u, v$ de la siguiente manera. Si la matriz del sistema de ecuaci\'ones $A$ tiene dimensi\'on $(n*m)*(n*m)$, donde $(n*m)$ es la dimensi\'on de la matriz de temperaturas discretizada, entonces la fila correspondiente a la ecuaci\'on $(i,j)$ en la matriz del sistema sera la fila $f = i*n + j$. De forma tal que $u_{f} = 1.0$ y $u_{k} = 0.0$ $ \forall k \neq f$.\\\
-
-Adem\'as $v_{c_{1}} = v_{c_{2}} = v_{c_{3}} = v_{c_{4}} -1/4$ y  $v_{k} = 0.0$ $ \forall k \neq c_{1},c_{2},c_{3},c_{4}$. Donde: \\
-\begin{itemize}
-\item $c_{1} = i*n + (j-1)$
-\item $c_{2} = (i-1)*n + j$
-\item $c_{3} = i*n + (j+1)$
-\item $c_{4} = (i+1)*n + j$
-\end{itemize}
+Dejaremos el ejemplo hasta aquí, pues la resolución del sistema no aporta información útil. Sin embargo, una vez que hallamos esta estructura procedimos a realizar la carga de datos de modo que la matriz asociada a nuestro sistema fuese una matriz banda-n.
 
 
-En cuanto a $ uv^{t} $ recordemos que vamos a usar Sherman-Morrison para sistemas que cambian una sola fila i, por lo que nos basta con
-conseguir que $ uv^{t} $ sea una matriz que modifique apropiadamente dicha fila. Por lo tanto tomamos a $u$ como el i-ésimo vector de la base canónica,
-y a $v$ como la modificación que necesitamos para transformar la fila i.
-
-\subsubsection{Pseudocódigo}
+El lenguaje empleado para la implementación es C++, ya que dentro de las posibilidades determinadas por la cátedra C++ tiene una mayor cantidad de facilidades dentro de la librería estándar, simplificando el desarrollo enormemente.
 
 
-\noindent\fbox{
-\begin{minipage}{1\textwidth}
-\begin{algorithmic}[1]
-\State{backwardsustitution(matriz m, vector b)}
-\State{sea res el vector con longitud igual a la cantidad columnas de m}
-\State{sea n el mínimo entre la cantidad de columnas y de filas de m}
-\For {$i \gets 0$; $ i < n$; $i--$}
-    \If{si $i==0$}
-        \State{asigno al coeficiente i el valor 1 en res$_i$}
-    \Else
-        \State{calculo el valor del coeficiente i, y lo guardo en res$_i$}
-    \EndIf
-\EndFor
-\State{devuelvo res}
-\end{algorithmic}
-\end{minipage}
-}
-\\ \\
-El pseudocodigo de fordwardsustitution es analogo por lo que no se adjunta.
-\\ \\ 
-\noindent\fbox{
-\begin{minipage}{1\textwidth}
-\begin{algorithmic}[1]
-\State{eliminacion\_gaussiana(matriz m, vector b)}
-\State{sea res el vector con longitud igual a la cantidad columnas de m}
-\State{sea d el mínimo entre la cantidad de columnas y de filas de m}
-\For {$i \gets 0$; $ i < d$; $i--$}
-    \While{haya alguna fila $f_j$ inferior a la fila i, con el coeficiente $f_{j_i} \neq 0$ }
-        \State{resto $f_i$ a $f_j$ con el coeficiente apropiado para que $f_{j_i} == 0$}
-        \State{guardo el resultado en m, reemplazando a la fila $f_j$}
-    \EndWhile
-\EndFor
-\State{devuelvo backward\_substitution(m,b)}
-\end{algorithmic}
-\end{minipage}
-}\\\\
+El programa comienza leyendo las sanguijuelas desde los archivos de entrada y cargándolas en una estructura de lista. Luego, se entra en el flujo particular de la metodología de resolución elegida por el usuario. En todos los casos, en algún momento del algoritmo debemos traducir el listado de sanguijuelas en una matriz $A$ y un vector $b$ para resolver utilizando los métodos indicados. Esto lo realizamos a través del siguiente algoritmo:
 
-\noindent\fbox{
-\begin{minipage}{1\textwidth}
-\begin{algorithmic}[1]
-\State{LU\_factorization(matriz A)}
-\State{sean L, U dos matrices de las mismas dimenciones que A, con 1's en la diagonal}
-\State{sea d el mínimo entre la cantidad de columnas y de filas de m}
-\For {$i \gets 0$; $ i < d$; $i--$}
-    \While{haya alguna fila $f_j$ inferior a la fila i, con el coeficiente $f_{j_i} \neq 0$ }
-        \State{resto $f_i$ a $f_j$ con el coeficiente apropiado para que $f_{j_i} == 0$}
-        \State{guardo el resultado en U reemplazando a la fila $f_j$}
-        \State{guardo el coeficiente en L, en la fila j columna i}
-    \EndWhile
-\EndFor
-\State{devuelvo L y U}
-\end{algorithmic}
-\end{minipage}
-}
-\vspace{0.5cm}
-
-\noindent\fbox{
-\begin{minipage}{1\textwidth}
 \begin{algorithm}[H]
- \KwData{$L,U \in  \mathbb{R}^{(n \times m)^{2}}$ factorizaci\'on $LU$ del sistema. \\
-  $l$ sanguijuela a procesar.}
- \KwResult{$b \in  \mathbb{R}^{n \cdot m}$ temperaturas de las coordenadas del parabrisas. \\ }
+ \KwData{$h$ factor de granularidad.\\
+ $width, height \in \mathbb{R}$, ancho y alto del parabrisas.\\
+  $L = l_{1}, \ldots, l_{k}$ lista de sanguijuelas.}
+ \KwResult{A, la matriz de ecuaciones del problema, y b, su término independiente }
+ \vspace{0.5cm}
+ 	$A =$ Matriz de banda $n$ en $\mathbb{R}^{mn \times mn}$ donde $m = round(\dfrac{height}{h})+1$, $n =  round(\dfrac{width}{h})+1$.
+ 	
+ 	\For {$eq \in \{ e \;/\; 1 \leq e \leq (m \cdot n) \}$}{
+ 		$A_{eq, eq} = 1.0$ \\
+ 		$i = \floor{\dfrac{eq}{n}}$ \\
+ 		$j = eq \; mod \; n$ 
+ 		
+    	\eIf{$(i,j) \in$ ``Borde del parabirsas''}{
+    		$b_{eq} = -100.0$
+    	}{
+    		\eIf{$(i,j)$ afectada por una sanguijuela $l \in L$}{
+    		    \If{$b_{eq} < temperature(l)$} {
+    		        $b_{eq} = temperature(l)$
+    		    }
+    		}{
+    			$b_{eq} = 0.0$ \\
+    			$A_{eq, (i \cdot n) + j -1} = -\dfrac{1}{4}$ \\
+    			$A_{eq, (i \cdot n) + j -1} = -\dfrac{1}{4}$ \\
+    			$A_{eq, ((i-1) \cdot n) + j} = -\dfrac{1}{4}$ \\
+    			$A_{eq, ((i+1) \cdot n) + j} = -\dfrac{1}{4}$ \\
+    		}
+    	}
+ 	}
+ 	
+	\Return {$A, b$}
+\caption{build\_system\label{alg_build_system}}  
+\end{algorithm}
+
+A partir de este proceso, tenemos una matriz para resolver el sistema que cumple con las propiedades necesarias de tener en cada punto de la discretización la máxima temperatura de las sanguijuelas que le afectan, así como la estructura de banda que luego explotamos. Luego los algorítmos divergen en su estructura, y comienzan a aplicar los métodos específicos a la resolución del problema.
+
+En el caso de eliminación gaussiana, utilizamos el clásico algoritmo de gauss para triangular la matriz, y procedemos a simplemente devolver la solución correspondiente a la instancia:
+
+\begin{algorithm}[H]
+ \KwData{$A \in  \mathbb{R}^{(n \times n)}$ una matriz banda de un sistema con soluci\'on.\\
+ $upper\_band \in \mathbb{N}$ banda superior de la matriz. \\ 
+ $lower\_band \in \mathbb{N}$ banda inferior de la matriz. \\ 
+ $b \in \mathbb{R}^{n}$ t\'ermino independiente.}
+ \KwResult{$x \in  \mathbb{R}^{n}$ soluci\'on al sistema.}
  \vspace{0.5cm}	
  
-	$P(unique):$ "la posici\'on y radio discretizado de la sanguijuela afecta una sola fila de la matriz
-	del sistema."
+ 	\For{$d = 1, \ldots, n$}{
+		$lower\_bound = min(n, d + lower\_band + 1) $ \\
+		\For{$i = d +1, \ldots, lower\_bound$} {
+			$b_{i} = b_{i} - \dfrac{A_{i,d}}{A_{d,d}}b_{d} $\\
+			$upper\_bound = min(n, d + upper\_band + 1) $ \\
+			\For{$j = d+1,\ldots,upper\_bound$} {
+				$A_{i,j} = \dfrac{A_{i,d}}{A_{d,d}}A_{i,j}$\\
+			}
+			$A_{i,d} = 0.0$\\
+		} 
+ 	}
+	
+ 	
+   	\vspace{0.5cm}	
+	\Return {$backward\_substitution(A, upper\_bando, b)$}
+\caption{gaussian\_resolution (para matrices banda) \label{alg_backward_substition}}  
+\end{algorithm} 
+
+Cabe destacar que si bien sabemos que la matriz siempre va a ser triangulable y, más aun, sabemos que nunca va a tener infinitas soluciones porque la matriz va a ser inversible. Cuando implementamos estas partes del código todavía no teníamos en claro que no iban a haber infinitas soluciones, por lo que escribimos el algoritmo para que se adapte a la situación de cualquier forma. Sin embargo, vimos durante la clase que no es posible que tengamos infinitas soluciones (ni tampoco que no tengamos solución).
+
+\begin{algorithm}[H]
+ \KwData{$A \in  \mathbb{R}^{(n \times n)}$ una matriz banda triangulada de un sistema con soluci\'on.\\
+ $upper\_band \in \mathbb{N}$ banda superior de la matriz. \\ 
+ $b \in \mathbb{R}^{n}$ t\'ermino independiente.}
+ \KwResult{$x \in  \mathbb{R}^{n}$ soluci\'on al sistema.}
+ 
+ 	\For{$i = n, \ldots, 1$}{
+ 		\eIf{$A_{i,i} == 0.0$} {
+			\Return{"Infinitas soluciones."} 		
+ 		}{
+ 			$bound = min (n, i + upper\_band + 1)$ \\
+ 			$x_{i} = \dfrac{b_{i} - \sum\limits_{j=i+1}^{bound} (A_{i,j} x_{j})}{A_{i,i}} $
+ 		}
+ 	}
+	
+	\Return {$x$}
+\caption{backward\_substitution (para matrices banda) \label{alg_gaussian_elimination}}  
+\end{algorithm}
+
+En el caso de solución a través de la factorización LU de la matriz, es fácil ver que la matriz va a ser estrictamente diagonal dominante (en el algoritmo de construcción del sistema, sólo ponemos 1 en la diagonal y en algunos casos ponemos -0.25 en 4 columnas distintas), por lo que siempre va a existir su factorización LU, y el siguiente algorítmo siempre va a encontrar las matrices correspondientes:
+
+\begin{algorithm}[H]
+ \KwData{$L,U \in \mathbb{R}^{(n \times n)}$ descomposici\'on $LU$ de una matriz banda $A$.\\
+ 
+ $b \in \mathbb{R}^{n}$ t\'ermino independiente. \\
+ $band \in \mathbb{N}$ banda de la matriz. }
+ \KwResult{$x \in  \mathbb{R}^{n}$ soluci\'on al sistema.}
+ \vspace{0.5cm}	
+ 
+ 	$b' = forward\_substitution(L,b)$ \\
+ 	$x = backward\_substitution(U,b')$ \\
+   	\vspace{0.5cm}	
+	\Return {$x$}
+\caption{LU\_resolution (para matrices banda) \label{alg_LU_resolution}}  
+\end{algorithm} 
+
+
+\begin{algorithm}[H]
+ \KwData{$A \in  \mathbb{R}^{(n \times n)}$ una matriz banda de un sistema con soluci\'on.\\
+ $band \in \mathbb{N}$ banda de la matriz. 
+}
+ \KwResult{ $L,U \in \mathbb{R}^{(n \times n)}$ descomposici\'on $LU$ de $A$.}
+ \vspace{0.5cm}	
+ 	\For{$i = 1, \ldots, n$}{
+ 		$L_{i,i} = 1.0$ \\
+ 		$U_{i,i} = 1.0$ \\
+	} 	
+ 	$U_{1,1} = \dfrac{A_{1,1}}{L_{1,1}} $ \\
+ 	\vspace{0.5cm}	
+ 	
+	\For{$j = 2, \ldots, bound$}{
+		$U_{1,j} =  \dfrac{A_{1,j}}{L_{1,1}}$ \\
+ 		$L_{j,1} =  \dfrac{A_{j,1}}{U_{1,1}}$\\
+ 		
+	}
+	\vspace{0.5cm}	 	
+	
+	\For{$i = 2, \ldots, n-1$}{
+		$i' = max(1,i-band) $\\
+		$U_{i,i}= \dfrac{A_{i,i} - \sum\limits_{k=i'}^{i-1}L_{i,k}U_{k,i}}{L_{i,i}}$\\
+		
+		\For{$j = i+1, \ldots, n$}{
+			$U_{i,j}= \dfrac{A_{i,j} - \sum\limits_{k=i'}^{i-1}L_{i,k}U_{k,j}}{L_{i,i}}$\\
+			$L_{j,i}= \dfrac{A_{j,i} - \sum\limits_{k=i'}^{i-1}L_{j,k}U_{k,i}}{U_{i,i}}$\\
+		}
+			 		
+	} 	
+	\vspace{0.5cm}
+	
+	$i' = max(n,n-band)$ \\
+	$U_{n,n}= \dfrac{A_{n,n} - \sum\limits_{k=i'}^{n-1}L_{n,k}U_{k,n}}{L_{n,n}}$\\
+	
+   	\vspace{0.5cm}	
+	\Return {$L,U$}
+\caption{LU\_factorization (para matrices banda) \label{alg_LU_factorization}}  
+\end{algorithm} 
+
+Por lo que sólo queda resolver el sistema de la forma que explicamos en la introducción: $Ax = b \iff LUx = b$, entonces tomando $y = Ux$, podemos resolver primero $Ly = b$, y luego $Ux = y$.
+
+Llegado a este punto, teníamos que establecer el criterio para determinar la temperatura en el punto crítico antes de poder continuar con los algorítmos de eliminación de sanguijuelas. Elegimos utilizar el promedio de las temperaturas de todos los puntos discretizados que estén en el interior en la circunferencia de radio $h$ centrada en el punto crítico. Lo elegimos porque en particular, si el punto critico es un punto de la discretizaci\'on entonces es el único punto en el interior de la circunferencia, lo que nos parece coincidir intuitivamente con lo que buscamos del criterio. Además, tiene la propiedad de ser fácil de calcular en comparación con las otras ideas que tuvimos:
+
+\begin{algorithm}[H]
+ \KwData{$h$ factor de granularidad. \\
+ $width,height \in \mathbb{R}$, ancho y alto del parabrisas.\\
+ $b \in  \mathbb{R}^{m \cdot n}$ soluci\'on al problema.
+ }
+ \KwResult{$T \in  \mathbb{R}$ temperatura del punto cr\'itico. \\ }
+ \vspace{0.5cm}	
+ 
+	$centerJ = \dfrac{width}{2}$\;
+	$centerI = \dfrac{height}{2}$\;
+
+	$topJ = min(\dfrac{centerJ}{h} +1, \dfrac{width}{h} -1)$\;	
+	$bottomJ = max(\dfrac{centerJ}{h} - 1, 1)$\;			
+	
+	$topI = min(\dfrac{centerI}{h} +1, \dfrac{height}{h} -1)$\;	
+	$bottomI = max(\dfrac{center}{h} - 1, 1)$\;	
+	
+	$cp\_temperature = 0.0$\;
+	
+	$k = 0$\;
+	
+	\vspace{0.5cm}
+	\For{$i \in \{i \;/\; \ceil{bottomI} \leq i \leq  \floor{topI}  \}$} {
+		\vspace{0.5cm}
+		\For{$j \in \{j \;/\; \ceil{bottomJ} \leq j \leq  \floor{topJ}  \}$} {
+		\vspace{0.5cm}
+			$cp\_temperature = b_{(i \times n) + j}$\;
+			$k = k+1$\;
+			\vspace{0.5cm}
+		}
+	}
+	
+   	\vspace{0.5cm}
+	\Return {$T = \dfrac{cp\_temperature}{k}$}
+\caption{cp\_temperature (critic\_point\_temperature)\label{alg_critic_point_temperature}}  
+\end{algorithm} 
+
+A esta altura, nos quedaban por implementar el algorítmo de eliminación simple, y el algorítmo de Sherman Morrison. Comenzamos por el primero, por ser más fácil, y segundo por proveernos una forma para testear el algoritmo optimizado:
+
+\begin{algorithm}[H]
+ \KwData{$h$ factor de granularidad. \\
+ $width,height \in \mathbb{R}$, ancho y alto del parabrisas.\\
+  $L = l_{1}, \ldots, l_{k}$ lista de sanguijuelas.}
+ \KwResult{$T \in  \mathbb{R}^{m \times n}$ temperaturas de las coordenadas del parabrisas. \\ }
+ \vspace{0.5cm}	
+	$A, b= build\_system(h, width, height,L) \in  \mathbb{R}^{(n \times m)^{2}}, \mathbb{R}^{n \cdot m}$\\
+	$x = gaussian\_elimination(A,b)$\\
+	\vspace{0.5cm}
+	\If{$cp\_temp(h, width, height, x) \geq 235.0$} {
+	\vspace{0.5cm}
+		\For{$l \in L$}{
+			$L' = L - l$\\
+			$A = build\_system(h,width,height,L')$\\
+			$x' = gaussian\_elimination(A,b)$\\
+			\vspace{0.5cm}
+			\If{$cp\_temp(h, width, height, x') < cp\_temp(h, width, height, x)$} {
+				$x = x'$\\
+			}
+   		}   	
+   	}
+   	\vspace{0.5cm}	
+	\Return {$T = load\_temperature\_matrix(x)$}
+\caption{simple\_algorithm\label{alg_simple_algorithm}}  
+\end{algorithm} 
+
+
+Finalmente, implementamos el algoritmo de eliminación optimizado por la fórmula de Sherman Morrison. La idea es que si tenemos una matriz $A$, una matriz de perturbación $B$, y deseamos resolver el sistema $(A+B)^{-1}x=b$, podemos hacerlo si encontramos dos vectores $u$ y $v$ tales que $uv^t=B$, aplicando la siguiente identidad matricial:
+
+$$(A + uv^t)^{-1} = A^{-1} - \frac{A^{-1} u v^t A^{-1}}{1 + v^t A^{-1} u}$$
+
+Observemos que $(A+B)x = b \iff (A + uv^t)x = b \iff x = (A + uv^t)^{-1}b = A^{-1}b - \frac{A^{-1} u v^t A^{-1}}{1 + v^t A^{-1} u}b$. Entonces, para poder obtener a $x$ necesitamos resolver ambos sumandos. Observemos que el primer sumando sale directo de resolver $Ay = b$, mientras que el segundo sumando lo tenemos que tomar por partes: primero, observemos que la parte de arriba $A^{-1} u v^t A^{-1} b$ tenemos que $A^{-1}b = y$, es decir que podemos resolver $Az = u v^t y$, y tendremos que $z = A^{-1} u v^t A^{-1} b$; luego, la parte de abajo $1 + v^t A^{-1} u$ podemos resolver $Am = u$, y tomar $1 + v^t m$. Es decir, finalmente tendríamos
+
+$$(A+B)x = b \iff x = y - \frac{z}{1 + v^t m}$$
+
+Ahora, si calculamos esto con Eliminación Gaussiana, el costo de la parte de la izquierda sería $O(n^2)$ para sumar la perturbación y $O(n^3)$ para resolver el sistema, mientras que el costo de la derecha sería $O(n^3)$ para obtener $y$, $O(n^3)$ para obtener $z$, y $O(n^3)$ para obtener $m$, es decir, la complejidad asintótica es la misma, pero en concreto empeoraron las constantes.
+
+Supongamos, entonces, que tenemos la factorización LU de la matriz $A$. Entonces, los sistemas mencionados anteriormente son todos resolubles en $O(n^2)$ utilizando el método explicado en la introducción, y todas las operaciones que tenemos fuera de eso son de complejidad menor o igual. Es decir, podemos calcular el resultado utilizando la fórmula de la derecha en $O(n^2)$, en lugar del $O(n^3)$ que nos ofrece Eliminación Gaussiana.
+
+En cuanto a $uv^{t}$ recordemos que vamos a usar Sherman-Morrison para sistemas que cambian una sola ecuación del sistema. Cuando una posición discretizada $(i, j)$ se vea afectada por una sanguijuela singular (solo afecte una posición del sistema discreto) y esa posición no caiga en el radio discretizado de ninguna otra sanguijuela vamos a volver a pedir que la temperatura de esa posición discretizada se rija por la ecuación de Laplace. Observemos que como todas las filas de la diagonal de $A$ son $1$, la condición que dimos sobre las sanguijuelas implica que la fila es exactamente el vector $e_i^t$. Por lo que la modificación para que rija Laplace consistiría en tomar $uv^{t}$ como la matriz donde todas las filas sean ceros excepto la fila de la ecuación correspondiente a la temperatura $(i, j)$. Esta fila tendría el valor $-1/4$ para las columnas correspondientes a las posiciones ${(i,j-1), (i-1,j), (i,j+1), (i+1,j)}$, y cero para el resto de las posiciones.\\\
+
+Construimos los vectores $u, v$ de la siguiente manera. Si la matriz del sistema de ecuaciones $A$ tiene dimensión $d \times d$, entonces la fila correspondiente a la ecuación para $(i, j)$ en la matriz del sistema será la fila $f = i*n + j$. De forma tal que basta con tomar $u = e_f$.
+
+Además, precisamos $v_{c_{1}} = v_{c_{2}} = v_{c_{3}} = v_{c_{4}} -1/4$ y $v_{k} = 0.0$ $ \forall k \neq c_{1},c_{2},c_{3},c_{4}$. Donde: \\
+
+\begin{itemize}
+    \item $c_{1} = i \cdot n + (j-1)$
+    \item $c_{2} = (i-1) \cdot n + j$
+    \item $c_{3} = i \cdot n + (j+1)$
+    \item $c_{4} = (i+1) \cdot + j$
+\end{itemize}
+
+Que nos termina de caracterizar a los vectores $u, v$. Finalmente, el algorítmo de Sherman-Morrison:
+
+\begin{algorithm}[H]
+ \KwData{$h$ factor de granularidad. \\
+ $width,height \in \mathbb{R}$, ancho y alto del parabrisas.\\
+  $L_{Leeches} = l_{1}, \ldots, l_{k}$ lista de sanguijuelas.}
+ \KwResult{$T \in  \mathbb{R}^{m \times n}$ temperaturas de las coordenadas del parabrisas. \\ }
+ \vspace{0.5cm}	
+	\If{$singular\_leeches\_count(L) < 2$} {
+		\Return{$simple\_algorithm(h,width,height,n,m,L_{leeches})$}
+	} 
+ 	\vspace{0.5cm}
+ 	
+	$A,b = build\_system(h,width,height,L) \in  \mathbb{R}^{(m \times n)^{2}}$\\
+	$L,U = LU\_factorization(A, (n \cdot m)) \in  \mathbb{R}^{(m \times n)^{2}}$\\	
+	\vspace{0.5cm}
+
+	$x = LU\_resolution(L,U,b) \in  \mathbb{R}^{m \times n}$\\
+	\vspace{0.5cm}
+	
+	\If{$cp\_temp(h, width, height, x) \geq 235.0$} {
+	\vspace{0.5cm}
+		\For{$l \in L_{Leeches}$}{
+			
+			$is\_singular\_leech(l):$ "la posición y radio discretizado de la sanguijuela $l$ afectan una sola fila de la 				matriz del sistema." \\
+			\vspace{0.5cm}
+			\eIf{$is\_singular\_leech(l)$}{
+				$x' = singular\_leech\_resolution(L,U,l)$
+			}{
+				$L' = L - l$\\
+				$A,b = build\_system(h,width,height,L')$\\
+				$x' = gaussian\_elimination(A,b)$\\
+			}		
+			\vspace{0.5cm}
+			
+			\If{$cp\_temp(h, width, height, x') < cp\_temp(h, width, height, x)$} {
+				$x = x'$';
+			}
+   		}   	
+   	}
+   	\vspace{0.5cm}	
+	\Return {$T = load\_temperature\_matrix(x)$}
+\caption{sherman\_morrison\_algorithm\label{alg_sherman_morrison_algorithm}}  
+\end{algorithm}  
+
+Con el algoritmo correspondiente para resolver el problema cuando ya tenemos una sanguijuela unitaria:
+
+\begin{algorithm}[H]
+ \KwData{$L,U \in  \mathbb{R}^{(m \times n)^{2}}$ factorización $LU$ del sistema. $l$ sanguijuela a procesar.}
+ \KwResult{$x \in  \mathbb{R}^{m \cdot x}$ temperaturas de las coordenadas del parabrisas. \\ }
+ \vspace{0.5cm}	
+ 
+	$unique(l):$ "no hay otra sanguijuela en el problema que afecte la misma posición discretizada."
  	\vspace{0.5cm}
 	
-	\eIf{$\neg P(unique)$} {
-		$b = LU\_resolution(L,U)$
+	\eIf{$\neg unique(l)$} {
+		$x = LU\_resolution(L,U,b)$
 	}{
 		$u,v = generate\_sherman\_morrison\_uv(l)$\\
 		$b = sherman\_morrison\_resolution(L,U,u,v)$
@@ -234,31 +417,8 @@ El pseudocodigo de fordwardsustitution es analogo por lo que no se adjunta.
  	\vspace{0.5cm}
  	
 	
-	\Return {$b$}
-\caption{singular\_leech\_resolution\label{intro_alg_interpolation}}  
+	\Return {$x$}
+\caption{singular\_leech\_resolution\label{alg_singular_leech_resoluton}}  
 \end{algorithm} 
-\end{minipage}
-} 
-\vspace{0.5cm}
 
-El algoritmo $build\_system$
-
-
-\subsection{Sobre la experimentación}
-
-Para medir los tiempos de resolución, utilizamos la función gettimeof day, que permite medir con
-facilidad el lapso de tiempo entre dos momentos de la ejecución del programa. Decidimos medir
-únicamente los tiempos que estuvieran estrictamente relacionados a la resolución del sistema,
-dejando afuera, por ejemplo, el tiempo empleado para escribir las soluciones en archivos de salida. La
-idea de fondo que nos llevó a medir de esta manera fue la de intentar que las magnitudes de los tiempos
-empleados por los métodos de triangulación de Gauss y LU no se vieran afectadas por tiempos mucho
-mayores que distorsionaran la distancia relativa entre ellas.
-
-Una vez finalizada la etapa de implementación y testeo de los algoritmos, procedimos a realizar una
-serie de experimentos que nos permitieran evaluar el comportamiento de los mismos. Además de
-analizar como se modifican los resultados a medida que se modifica el parámetro de discretización
-h, definimos algoritmos para comparar el desempeño, en términos de la estimación de temperaturas.
-Por comodidad, a la hora de diseñar los experimentos, definimos todos los parabrisas con forma cuadrada.
-
-Siguiendo la consigna del TP, planteamos tres casos diferentes para analizar como varia la temperatura 
-en el punto critico al variar la discretización. Estos casos fueron generados de manera pseudo aleatoria. Es decir, si bien las posiciones de las sanguijuelas se establecieron usando una distribución uniforme y la temperatura usando una distribución normal~\cite{proba}, restringimos los rangos de ambos parámetros para lograr la instancia deseada.
+No incluimos pseudocódigos para generate\_sherman\_morrison\_uv y sherman\_morrison\_resolution porque consideramos que no aportan a la comprensión fuera de las explicaciones que ya dimos. Fuera de eso, la función load\_temperature\_matrix tampoco fue incluida por ser una función que sólo hace entrada y salida, por lo que no vemos el sentido de mostrarla.
