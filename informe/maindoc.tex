@@ -14,6 +14,11 @@
 \graphicspath{{../experimentos}{.}}
 \usepackage{algpseudocode}
 
+\usepackage[boxed,boxruled,vlined,linesnumbered]{algorithm2e}
+
+\providecommand{\ceil}[1]{\left \lceil #1 \right \rceil }
+\providecommand{\floor}[1]{\left \lfloor #1 \right \rfloor }
+
 \geometry{
  a4paper,
  total={210mm,297mm},
@@ -28,7 +33,7 @@
 \begin{document}
 
 \renewcommand{\refname}{Bibliografía}
-\renewcommand{\contentsname}{Indice}
+\renewcommand{\contentsname}{\'Indice}
 \fecha{03 / 06 / 2015}
 \materia{Métodos Numéricos}
 \titulo{Recuperatorio del Trabajo Práctico 1}
@@ -56,7 +61,8 @@
 \section{Apéndices}
 
 \subsection{Apéndice A: Enunciado}
-\includepdf[pages={1, 2, 3, 4}]{consigna.pdf}
+\input{../presentacion/tp1.tex}
+%\includepdf[pages={1, 2, 3, 4}]{consigna.pdf}
 
 \subsection{Apéndice B: Código relevante}
 

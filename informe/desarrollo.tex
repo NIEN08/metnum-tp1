@@ -9,7 +9,7 @@ En principio, y con la intención de entender el problema en profundidad, plante
 
 entonces el problema modelado es de la pinta$^6$:\footnotetext[6]{Aclaramos que la circunferencia negra representa una sanguijuela mutante y el cuadrado celeste, al parabrisas.}
 
-\begin{figure}[t]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.3\textwidth]{ejP01}
     \caption{Imagen ilustrativa del parabrisas}
@@ -17,7 +17,7 @@ entonces el problema modelado es de la pinta$^6$:\footnotetext[6]{Aclaramos que 
 
 Luego lo representaremos como muestra el gráfico a continuación, donde cada intersección de las lineas representa una variable del modelo, de la cual debemos averiguar su temperatura.
 
-\begin{figure}[t]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.3\textwidth]{ejP02}
     \caption{Representación visual del modelo discretizado}
@@ -115,26 +115,39 @@ Luego de implementada Eliminación Gaussiana y Factorizaci\'on LU, procedimos a 
 
 %%%%%%%%%% TODO: Terminar. Hay que escribir exactamente cómo se hacen los cálculos y justificar.
 
-Para finalizar la implementación, programamos el Algoritmo Simple para calcular cual sanguijuela eliminar, y algoritmo mejorado con la fórmula de Sherman-Morrison. Básicamente la idea de Sherman Morrison es lograr 
+Para finalizar la implementación, programamos el Algoritmo Simple para calcular cual sanguijuela eliminar, y algoritmo mejorado con la fórmula de Sherman-Morrison. 
 
 La fórmula de Sherman-Morrison nos permite conseguir un sistema equivalente al de $(A+B)^{-1}x=b$ si podemos encontrar dos vectores $u$ y $v$ tales que $uv^t=B$.
 
-Sherman-Morrison nos proponen la siguiente fórmula:
+  Supongamos que queremos resolver el sistema $  (A + uv^{t})x = b $ con solucion unica. \\\ 
+   
+ $\iff x = (A + uv^{t})^{-1} b$   \\\
+ $\iff_{SM} $ $ x = A^{-1}b -  \dfrac{A^{-1}u v^{t}A^{-1}b}{1+v^{t}A^{-1}u}$ \\\
+$\iff $ $ x = A^{-1}b -  \dfrac{v^{t}A^{-1}b}{1+v^{t}A^{-1}u} A^{-1}u $\\\
+Pero sabemos que: \\\
+$A^{-1}b = y \iff Ay = b$ \\\
+$A^{-1}u = z \iff Az = u$ \\\
 
-$x = (A + uv^{t})^{-1} b = A^{-1}b -  \dfrac{v^{t}A^{-1}b}{1+v^{t}A^{-1}u} A^{-1}u$
+Suponiendo que ya resolvimos el sistema A antes de la modificacion, tenemos su descomposicion, $ LU=A $. Por lo que basta resolver: \\\
+$Ly_{2}= b $ y $ Lz_{2} = u$ \\\
+Luego, $ Uy=y_{2} $ y $ Uz=z_{2}$ \\\
+Una vez calculados $ y $ y $ z $ estamos en condiciones de resolver la expresion. Notemos que $ \dfrac{v^{t}A^{-1}b}{1+v^{t}A^{-1}u} $ es un escalar. \\\
 
-Pero sabemos que:$A^{-1}b = y \iff Ay = b 
-A^{-1}u = z \iff Az = u $
+Finalmente $ x = y - \dfrac{v^{t}y}{1+v^{t}z} z$ \\\
 
-Suponiendo que ya resolvimos el sistema A antes de la modificación, tenemos su descomposición, $ LU=A $. Por lo que basta resolver: $\\\
-Ly_{2} = y $ y $ Lz_{2}=z$
+En cuanto a $ uv^{t} $ recordemos que vamos a usar sherman-morrison para sistemas que cambian una ecuacion del sistema. Cuando una posicion discretizada i,j se vea afectada por una sanguijuela singular (solo afecte una posicion del sistema discreto) y esa posicion no caiga en el radio discretizado de ninguna otra sanguijuela vamos a volver a pedir que la temperatura de esa posicion discretizada se rija por la ecuaci\'on de Laplace. Por lo que la modificaci\'on ser\'a:  \\\
 
-Luego, $ Uy=y_{2} $ y $ Uz=z_{2}$
-Una vez calculados $ y $ y $ z $ estamos en condiciones de resolver la expresión. Notemos que
+$ A + Eq $ donde $Eq = uv^{t} $ la matriz donde todas las filas ser\'an ceros excepto la fila de la ecuacion correspondiente a la temperatura $(i, j)$. Esta fila tendr\'a el valor $-1/4$ para las columnas correspondientes a las posiciones $(i,j-1),(i-1,j), (i,j+1), (i+1,j) $.\\\
 
-$ \dfrac{v^{t}A^{-1}b}{1+v^{t}A^{-1}u} $ es un escalar.
+Constru\'imos los vectores $u, v$ de la siguiente manera. Si la matriz del sistema de ecuaci\'ones $A$ tiene dimensi\'on $(n*m)*(n*m)$, donde $(n*m)$ es la dimensi\'on de la matriz de temperaturas discretizada, entonces la fila correspondiente a la ecuaci\'on $(i,j)$ en la matriz del sistema sera la fila $f = i*n + j$. De forma tal que $u_{f} = 1.0$ y $u_{k} = 0.0$ $ \forall k \neq f$.\\\
 
-Finalmente $ x = y +  \dfrac{v^{t}y}{1+v^{t}z} z$
+Adem\'as $v_{c_{1}} = v_{c_{2}} = v_{c_{3}} = v_{c_{4}} -1/4$ y  $v_{k} = 0.0$ $ \forall k \neq c_{1},c_{2},c_{3},c_{4}$. Donde: \\
+\begin{itemize}
+\item $c_{1} = i*n + (j-1)$
+\item $c_{2} = (i-1)*n + j$
+\item $c_{3} = i*n + (j+1)$
+\item $c_{4} = (i+1)*n + j$
+\end{itemize}
 
 
 En cuanto a $ uv^{t} $ recordemos que vamos a usar Sherman-Morrison para sistemas que cambian una sola fila i, por lo que nos basta con
@@ -197,7 +210,39 @@ El pseudocodigo de fordwardsustitution es analogo por lo que no se adjunta.
 \State{devuelvo L y U}
 \end{algorithmic}
 \end{minipage}
+}
+\vspace{0.5cm}
+
+\noindent\fbox{
+\begin{minipage}{1\textwidth}
+\begin{algorithm}[H]
+ \KwData{$L,U \in  \mathbb{R}^{(n \times m)^{2}}$ factorizaci\'on $LU$ del sistema. \\
+  $l$ sanguijuela a procesar.}
+ \KwResult{$b \in  \mathbb{R}^{n \cdot m}$ temperaturas de las coordenadas del parabrisas. \\ }
+ \vspace{0.5cm}	
+ 
+	$P(unique):$ "la posici\'on y radio discretizado de la sanguijuela afecta una sola fila de la matriz
+	del sistema."
+ 	\vspace{0.5cm}
+	
+	\eIf{$\neg P(unique)$} {
+		$b = LU\_resolution(L,U)$
+	}{
+		$u,v = generate\_sherman\_morrison\_uv(l)$\\
+		$b = sherman\_morrison\_resolution(L,U,u,v)$
+	}
+ 	\vspace{0.5cm}
+ 	
+	
+	\Return {$b$}
+\caption{singular\_leech\_resolution\label{intro_alg_interpolation}}  
+\end{algorithm} 
+\end{minipage}
 } 
+\vspace{0.5cm}
+
+El algoritmo $build\_system$
+
 
 \subsection{Sobre la experimentación}
 
